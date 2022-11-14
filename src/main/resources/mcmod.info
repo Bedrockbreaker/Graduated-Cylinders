@@ -1,0 +1,10 @@
+[
+{
+  "modid": "graduatedcylinders",
+  "name": "Graduated Cylinders",
+  "description": "Gives finer control over moving fluids between tanks",
+  "version": "Your Mom",
+  "mcversion": "${mcversion}",
+  "authorList": ["Bedrockbreaker"]
+}
+]
