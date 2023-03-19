@@ -1,0 +1,22 @@
+# GUI
+graduatedcylindersmisc.instructions=＋・－ボタン、矢印キー、スクロール ホイール、タイピングして量を増減する
+graduatedcylindersmisc.1mb=%s+Shift:     1 mB
+graduatedcylindersmisc.10mb=%s:          10 mB
+graduatedcylindersmisc.100mb=Shift:         100 mB
+graduatedcylindersmisc.1000mb=(なし):        1 B
+graduatedcylindersmisc.10000mb=Shift+Alt:      10 B
+graduatedcylindersmisc.100000mb=%s+Shift+Alt: 100 B
+graduatedcylindersmisc.allmb=Alt:           最大数・最小数
+graduatedcylindersmisc.accept=[%s]: OK
+graduatedcylindersmisc.cancel=[Esc]: キャンセル
+
+graduatedcylindersmisc.amount=%.3fバケツ
+graduatedcylindersmisc.cantransfer=流れ方向を切り替える
+graduatedcylindersmisc.cannottransfer=流れ方向を切り替えられない
+
+# Inventory
+graduatedcylindersmisc.rightclick=右クリック: %s %s%s mB%s
+
+# Ctrl Modifier Key
+graduatedcylindersmisc.ctrl=Ctrl
+graduatedcylindersmisc.ctrl.mac=Cmd

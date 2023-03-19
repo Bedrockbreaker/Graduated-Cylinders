@@ -1,9 +1,12 @@
 package bedrockbreaker.graduatedcylinders.Packets;
 
 import bedrockbreaker.graduatedcylinders.FluidTransferGui;
+import bedrockbreaker.graduatedcylinders.FluidHelper.FindTransferrableTankResult;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -13,37 +16,37 @@ import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketOpenFluidGUI implements IMessage {
 	
+	private ItemStack heldItem;
 	private BlockPos pos;
-	private ItemStack container;
-	private boolean export;
-	private boolean forced;
-	private int amt;
-	private int max;
+	private int side;
+	private FindTransferrableTankResult transferResults;
+	private FluidStack heldFluidStack;
+	private FluidStack blockFluidStack;
 	private boolean valid;
 
 	public PacketOpenFluidGUI() {
 		this.valid = false;
 	}
 
-	public PacketOpenFluidGUI(BlockPos pos, ItemStack container, boolean export, boolean forced, int amt, int max) {
+	public PacketOpenFluidGUI(ItemStack heldItem, BlockPos pos, int side, FindTransferrableTankResult transferResults, FluidStack heldFluidStack, FluidStack blockFluidStack) {
+		this.heldItem = heldItem;
 		this.pos = pos;
-		this.container = container;
-		this.export = export;
-		this.forced = forced;
-		this.amt = amt;
-		this.max = max;
+		this.side = side;
+		this.transferResults = transferResults;
+		this.heldFluidStack = heldFluidStack;
+		this.blockFluidStack = blockFluidStack;
 		this.valid = true;
 	}
 
 	@Override
 	public void fromBytes(ByteBuf buffer) {
 		try {
+			this.heldItem = new ItemStack(ByteBufUtils.readTag(buffer));
 			this.pos = new BlockPos(buffer.readInt(), buffer.readInt(), buffer.readInt());
-			this.container = ByteBufUtils.readItemStack(buffer);
-			this.export = buffer.readBoolean();
-			this.forced = buffer.readBoolean();
-			this.amt = buffer.readInt();
-			this.max = buffer.readInt();
+			this.side = buffer.readInt();
+			this.transferResults = new FindTransferrableTankResult(buffer.readInt(), buffer.readInt(), buffer.readBoolean(), buffer.readBoolean());
+			this.heldFluidStack = FluidStack.loadFluidStackFromNBT(ByteBufUtils.readTag(buffer));
+			this.blockFluidStack = FluidStack.loadFluidStackFromNBT(ByteBufUtils.readTag(buffer));
 		} catch(IndexOutOfBoundsException error) {
 			System.out.println(error);
 		}
@@ -53,14 +56,18 @@ public class PacketOpenFluidGUI implements IMessage {
 	@Override
 	public void toBytes(ByteBuf buffer) {
 		if (!this.valid) return;
+		// Transfer heldItem by NBT, which carrries capabilities (looking at you, Astral Sorcery -_-)
+		ByteBufUtils.writeTag(buffer, this.heldItem.writeToNBT(new NBTTagCompound()));
 		buffer.writeInt(this.pos.getX());
 		buffer.writeInt(this.pos.getY());
 		buffer.writeInt(this.pos.getZ());
-		ByteBufUtils.writeItemStack(buffer, this.container);
-		buffer.writeBoolean(this.export);
-		buffer.writeBoolean(this.forced);
-		buffer.writeInt(this.amt);
-		buffer.writeInt(this.max);
+		buffer.writeInt(this.side);
+		buffer.writeInt(this.transferResults.leftTank);
+		buffer.writeInt(this.transferResults.rightTank);
+		buffer.writeBoolean(this.transferResults.canExport);
+		buffer.writeBoolean(this.transferResults.canImport);
+		ByteBufUtils.writeTag(buffer, heldFluidStack != null ? heldFluidStack.writeToNBT(new NBTTagCompound()) : null);
+		ByteBufUtils.writeTag(buffer, blockFluidStack != null ? blockFluidStack.writeToNBT(new NBTTagCompound()) : null);
 	}
 
 	public static class Handler implements IMessageHandler<PacketOpenFluidGUI, IMessage> {
@@ -68,7 +75,7 @@ public class PacketOpenFluidGUI implements IMessage {
 		@Override
 		public IMessage onMessage(PacketOpenFluidGUI message, MessageContext context) {
 			if (!message.valid || context.side != Side.CLIENT) return null;
-			FMLCommonHandler.instance().getWorldThread(context.netHandler).addScheduledTask(() -> FluidTransferGui.open(message.pos, message.container, message.export, message.forced, message.amt, message.max));
+			FMLCommonHandler.instance().getWorldThread(context.netHandler).addScheduledTask(() -> FluidTransferGui.open(message.heldItem, message.pos, message.side, message.transferResults, message.heldFluidStack, message.blockFluidStack));
 			return null;
 		}
 	}

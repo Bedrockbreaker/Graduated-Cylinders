@@ -5,6 +5,7 @@
   "description": "Gives finer control over moving fluids between tanks",
   "version": "Your Mom",
   "mcversion": "${mcversion}",
-  "authorList": ["Bedrockbreaker"]
+  "authorList": ["Bedrockbreaker"],
+  "logoFile": "assets/graduatedcylinders/textures/logo.png"
 }
 ]

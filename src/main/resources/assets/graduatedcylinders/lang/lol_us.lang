@@ -1,0 +1,22 @@
+# GUI
+graduatedcylindersmisc.instructions=Uze da buttNs, Airohz, skroLl toy, or sits on keybored
+graduatedcylindersmisc.1mb=%s+ShiF:       1 mB
+graduatedcylindersmisc.10mb=%s:             10 mB
+graduatedcylindersmisc.100mb=Sift:              100 mB
+graduatedcylindersmisc.1000mb=(no key):       1 B
+graduatedcylindersmisc.10000mb=Shigt+ALT:      10 B
+graduatedcylindersmisc.100000mb=%s+SHfit+Alt: 100 B
+graduatedcylindersmisc.allmb=aLR:              lots/emptie
+graduatedcylindersmisc.accept=[%s]: Dun
+graduatedcylindersmisc.cancel=[Esc]: nah
+
+graduatedcylindersmisc.amount=%.3f Bukkit(z)
+graduatedcylindersmisc.cantransfer=Muv likwid bakwords
+graduatedcylindersmisc.cannottransfer=No canz muv likwid bakwords
+
+# Inventory
+graduatedcylindersmisc.rightclick=Riet Paw: %s %s%s mB%s
+
+# Ctrl Modifier Key
+graduatedcylindersmisc.ctrl=Ktrl
+graduatedcylindersmisc.ctrl.mac=Kmd
