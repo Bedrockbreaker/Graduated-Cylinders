@@ -14,6 +14,9 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Proxy.ProxyTanksProperties.ProxyTankProperties;
 import bedrockbreaker.graduatedcylinders.FluidHelper.FindTransferrableTankResult;
 import bedrockbreaker.graduatedcylinders.Packets.PacketBlockTransferFluid;
 import net.minecraft.block.state.IBlockState;
@@ -24,7 +27,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.client.settings.GameSettings;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -33,28 +36,21 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandlerItem;
-import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
 public class FluidTransferGui extends GuiScreen {
 
 	private static final ArrayList<Integer> allowedChars = new ArrayList<Integer>(Arrays.asList(14, 200, 203, 205, 208)); // Backspace and arrow keys
-	private final List<String> tooltip = new ArrayList<String>();
-	private final KeyBinding inventoryKey;
 	private boolean initialized = false;
 
 	private final ItemStack heldItem;
-	private final IFluidHandlerItem heldFluidHandler;
+	private final ProxyFluidHandler heldFluidHandler;
 	private final World world;
 	private final BlockPos pos;
 	private final ItemStack blockItem;
-	private FluidStack fluidStack;
+	private ProxyFluidStack fluidStack;
 	private ItemStack fluidItem;
 	private EnumFacing selectedFace;
-	private IFluidHandler blockFluidHandler;
+	private ProxyFluidHandler blockFluidHandler;
 	private int heldTankIndex;
 	private int blockTankIndex;
 	private int max;
@@ -71,11 +67,11 @@ public class FluidTransferGui extends GuiScreen {
 	private List<GuiButton> heldTanksButtons = new ArrayList<GuiButton>();
 	private List<GuiButton> blockTanksButtons = new ArrayList<GuiButton>();
 
-	public static void open(ItemStack heldItem, BlockPos pos, int side, FindTransferrableTankResult transferResults, FluidStack heldFluidStack, FluidStack blockFluidStack) {
+	public static void open(ItemStack heldItem, BlockPos pos, int side, FindTransferrableTankResult transferResults, ProxyFluidStack heldFluidStack, ProxyFluidStack blockFluidStack) {
 		Minecraft.getMinecraft().displayGuiScreen(new FluidTransferGui(heldItem, pos, EnumFacing.getFront(side), transferResults, heldFluidStack, blockFluidStack));
 	}
 
-	public FluidTransferGui(ItemStack heldItem, BlockPos pos, EnumFacing side, FindTransferrableTankResult transferResults, FluidStack heldFluidStack, FluidStack blockFluidStack) {
+	public FluidTransferGui(ItemStack heldItem, BlockPos pos, EnumFacing side, FindTransferrableTankResult transferResults, ProxyFluidStack heldFluidStack, ProxyFluidStack blockFluidStack) {
 		super();
 
 		if (heldItem == null) throw new IllegalArgumentException(); // IDE complaint.
@@ -83,42 +79,28 @@ public class FluidTransferGui extends GuiScreen {
 		Minecraft minecraft = Minecraft.getMinecraft();
 		
 		this.heldItem = heldItem;
-		this.heldFluidHandler = FluidUtil.getFluidHandler(heldItem);
+		this.heldFluidHandler = FluidHelper.getProxyFluidHandler(heldItem);
 		this.heldTankIndex = transferResults.leftTank;
 		this.world = minecraft.world;
 		this.pos = pos;
-		this.blockFluidHandler = FluidUtil.getFluidHandler(world, pos, side);
+		this.blockFluidHandler = FluidHelper.getProxyFluidHandler(world, pos, side, this.heldFluidHandler.getType());
 		this.blockItem = this.pickBlock(pos);
 		this.selectedFace = side;
 		this.blockTankIndex = transferResults.rightTank;
 
-		IFluidTankProperties heldFluidTank = this.heldFluidHandler.getTankProperties()[heldTankIndex];
-		IFluidTankProperties blockFluidTank = this.blockFluidHandler.getTankProperties()[blockTankIndex];
+		ProxyTankProperties heldFluidTank = this.heldFluidHandler.getTankProperties().get(heldTankIndex);
+		ProxyTankProperties blockFluidTank = this.blockFluidHandler.getTankProperties().get(blockTankIndex);
 
 		// Need to create excess variable because it yells at me for not checking for null.
-		FluidStack fluidStack = heldFluidStack == null ? blockFluidStack : heldFluidStack;
+		ProxyFluidStack fluidStack = heldFluidStack == null ? blockFluidStack : heldFluidStack;
 		if (fluidStack == null) throw new NullPointerException();
 		this.fluidStack = fluidStack;
-		this.fluidItem = FluidUtil.getFilledBucket(fluidStack);
+		this.fluidItem = fluidStack.getFilledBucket();
 
 		this.max = Math.min(heldFluidTank.getCapacity(), blockFluidTank.getCapacity());
 		this.forced = (transferResults.canExport && !transferResults.canImport) || (!transferResults.canExport && transferResults.canImport);
 		this.export = this.forced ? transferResults.canExport : minecraft.player.isSneaking();
 
-		this.inventoryKey = minecraft.gameSettings.keyBindInventory;
-		String ctrl =I18n.format(Minecraft.IS_RUNNING_ON_MAC ? "graduatedcylindersmisc.ctrl.mac" : "graduatedcylindersmisc.ctrl");
-		this.tooltip.add(I18n.format("graduatedcylindersmisc.instructions"));
-		this.tooltip.add("");
-		this.tooltip.add(I18n.format("graduatedcylindersmisc.1mb", ctrl));
-		this.tooltip.add(I18n.format("graduatedcylindersmisc.10mb", ctrl));
-		this.tooltip.add(I18n.format("graduatedcylindersmisc.100mb"));
-		this.tooltip.add(I18n.format("graduatedcylindersmisc.1000mb"));
-		this.tooltip.add(I18n.format("graduatedcylindersmisc.10000mb"));
-		this.tooltip.add(I18n.format("graduatedcylindersmisc.100000mb", ctrl));
-		this.tooltip.add(I18n.format("graduatedcylindersmisc.allmb"));
-		this.tooltip.add("");
-		this.tooltip.add(I18n.format("graduatedcylindersmisc.accept", this.inventoryKey.getDisplayName()));
-		this.tooltip.add(I18n.format("graduatedcylindersmisc.cancel"));
 		this.initialized = true;
 	}
 
@@ -180,25 +162,55 @@ public class FluidTransferGui extends GuiScreen {
 	// Called every frame
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		GameSettings settings = Minecraft.getMinecraft().gameSettings;
 		final int centerX = this.width/2;
 		final int centerY = this.height/2;
+		final String fluidName = this.fluidStack.getLocalizedName();
+		final String cmd = Minecraft.IS_RUNNING_ON_MAC ? ".cmd" : "";
+		final int leftMargin = this.width - (this.fontRenderer.getStringWidth(I18n.format("gc.gui.100000mb.combo" + cmd)) + this.fontRenderer.getStringWidth(I18n.format("gc.gui.allmb")) + 10);
 
 		this.drawDefaultBackground();
 		this.textAmount.drawTextBox();
 		super.drawScreen(mouseX, mouseY, partialTicks);
-		this.drawString(this.fontRenderer, I18n.format("graduatedcylindersmisc.amount", this.amount/1000.0F), centerX - 56, centerY - 30, 11184810); // Gray (#AAAAAA) (https://minecraft.fandom.com/wiki/Formatting_codes#Color_codes)
+		
+		// Bucket amount above text field
+		this.drawString(this.fontRenderer, fluidName, centerX - 10 - this.fontRenderer.getStringWidth(fluidName) / 2, centerY - 50, 16777215); // White (#FFFFFF)
+		
+		// Instructions in top-right corner
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.amount", this.amount/1000.0F), centerX - 56, centerY - 30, 11184810); // Gray (#AAAAAA) (https://minecraft.fandom.com/wiki/Formatting_codes#Color_codes)
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.instructions"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.instructions")) - 5, 5, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.toggle", settings.keyBindJump.getDisplayName()), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.toggle", settings.keyBindJump.getDisplayName())) - 5, 20, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.accept", settings.keyBindInventory.getDisplayName()), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.accept", settings.keyBindInventory.getDisplayName())) - 5, 35, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.cancel"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.cancel")) - 5, 50, 11184810);
+		
+		// Combo shortcuts, left-aligned in bottom-right corner
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.1mb.combo" + cmd), leftMargin, this.height - 105, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.10mb.combo" + cmd), leftMargin, this.height - 90, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.100mb.combo"), leftMargin, this.height - 75, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.1000mb.combo"), leftMargin, this.height - 60, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.10000mb.combo"), leftMargin, this.height - 45, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.100000mb.combo" + cmd), leftMargin, this.height - 30, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.allmb.combo"), leftMargin, this.height - 15, 11184810);
+		
+		// Combo fluid amounts, right-aligned in bottom-right corner
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.1mb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.1mb")) - 5, this.height - 105, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.10mb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.10mb")) - 5, this.height - 90, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.100mb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.100mb")) - 5, this.height - 75, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.1000mb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.1000mb")) - 5, this.height - 60, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.10000mb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.10000mb")) - 5, this.height - 45, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.100000mb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.100000mb")) - 5, this.height - 30, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.allmb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.allmb")) - 5, this.height - 15, 11184810);
+		
 		this.drawItemStack(this.heldItem, centerX - 61, centerY + 6);
 		this.drawItemStack(this.blockItem, centerX + 10, centerY + 6);
 		if (!this.fluidItem.isEmpty()) this.drawItemStack(this.fluidItem, centerX - 26, centerY - 92);
-		String fluidName = this.fluidStack.getLocalizedName();
-		this.drawString(this.fontRenderer, fluidName, centerX - 10 - this.fontRenderer.getStringWidth(fluidName) / 2, centerY - 50, 16777215); // White (#FFFFFF)
 
 		if (mouseX >= centerX - 62 && mouseX <= centerX - 30 && mouseY >= centerY + 6 && mouseY <= centerY + 38) this.renderToolTip(this.heldItem, mouseX, mouseY);
 		if (mouseX >= centerX + 10 && mouseX <= centerX + 42 && mouseY >= centerY + 6 && mouseY <= centerY + 38) this.renderToolTip(this.blockItem, mouseX, mouseY);
-		if (this.incFluidButton.isMouseOver() || this.decFluidButton.isMouseOver()) this.drawHoveringText(this.tooltip, mouseX, mouseY);
-		if (this.exportButton.isMouseOver()) this.drawHoveringText(I18n.format(this.forced ? "graduatedcylindersmisc.cannottransfer" : "graduatedcylindersmisc.cantransfer"), mouseX, mouseY);
+		//if (this.incFluidButton.isMouseOver() || this.decFluidButton.isMouseOver()) this.drawHoveringText(this.tooltip, mouseX, mouseY);
+		if (this.exportButton.isMouseOver()) this.drawHoveringText(I18n.format(this.forced ? "gc.gui.notoggle" : "gc.gui.yestoggle"), mouseX, mouseY);
 		// Draw tooltip when hovering over the textbox, except when the mouse is in the center of the screen, such as when the gui is first created
-		if (mouseX >= centerX - 60 && mouseX <= centerX + 40 && mouseY >= centerY - 20 && mouseY <= centerY && (mouseX != centerX || mouseY != centerY)) this.drawHoveringText(this.tooltip, mouseX, mouseY);
+		//if (mouseX >= centerX - 60 && mouseX <= centerX + 40 && mouseY >= centerY - 20 && mouseY <= centerY && (mouseX != centerX || mouseY != centerY)) this.drawHoveringText(this.tooltip, mouseX, mouseY);
 	}
 
 	@Override
@@ -226,9 +238,14 @@ public class FluidTransferGui extends GuiScreen {
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
 		super.keyTyped(typedChar, keyCode);
 
-		if (keyCode == this.inventoryKey.getKeyCode()) {
+		if (keyCode == Minecraft.getMinecraft().gameSettings.keyBindInventory.getKeyCode()) {
 			Minecraft.getMinecraft().displayGuiScreen(null);
 			PacketHandler.INSTANCE.sendToServer(new PacketBlockTransferFluid(this.heldItem, this.heldTankIndex, this.pos, this.selectedFace.getIndex(), this.blockTankIndex, this.amount * (this.export ? -1 : 1)));
+			return;
+		} else if (keyCode == Minecraft.getMinecraft().gameSettings.keyBindJump.getKeyCode()) {
+			if (this.forced) return;
+			this.export = !this.export;
+			this.exportButton.displayString = this.export ? "->" : "<-";
 			return;
 		}
 		if (!NumberUtils.isDigits(Character.toString(typedChar)) && !allowedChars.contains(keyCode)) return;

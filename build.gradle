@@ -13,7 +13,7 @@ apply plugin: 'net.minecraftforge.gradle'
 // apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = '1.12.2-2.4.1'
+version = '1.12.2-2.5.7'
 group = 'bedrockbreaker.graduatedcylinders' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'GraduatedCylinders'
 
@@ -61,11 +61,18 @@ minecraft {
     }
 }
 
+repositories {
+    maven { url "https://cursemaven.com" }
+}
+
 dependencies {
     // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2860'
+
+    compileOnly fg.deobf('curse.maven:mekanism-268560:2835176')
+    //runtimeOnly fg.deobf('curse.maven:mekanism-268560:2835176')
 
     // You may put jars on which you depend on in ./libs or you may define them like so..
     // compile "some.group:artifact:version:classifier"

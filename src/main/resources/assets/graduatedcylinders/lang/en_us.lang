@@ -1,22 +1,31 @@
 # GUI
-graduatedcylindersmisc.instructions=Change using the buttons, arrow keys, scroll wheel, or typing
-graduatedcylindersmisc.1mb=%s+Shift:      1 mB
-graduatedcylindersmisc.10mb=%s:             10 mB
-graduatedcylindersmisc.100mb=Shift:            100 mB
-graduatedcylindersmisc.1000mb=(None):         1 B
-graduatedcylindersmisc.10000mb=Shift+Alt:       10 B
-graduatedcylindersmisc.100000mb=%s+Shift+Alt: 100 B
-graduatedcylindersmisc.allmb=Alt:               max/min
-graduatedcylindersmisc.accept=[%s]: Accept
-graduatedcylindersmisc.cancel=[Esc]: Cancel
+gc.gui.instructions=Change using the buttons, arrow keys, scroll wheel, or typing
+gc.gui.toggle=[%s]: Toggle
+gc.gui.accept=[%s]: Accept
+gc.gui.cancel=[Esc]: Cancel
 
-graduatedcylindersmisc.amount=%.3f Bucket(s)
-graduatedcylindersmisc.cantransfer=Toggle fluid transfer direction
-graduatedcylindersmisc.cannottransfer=Can't change fluid transfer direction
+gc.gui.1mb.combo=Ctrl+Shift:
+gc.gui.1mb.combo.cmd=Cmd+Shift:
+gc.gui.10mb.combo=Ctrl:
+gc.gui.10mb.combo.cmd=Cmd:
+gc.gui.100mb.combo=Shift:
+gc.gui.1000mb.combo=(None):
+gc.gui.10000mb.combo=Shift+Alt:
+gc.gui.100000mb.combo=Ctrl+Shift+Alt:
+gc.gui.100000mb.combo.cmd=Cmd+Shift+Alt:
+gc.gui.allmb.combo=Alt:
+
+gc.gui.1mb=1 mB
+gc.gui.10mb=10 mB
+gc.gui.100mb=100 mB
+gc.gui.1000mb=1 B
+gc.gui.10000mb=10 B
+gc.gui.100000mb=100 B
+gc.gui.allmb=max/min
+
+gc.gui.amount=%.3f Bucket(s)
+gc.gui.yestoggle=Toggle fluid transfer direction
+gc.gui.notoggle=Can't change fluid transfer direction
 
 # Inventory
-graduatedcylindersmisc.rightclick=Right Click: %s %s%s mB%s
-
-# Ctrl Modifier Key
-graduatedcylindersmisc.ctrl=Ctrl
-graduatedcylindersmisc.ctrl.mac=Cmd
+gc.inventory.rightclick=Right Click: %s %s%s mB%s

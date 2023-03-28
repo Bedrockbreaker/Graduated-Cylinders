@@ -1,5 +1,9 @@
 package bedrockbreaker.graduatedcylinders.Packets;
 
+import bedrockbreaker.graduatedcylinders.FluidHelper;
+import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidHandlerItem;
+import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidStack;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -8,10 +12,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -84,18 +84,18 @@ public class PacketBlockTransferFluid implements IMessage {
 				if (slot == -1) return;
 
 				World world = ctx.getServerHandler().player.getServerWorld();
-				IFluidHandlerItem heldFluidHandler = FluidUtil.getFluidHandler(message.heldItem);
-				IFluidHandler blockFluidHandler = FluidUtil.getFluidHandler(world, message.pos, EnumFacing.getFront(message.side));
+				ProxyFluidHandlerItem heldFluidHandler = FluidHelper.getProxyFluidHandler(message.heldItem);
+				ProxyFluidHandler blockFluidHandler = FluidHelper.getProxyFluidHandler(world, message.pos, EnumFacing.getFront(message.side), heldFluidHandler.getType());
 				if (heldFluidHandler == null || blockFluidHandler == null) return;
 
-				FluidStack fluidStack = heldFluidHandler.getTankProperties()[message.heldTankIndex].getContents();
-				if (fluidStack == null) fluidStack = blockFluidHandler.getTankProperties()[message.blockTankIndex].getContents();
+				ProxyFluidStack fluidStack = heldFluidHandler.getTankProperties().get(message.heldTankIndex).getContents();
+				if (fluidStack == null) fluidStack = blockFluidHandler.getTankProperties().get(message.blockTankIndex).getContents();
 				if (fluidStack == null) return;
-				fluidStack = new FluidStack(fluidStack, Math.abs(message.amount));
+				fluidStack = new ProxyFluidStack(fluidStack, Math.abs(message.amount));
 
 				EntityPlayer player = ctx.getServerHandler().player;
 
-				if (FluidUtil.tryFluidTransfer(message.amount < 0 ? blockFluidHandler : heldFluidHandler, message.amount < 0 ? heldFluidHandler : blockFluidHandler, fluidStack, true) != null) world.playSound(null, player.getPosition(), message.amount < 0 ? fluidStack.getFluid().getEmptySound(fluidStack) : fluidStack.getFluid().getFillSound(fluidStack), SoundCategory.PLAYERS, 1.0F, 1.0F);
+				if (FluidHelper.tryFluidTransfer(message.amount < 0 ? blockFluidHandler : heldFluidHandler, message.amount < 0 ? heldFluidHandler : blockFluidHandler, fluidStack, true) != null) world.playSound(null, player.getPosition(), message.amount < 0 ? fluidStack.getEmptySound() : fluidStack.getFillSound(), SoundCategory.PLAYERS, 1.0F, 1.0F);
 				world.getTileEntity(message.pos).markDirty();
 
 				player.inventory.setInventorySlotContents(slot, heldFluidHandler.getContainer());

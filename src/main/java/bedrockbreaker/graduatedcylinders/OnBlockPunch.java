@@ -3,13 +3,11 @@ package bedrockbreaker.graduatedcylinders;
 import bedrockbreaker.graduatedcylinders.FluidHelper.FindTransferrableTankResult;
 import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
 import bedrockbreaker.graduatedcylinders.Packets.PacketOpenFluidGUI;
+import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidHandler;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class OnBlockPunch {
@@ -20,18 +18,18 @@ public class OnBlockPunch {
 		if (event.getWorld().isRemote || event.getEntityPlayer().isCreative()) return;
 
 		ItemStack heldItem = event.getItemStack();
-		IFluidHandlerItem heldFluidHandler = FluidHelper.getValidFluidHandler(heldItem);
+		ProxyFluidHandler heldFluidHandler = FluidHelper.getProxyFluidHandler(heldItem);
 		if (heldFluidHandler == null) return;
 
 		EnumFacing eventSide = event.getFace();
 		EnumFacing defaultSide = eventSide == null ? EnumFacing.NORTH : eventSide;
 
-		IFluidHandler blockFluidHandler = FluidUtil.getFluidHandler(event.getWorld(), event.getPos(), defaultSide);
+		ProxyFluidHandler blockFluidHandler = FluidHelper.getProxyFluidHandler(event.getWorld(), event.getPos(), defaultSide, heldFluidHandler.getType());
 		FindTransferrableTankResult transferResults = FluidHelper.findTransferrableTank(heldFluidHandler, blockFluidHandler);
 		if (transferResults == null) {
 			for (EnumFacing side : EnumFacing.VALUES) {
 				if (side == defaultSide) continue;
-				blockFluidHandler = FluidUtil.getFluidHandler(event.getWorld(), event.getPos(), side);
+				blockFluidHandler = FluidHelper.getProxyFluidHandler(event.getWorld(), event.getPos(), side, heldFluidHandler.getType());
 				transferResults = FluidHelper.findTransferrableTank(heldFluidHandler, blockFluidHandler);
 				if (transferResults != null) {
 					defaultSide = side;
@@ -42,6 +40,6 @@ public class OnBlockPunch {
 		}
 		if (blockFluidHandler == null) throw new NullPointerException("Something terribly wrong has happened..."); // This should logically never throw.
 
-		PacketHandler.INSTANCE.sendTo(new PacketOpenFluidGUI(heldItem, event.getPos(), defaultSide.getIndex(), transferResults, heldFluidHandler.getTankProperties()[transferResults.leftTank].getContents(), blockFluidHandler.getTankProperties()[transferResults.rightTank].getContents()), (EntityPlayerMP) event.getEntityPlayer());
+		PacketHandler.INSTANCE.sendTo(new PacketOpenFluidGUI(heldItem, event.getPos(), defaultSide.getIndex(), transferResults, heldFluidHandler.getTankProperties().get(transferResults.leftTank).getContents(), blockFluidHandler.getTankProperties().get(transferResults.rightTank).getContents()), (EntityPlayerMP) event.getEntityPlayer());
 	}
 }

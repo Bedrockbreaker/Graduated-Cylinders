@@ -2,11 +2,11 @@ package bedrockbreaker.graduatedcylinders.Packets;
 
 import bedrockbreaker.graduatedcylinders.FluidTransferGui;
 import bedrockbreaker.graduatedcylinders.FluidHelper.FindTransferrableTankResult;
+import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidStack;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -20,15 +20,15 @@ public class PacketOpenFluidGUI implements IMessage {
 	private BlockPos pos;
 	private int side;
 	private FindTransferrableTankResult transferResults;
-	private FluidStack heldFluidStack;
-	private FluidStack blockFluidStack;
+	private ProxyFluidStack heldFluidStack;
+	private ProxyFluidStack blockFluidStack;
 	private boolean valid;
 
 	public PacketOpenFluidGUI() {
 		this.valid = false;
 	}
 
-	public PacketOpenFluidGUI(ItemStack heldItem, BlockPos pos, int side, FindTransferrableTankResult transferResults, FluidStack heldFluidStack, FluidStack blockFluidStack) {
+	public PacketOpenFluidGUI(ItemStack heldItem, BlockPos pos, int side, FindTransferrableTankResult transferResults, ProxyFluidStack heldFluidStack, ProxyFluidStack blockFluidStack) {
 		this.heldItem = heldItem;
 		this.pos = pos;
 		this.side = side;
@@ -45,8 +45,8 @@ public class PacketOpenFluidGUI implements IMessage {
 			this.pos = new BlockPos(buffer.readInt(), buffer.readInt(), buffer.readInt());
 			this.side = buffer.readInt();
 			this.transferResults = new FindTransferrableTankResult(buffer.readInt(), buffer.readInt(), buffer.readBoolean(), buffer.readBoolean());
-			this.heldFluidStack = FluidStack.loadFluidStackFromNBT(ByteBufUtils.readTag(buffer));
-			this.blockFluidStack = FluidStack.loadFluidStackFromNBT(ByteBufUtils.readTag(buffer));
+			this.heldFluidStack = ProxyFluidStack.loadFluidStackFromNBT(ByteBufUtils.readTag(buffer));
+			this.blockFluidStack = ProxyFluidStack.loadFluidStackFromNBT(ByteBufUtils.readTag(buffer));
 		} catch(IndexOutOfBoundsException error) {
 			System.out.println(error);
 		}

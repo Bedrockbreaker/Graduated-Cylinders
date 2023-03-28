@@ -4,16 +4,14 @@ import org.lwjgl.input.Mouse;
 
 import bedrockbreaker.graduatedcylinders.Packets.PacketContainerTransferFluid;
 import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.inventory.Slot;
-import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -37,21 +35,17 @@ public class InventoryHandler {
 		Slot hoveredSlot = ((GuiContainer) screen).getSlotUnderMouse();
 		if (hoveredSlot == null) return;
 
-		ItemStack held = minecraft.player.inventory.getItemStack();
-		ItemStack under = hoveredSlot.getStack();
-		if (held == null || under == null) throw new NullPointerException(); // IDE complaint
-		final int transferAmount = FluidHelper.getTransferAmount(held, under);
+		ProxyFluidHandler heldFluidHandler = FluidHelper.getProxyFluidHandler(minecraft.player.inventory.getItemStack());
+		ProxyFluidHandler underFluidHandler = FluidHelper.getProxyFluidHandler(hoveredSlot.getStack());
+
+		final int transferAmount = FluidHelper.getTransferAmount(heldFluidHandler, underFluidHandler);
 		if (transferAmount == 0) return;
 
-		IFluidHandler heldFluidHandler = FluidUtil.getFluidHandler(held);
-		IFluidHandler underFluidHandler = FluidUtil.getFluidHandler(under);
-		if (heldFluidHandler == null || underFluidHandler == null) throw new NullPointerException(); // IDE complaint
-
-		FluidStack fluid = heldFluidHandler.getTankProperties()[0].getContents();
-		if (fluid == null) fluid = underFluidHandler.getTankProperties()[0].getContents();
+		ProxyFluidStack fluid = heldFluidHandler.getTankProperties().get(0).getContents();
+		if (fluid == null) fluid = underFluidHandler.getTankProperties().get(0).getContents();
 		if (fluid == null) throw new NullPointerException(); // IDE complaint
 
-		final int color = fluid.getFluid().getColor() & 0xFFFFFF; // Remove the alpha channel
+		final int color = fluid.getColor() & 0xFFFFFF; // Remove the alpha channel
 		if (color != fluidColorCache) {
 			fluidColorCache = color;
 			final int red = (color >> 16) & 0xFF;
@@ -72,7 +66,7 @@ public class InventoryHandler {
 			colorCodeCache = Integer.toHexString(chosenColor + 2); // Range 2-9A-F
 		}
 
-		screen.drawHoveringText(I18n.format("graduatedcylindersmisc.rightclick", transferAmount < 0 ? "->" : "<-", "\u00A7" + colorCodeCache + "\u00A7l", Math.abs(transferAmount), "\u00A7r"), event.getMouseX(), event.getMouseY());
+		screen.drawHoveringText(I18n.format("gc.inventory.rightclick", transferAmount < 0 ? "->" : "<-", "\u00A7" + colorCodeCache + "\u00A7l", Math.abs(transferAmount), "\u00A7r"), event.getMouseX(), event.getMouseY());
 	}
 
 	@SubscribeEvent
@@ -87,9 +81,7 @@ public class InventoryHandler {
 		Slot hoveredSlot = ((GuiContainer) screen).getSlotUnderMouse();
 		if (hoveredSlot == null) return;
 
-		ItemStack held = minecraft.player.inventory.getItemStack();
-		ItemStack under = hoveredSlot.getStack();
-		if (FluidHelper.getTransferAmount(held, under) == 0) return;
+		if (FluidHelper.getTransferAmount(FluidHelper.getProxyFluidHandler(minecraft.player.inventory.getItemStack()), FluidHelper.getProxyFluidHandler(hoveredSlot.getStack())) == 0) return;
 
 		event.setCanceled(true);
 		PacketHandler.INSTANCE.sendToServer(new PacketContainerTransferFluid(hoveredSlot.slotNumber));

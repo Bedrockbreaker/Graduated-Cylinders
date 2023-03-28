@@ -1,22 +1,31 @@
 # GUI
-graduatedcylindersmisc.instructions=Uze da buttNs, Airohz, skroLl toy, or sits on keybored
-graduatedcylindersmisc.1mb=%s+ShiF:       1 mB
-graduatedcylindersmisc.10mb=%s:             10 mB
-graduatedcylindersmisc.100mb=Sift:              100 mB
-graduatedcylindersmisc.1000mb=(no key):       1 B
-graduatedcylindersmisc.10000mb=Shigt+ALT:      10 B
-graduatedcylindersmisc.100000mb=%s+SHfit+Alt: 100 B
-graduatedcylindersmisc.allmb=aLR:              lots/emptie
-graduatedcylindersmisc.accept=[%s]: Dun
-graduatedcylindersmisc.cancel=[Esc]: nah
+gc.gui.instructions=Uze da buttNs, Airohz, skroLl toy, or sits on keybored
+gc.gui.toggle=[%s]: do a barrel roll
+gc.gui.accept=[%s]: Dun
+gc.gui.cancel=[Esc]: nah
 
-graduatedcylindersmisc.amount=%.3f Bukkit(z)
-graduatedcylindersmisc.cantransfer=Muv likwid bakwords
-graduatedcylindersmisc.cannottransfer=No canz muv likwid bakwords
+gc.gui.1mb.combo=Ktrl+ShiF:
+gc.gui.1mb.combo.cmd=Kmd+ShiF:
+gc.gui.10mb.combo=Ktrl:
+gc.gui.10mb.combo.cmd=Kmd:
+gc.gui.100mb.combo=Sift:
+gc.gui.1000mb.combo=(no key):
+gc.gui.10000mb.combo=Shigt+ALT:
+gc.gui.100000mb.combo=Ktrl+SHfit+Alt:
+gc.gui.100000mb.combo.cmd=Kmd+SHfit+Alt:
+gc.gui.allmb.combo=aLR:
+
+gc.gui.1mb=1 mB
+gc.gui.10mb=10 mB
+gc.gui.100mb=100 mB
+gc.gui.1000mb=1 B
+gc.gui.10000mb=10 B
+gc.gui.100000mb=100 B
+gc.gui.allmb=lots/emptie
+
+gc.gui.amount=%.3f Bukkit(z)
+gc.gui.yestoggle=Muv likwid bakwords
+gc.gui.notoggle=No canz muv likwid bakwords
 
 # Inventory
-graduatedcylindersmisc.rightclick=Riet Paw: %s %s%s mB%s
-
-# Ctrl Modifier Key
-graduatedcylindersmisc.ctrl=Ktrl
-graduatedcylindersmisc.ctrl.mac=Kmd
+gc.inventory.rightclick=Riet Paw: %s %s%s mB%s
