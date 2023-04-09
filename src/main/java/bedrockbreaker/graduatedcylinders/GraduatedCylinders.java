@@ -11,7 +11,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 public class GraduatedCylinders {
 	public static final String MODID = "graduatedcylinders";
 	public static final String NAME = "Graduated Cylinders";
-	public static final String VERSION = "2.5.7";
+	public static final String VERSION = "2.6.2";
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -23,5 +23,3 @@ public class GraduatedCylinders {
 		MinecraftForge.EVENT_BUS.register(new OnBlockPunch());
 	}
 }
-
-// TODO: allow changing sides/tank handlers

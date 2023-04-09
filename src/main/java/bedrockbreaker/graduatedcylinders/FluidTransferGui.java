@@ -2,7 +2,6 @@ package bedrockbreaker.graduatedcylinders;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +11,7 @@ import org.lwjgl.opengl.GL11;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.primitives.Ints;
 
 import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
 import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidHandler;
@@ -31,6 +31,7 @@ import net.minecraft.client.settings.GameSettings;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -39,7 +40,6 @@ import net.minecraft.world.World;
 
 public class FluidTransferGui extends GuiScreen {
 
-	private static final ArrayList<Integer> allowedChars = new ArrayList<Integer>(Arrays.asList(14, 200, 203, 205, 208)); // Backspace and arrow keys
 	private boolean initialized = false;
 
 	private final ItemStack heldItem;
@@ -125,6 +125,7 @@ public class FluidTransferGui extends GuiScreen {
 		this.textAmount.setFocused(true);
 		this.textAmount.setCanLoseFocus(false);
 
+		// TODO: allow changing faces and fluidHandlers from gui
 		/*
 		final int blockItemCenterX = this.width / 4 - 31;
 		final int blockItemCenterY = this.height / 4 + 3;
@@ -165,7 +166,7 @@ public class FluidTransferGui extends GuiScreen {
 		GameSettings settings = Minecraft.getMinecraft().gameSettings;
 		final int centerX = this.width/2;
 		final int centerY = this.height/2;
-		final String fluidName = this.fluidStack.getLocalizedName();
+		final String fluidName = "\u00A7n" + this.fluidStack.getLocalizedName() + "\u00A7r";
 		final String cmd = Minecraft.IS_RUNNING_ON_MAC ? ".cmd" : "";
 		final int leftMargin = this.width - (this.fontRenderer.getStringWidth(I18n.format("gc.gui.100000mb.combo" + cmd)) + this.fontRenderer.getStringWidth(I18n.format("gc.gui.allmb")) + 10);
 
@@ -173,11 +174,11 @@ public class FluidTransferGui extends GuiScreen {
 		this.textAmount.drawTextBox();
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		
-		// Bucket amount above text field
+		// Fluid amount and name above text field
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.amount", this.amount/1000.0F), centerX - 56, centerY - 30, 11184810); // Gray (#AAAAAA) (https://minecraft.fandom.com/wiki/Formatting_codes#Color_codes)
 		this.drawString(this.fontRenderer, fluidName, centerX - 10 - this.fontRenderer.getStringWidth(fluidName) / 2, centerY - 50, 16777215); // White (#FFFFFF)
 		
 		// Instructions in top-right corner
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.amount", this.amount/1000.0F), centerX - 56, centerY - 30, 11184810); // Gray (#AAAAAA) (https://minecraft.fandom.com/wiki/Formatting_codes#Color_codes)
 		this.drawString(this.fontRenderer, I18n.format("gc.gui.instructions"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.instructions")) - 5, 5, 11184810);
 		this.drawString(this.fontRenderer, I18n.format("gc.gui.toggle", settings.keyBindJump.getDisplayName()), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.toggle", settings.keyBindJump.getDisplayName())) - 5, 20, 11184810);
 		this.drawString(this.fontRenderer, I18n.format("gc.gui.accept", settings.keyBindInventory.getDisplayName()), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.accept", settings.keyBindInventory.getDisplayName())) - 5, 35, 11184810);
@@ -201,26 +202,23 @@ public class FluidTransferGui extends GuiScreen {
 		this.drawString(this.fontRenderer, I18n.format("gc.gui.100000mb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.100000mb")) - 5, this.height - 30, 11184810);
 		this.drawString(this.fontRenderer, I18n.format("gc.gui.allmb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.allmb")) - 5, this.height - 15, 11184810);
 		
+		// Itemstacks
 		this.drawItemStack(this.heldItem, centerX - 61, centerY + 6);
 		this.drawItemStack(this.blockItem, centerX + 10, centerY + 6);
 		if (!this.fluidItem.isEmpty()) this.drawItemStack(this.fluidItem, centerX - 26, centerY - 92);
 
+		// Tooltips
 		if (mouseX >= centerX - 62 && mouseX <= centerX - 30 && mouseY >= centerY + 6 && mouseY <= centerY + 38) this.renderToolTip(this.heldItem, mouseX, mouseY);
 		if (mouseX >= centerX + 10 && mouseX <= centerX + 42 && mouseY >= centerY + 6 && mouseY <= centerY + 38) this.renderToolTip(this.blockItem, mouseX, mouseY);
-		//if (this.incFluidButton.isMouseOver() || this.decFluidButton.isMouseOver()) this.drawHoveringText(this.tooltip, mouseX, mouseY);
 		if (this.exportButton.isMouseOver()) this.drawHoveringText(I18n.format(this.forced ? "gc.gui.notoggle" : "gc.gui.yestoggle"), mouseX, mouseY);
-		// Draw tooltip when hovering over the textbox, except when the mouse is in the center of the screen, such as when the gui is first created
-		//if (mouseX >= centerX - 60 && mouseX <= centerX + 40 && mouseY >= centerY - 20 && mouseY <= centerY && (mouseX != centerX || mouseY != centerY)) this.drawHoveringText(this.tooltip, mouseX, mouseY);
 	}
 
 	@Override
 	protected void actionPerformed(GuiButton button) throws IOException {
 		if (button == this.incFluidButton) {
-			this.amount = MathHelper.clamp(this.amount + delta(), 0, this.max);
-			this.textAmount.setText(Integer.toString(this.amount));
+			this.setAmount(this.amount + delta());
 		} else if (button == this.decFluidButton) {
-			this.amount = MathHelper.clamp(this.amount - delta(), 0, this.max);
-			this.textAmount.setText(Integer.toString(this.amount));
+			this.setAmount(this.amount - delta());
 		} else if (button == this.exportButton) {
 			if (this.forced) return;
 			this.export = !this.export;
@@ -237,29 +235,7 @@ public class FluidTransferGui extends GuiScreen {
 	@Override
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
 		super.keyTyped(typedChar, keyCode);
-
-		if (keyCode == Minecraft.getMinecraft().gameSettings.keyBindInventory.getKeyCode()) {
-			Minecraft.getMinecraft().displayGuiScreen(null);
-			PacketHandler.INSTANCE.sendToServer(new PacketBlockTransferFluid(this.heldItem, this.heldTankIndex, this.pos, this.selectedFace.getIndex(), this.blockTankIndex, this.amount * (this.export ? -1 : 1)));
-			return;
-		} else if (keyCode == Minecraft.getMinecraft().gameSettings.keyBindJump.getKeyCode()) {
-			if (this.forced) return;
-			this.export = !this.export;
-			this.exportButton.displayString = this.export ? "->" : "<-";
-			return;
-		}
-		if (!NumberUtils.isDigits(Character.toString(typedChar)) && !allowedChars.contains(keyCode)) return;
-
-		this.textAmount.textboxKeyTyped(typedChar, keyCode);
-
-		if (keyCode == 200 || keyCode == 208) {
-			this.amount = MathHelper.clamp(this.amount + (keyCode == 200 ? delta() : -delta()), 0, this.max);
-			this.textAmount.setText(Integer.toString(this.amount));
-		} else {
-			int num = Integer.parseUnsignedInt(StringUtils.defaultIfEmpty(this.textAmount.getText(), "0"));
-			this.amount = MathHelper.clamp(num < 0 ? Integer.MAX_VALUE : num, 0, this.max);
-			this.textAmount.setText(Integer.toString(this.amount));
-		}
+		this.handleKeyInput(typedChar, keyCode);
 	}
 
 	@Override
@@ -267,10 +243,7 @@ public class FluidTransferGui extends GuiScreen {
 		if (!this.initialized) return;
 
 		final int scrollAmount = Mouse.getDWheel();
-		if (scrollAmount != 0) {
-			this.amount = MathHelper.clamp(this.amount + delta() * MathHelper.clamp(scrollAmount, -1, 1), 0, this.max);
-			this.textAmount.setText(Integer.toString(this.amount));
-		}
+		if (scrollAmount != 0) this.setAmount(this.amount + delta() * MathHelper.clamp(scrollAmount, -1, 1));
 
 		super.handleMouseInput();
 	}
@@ -279,6 +252,41 @@ public class FluidTransferGui extends GuiScreen {
 	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 		this.textAmount.mouseClicked(mouseX, mouseY, mouseButton);
+		this.handleKeyInput(Character.MIN_VALUE, mouseButton - 100);
+	}
+
+	private void handleKeyInput(char typedChar, int keyCode) {
+		GameSettings settings = Minecraft.getMinecraft().gameSettings;
+
+		if (keyCode == settings.keyBindInventory.getKeyCode()) {
+			Minecraft.getMinecraft().displayGuiScreen(null);
+			PacketHandler.INSTANCE.sendToServer(new PacketBlockTransferFluid(this.heldItem, this.heldTankIndex, this.pos, this.selectedFace.getIndex(), this.blockTankIndex, this.amount * (this.export ? -1 : 1)));
+		} else if (keyCode == settings.keyBindJump.getKeyCode()) {
+			if (this.forced) return;
+			this.export = !this.export;
+			this.exportButton.displayString = this.export ? "->" : "<-";
+		} else if (keyCode == settings.keyBindForward.getKeyCode() || keyCode == 200) {  // Forward key or up arrow
+			this.setAmount(this.amount + delta());
+		} else if (keyCode == settings.keyBindBack.getKeyCode() || keyCode == 208) { // Back key or down arrow
+			this.setAmount(this.amount - delta());
+		} else if (keyCode == settings.keyBindLeft.getKeyCode()) {
+			this.textAmount.textboxKeyTyped(Character.MIN_VALUE, 203); // Send a left arrow key press to the text box (to move the cursor)
+		} else if (keyCode == settings.keyBindRight.getKeyCode()) {
+			this.textAmount.textboxKeyTyped(Character.MIN_VALUE, 205); // Send right arrow key ^^
+		} else if (NumberUtils.isDigits(Character.toString(typedChar)) || !ChatAllowedCharacters.isAllowedCharacter(typedChar)) { // Digits and non-printable characters (backspace, etc.)
+			this.textAmount.textboxKeyTyped(typedChar, keyCode);
+			Integer num = Ints.tryParse(StringUtils.defaultIfEmpty(this.textAmount.getText(), "0"));
+			if (num == null) num = Integer.MAX_VALUE;
+			this.amount = MathHelper.clamp(num, 0, this.max);
+			if (num != this.amount) this.textAmount.setText(Integer.toString(this.amount)); // If text representation overflows integer
+			
+			if (!this.textAmount.getText().startsWith("0") || !NumberUtils.isDigits(Character.toString(typedChar))) return; // If digit is typed and text starts with zeros
+			final int cursorPos = this.textAmount.getCursorPosition();
+			int leadCount = 0;
+			while (leadCount < this.textAmount.getText().length() - 1 && this.textAmount.getText().charAt(leadCount) == '0') leadCount++;
+			this.textAmount.setText(this.textAmount.getText().substring(leadCount));
+			this.textAmount.setCursorPosition(Math.max(cursorPos - leadCount, 0));
+		}
 	}
 
 	private ItemStack pickBlock(BlockPos pos) {
@@ -316,6 +324,11 @@ public class FluidTransferGui extends GuiScreen {
 		GL11.glScalef(0.5F, 0.5F, 0.5F);
 		this.zLevel = 0.0F;
 		this.itemRender.zLevel = 0.0F;
+	}
+
+	private void setAmount(int amountIn) {
+		this.amount = MathHelper.clamp(amountIn, 0, this.max);
+		this.textAmount.setText(Integer.toString(this.amount));
 	}
 
 	private int delta() {

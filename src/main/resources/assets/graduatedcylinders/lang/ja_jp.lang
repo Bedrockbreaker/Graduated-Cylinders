@@ -1,5 +1,5 @@
 # GUI
-gc.gui.instructions=＋・－ボタン、矢印キー、スクロール ホイール、タイピングして量を増減する
+gc.gui.instructions=＋・－ボタン、移動キー、スクロールホイール、タイピングして量を増減する
 gc.gui.toggle=[%s]: 切り替え
 gc.gui.accept=[%s]: OK
 gc.gui.cancel=[Esc]: キャンセル

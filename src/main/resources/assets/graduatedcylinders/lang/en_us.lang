@@ -1,5 +1,5 @@
 # GUI
-gc.gui.instructions=Change using the buttons, arrow keys, scroll wheel, or typing
+gc.gui.instructions=Change using the buttons, movement keys, scroll wheel, or typing
 gc.gui.toggle=[%s]: Toggle
 gc.gui.accept=[%s]: Accept
 gc.gui.cancel=[Esc]: Cancel
