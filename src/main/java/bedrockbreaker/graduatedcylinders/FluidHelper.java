@@ -27,6 +27,7 @@ public class FluidHelper {
 		if (itemStack.isEmpty() || itemStack.getCount() != 1) return null;
 		IFluidHandlerItem fluidHandler = FluidUtil.getFluidHandler(itemStack);
 		if (fluidHandler != null) return new ProxyFluidHandlerItem(fluidHandler);
+		if (!GraduatedCylinders.isMekLoaded) return null;
 		Item item = itemStack.getItem();
 		return (item instanceof IGasItem) ? new ProxyFluidHandlerItem((IGasItem) item, itemStack) : null;
 	}
@@ -39,7 +40,7 @@ public class FluidHelper {
 		if (tileEntity == null) return null;
 
 		if (type == ProxyType.FLUID && tileEntity.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side)) return new ProxyFluidHandler(tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side));
-		if ((type == ProxyType.GASITEM || type == ProxyType.GAS) && tileEntity instanceof IGasHandler) return new ProxyFluidHandler((IGasHandler) tileEntity, side);
+		if (GraduatedCylinders.isMekLoaded && (type == ProxyType.GASITEM || type == ProxyType.GAS) && tileEntity instanceof IGasHandler) return new ProxyFluidHandler((IGasHandler) tileEntity, side);
 		return null;
 	}
 

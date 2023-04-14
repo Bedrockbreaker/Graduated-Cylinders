@@ -8,12 +8,15 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+// For some unknown reason, this code needs to exist on the client as well
+@EventBusSubscriber(modid = GraduatedCylinders.MODID)
 public class OnBlockPunch {
 
 	@SubscribeEvent
-	public void onBlockLeftClicked(PlayerInteractEvent.LeftClickBlock event) {
+	public static void onBlockLeftClicked(PlayerInteractEvent.LeftClickBlock event) {
 		// Return if running on logical client, or player is in creative mode
 		if (event.getWorld().isRemote || event.getEntityPlayer().isCreative()) return;
 
