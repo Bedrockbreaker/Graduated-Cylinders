@@ -23,6 +23,7 @@ gc.gui.10000mb=10 B
 gc.gui.100000mb=100 B
 gc.gui.allmb=lots/emptie
 
+gc.gui.amount.current=%s mB
 gc.gui.amount=%.3f Bukkit(z)
 gc.gui.yestoggle=Muv likwid bakwords
 gc.gui.notoggle=No canz muv likwid bakwords

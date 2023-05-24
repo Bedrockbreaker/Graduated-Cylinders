@@ -1,5 +1,8 @@
 package bedrockbreaker.graduatedcylinders;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
@@ -10,7 +13,9 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 public class GraduatedCylinders {
 	public static final String MODID = "graduatedcylinders";
 	public static final String NAME = "Graduated Cylinders";
-	public static final String VERSION = "2.6.3";
+	public static final String VERSION = "2.6.4";
+
+	public static Logger console = LogManager.getLogger("Graduated Cylinders");
 	public static boolean isMekLoaded = false;
 
 	@EventHandler

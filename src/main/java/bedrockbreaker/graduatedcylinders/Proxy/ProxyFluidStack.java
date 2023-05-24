@@ -7,6 +7,7 @@ import mekanism.api.gas.GasStack;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.FluidStack;
@@ -89,12 +90,20 @@ public class ProxyFluidStack {
 		return nbt;
 	}
 
-	public int getColor() {
-		return this.type == ProxyType.FLUID ? fluidStack.getFluid().getColor() : gasStack.getGas().getTint();
-	}
-
 	public String toString() {
 		return "[" + this.type + "] (" + this.amount + " mb " + (this.type == ProxyType.FLUID ? this.fluidStack.getUnlocalizedName() + ") " + this.fluidStack : this.gasStack.getGas().getTranslationKey() + ") " +  this.gasStack);
+	}
+
+	public String getRegistryName() {
+		return this.type == ProxyType.FLUID ? fluidStack.getUnlocalizedName() : gasStack.getGas().getTranslationKey();
+	}
+
+	public ResourceLocation getResourceLocation() {
+		return this.type == ProxyType.FLUID ? fluidStack.getFluid().getStill() : gasStack.getGas().getIcon();
+	}
+
+	public int getColor() {
+		return this.type == ProxyType.FLUID ? fluidStack.getFluid().getColor(fluidStack) : gasStack.getGas().getTint();
 	}
 
 	public String getLocalizedName() {

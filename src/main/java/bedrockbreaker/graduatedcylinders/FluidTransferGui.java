@@ -36,6 +36,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 
 public class FluidTransferGui extends GuiScreen {
@@ -166,41 +167,44 @@ public class FluidTransferGui extends GuiScreen {
 		GameSettings settings = Minecraft.getMinecraft().gameSettings;
 		final int centerX = this.width/2;
 		final int centerY = this.height/2;
-		final String fluidName = "\u00A7n" + this.fluidStack.getLocalizedName() + "\u00A7r";
 		final String cmd = Minecraft.IS_RUNNING_ON_MAC ? ".cmd" : "";
 		final int leftMargin = this.width - (this.fontRenderer.getStringWidth(I18n.format("gc.gui.100000mb.combo" + cmd)) + this.fontRenderer.getStringWidth(I18n.format("gc.gui.allmb")) + 10);
+		final String heldAmount = I18n.format("gc.gui.amount.current", heldFluidHandler.getTankProperties().get(heldTankIndex).getContents() != null ? heldFluidHandler.getTankProperties().get(heldTankIndex).getContents().amount : 0);
+		final String blockAmount = I18n.format("gc.gui.amount.current", blockFluidHandler.getTankProperties().get(blockTankIndex).getContents() != null ? blockFluidHandler.getTankProperties().get(blockTankIndex).getContents().amount : 0);
 
 		this.drawDefaultBackground();
 		this.textAmount.drawTextBox();
 		super.drawScreen(mouseX, mouseY, partialTicks);
-		
-		// Fluid amount and name above text field
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.amount", this.amount/1000.0F), centerX - 56, centerY - 30, 11184810); // Gray (#AAAAAA) (https://minecraft.fandom.com/wiki/Formatting_codes#Color_codes)
-		this.drawString(this.fontRenderer, fluidName, centerX - 10 - this.fontRenderer.getStringWidth(fluidName) / 2, centerY - 50, 16777215); // White (#FFFFFF)
+
+		// Fluid amounts and name above text field
+		this.drawCenteredString(this.fontRenderer, heldAmount, centerX - 46 - Math.max(this.fontRenderer.getStringWidth(heldAmount) / 2 - 26, 0), centerY + 43, 0xAAAAAA);
+		this.drawCenteredString(this.fontRenderer, blockAmount, centerX + 26 + Math.max(this.fontRenderer.getStringWidth(blockAmount) / 2 - 26, 0), centerY + 43, 0xAAAAAA);
+		this.drawCenteredString(this.fontRenderer, ColorCache.getFluidColorCode(fluidStack, fluidStack.getColor()) + TextFormatting.UNDERLINE + this.fluidStack.getLocalizedName() + TextFormatting.RESET, centerX - 10, centerY - 50, 0xFFFFFF);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.amount", this.amount/1000.0F), centerX - 56, centerY - 30, 0xAAAAAA);
 		
 		// Instructions in top-right corner
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.instructions"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.instructions")) - 5, 5, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.toggle", settings.keyBindJump.getDisplayName()), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.toggle", settings.keyBindJump.getDisplayName())) - 5, 20, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.accept", settings.keyBindInventory.getDisplayName()), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.accept", settings.keyBindInventory.getDisplayName())) - 5, 35, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.cancel"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.cancel")) - 5, 50, 11184810);
+		this.drawRightAlignedString(I18n.format("gc.gui.instructions"), this.width - 5, 5, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format("gc.gui.toggle", settings.keyBindJump.getDisplayName()), this.width - 5, 20, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format("gc.gui.accept", settings.keyBindInventory.getDisplayName()), this.width - 5, 35, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format("gc.gui.cancel"), this.width - 5, 50, 0xAAAAAA);
 		
 		// Combo shortcuts, left-aligned in bottom-right corner
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.1mb.combo" + cmd), leftMargin, this.height - 105, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.10mb.combo" + cmd), leftMargin, this.height - 90, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.100mb.combo"), leftMargin, this.height - 75, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.1000mb.combo"), leftMargin, this.height - 60, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.10000mb.combo"), leftMargin, this.height - 45, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.100000mb.combo" + cmd), leftMargin, this.height - 30, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.allmb.combo"), leftMargin, this.height - 15, 11184810);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.1mb.combo" + cmd), leftMargin, this.height - 105, 0xAAAAAA);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.10mb.combo" + cmd), leftMargin, this.height - 90, 0xAAAAAA);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.100mb.combo"), leftMargin, this.height - 75, 0xAAAAAA);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.1000mb.combo"), leftMargin, this.height - 60, 0xAAAAAA);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.10000mb.combo"), leftMargin, this.height - 45, 0xAAAAAA);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.100000mb.combo" + cmd), leftMargin, this.height - 30, 0xAAAAAA);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.allmb.combo"), leftMargin, this.height - 15, 0xAAAAAA);
 		
 		// Combo fluid amounts, right-aligned in bottom-right corner
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.1mb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.1mb")) - 5, this.height - 105, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.10mb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.10mb")) - 5, this.height - 90, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.100mb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.100mb")) - 5, this.height - 75, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.1000mb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.1000mb")) - 5, this.height - 60, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.10000mb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.10000mb")) - 5, this.height - 45, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.100000mb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.100000mb")) - 5, this.height - 30, 11184810);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.allmb"), this.width - this.fontRenderer.getStringWidth(I18n.format("gc.gui.allmb")) - 5, this.height - 15, 11184810);
+		this.drawRightAlignedString(I18n.format("gc.gui.1mb"), this.width - 5, this.height - 105, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format("gc.gui.10mb"), this.width - 5, this.height - 90, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format("gc.gui.100mb"), this.width - 5, this.height - 75, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format("gc.gui.1000mb"), this.width - 5, this.height - 60, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format("gc.gui.10000mb"), this.width - 5, this.height - 45, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format("gc.gui.100000mb"), this.width - 5, this.height - 30, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format("gc.gui.allmb"), this.width - 5, this.height - 15, 0xAAAAAA);
 		
 		// Itemstacks
 		this.drawItemStack(this.heldItem, centerX - 61, centerY + 6);
@@ -287,6 +291,10 @@ public class FluidTransferGui extends GuiScreen {
 			this.textAmount.setText(this.textAmount.getText().substring(leadCount));
 			this.textAmount.setCursorPosition(Math.max(cursorPos - leadCount, 0));
 		}
+	}
+
+	private void drawRightAlignedString(String text, int x, int y, int color) {
+		this.drawString(this.fontRenderer, text, x - this.fontRenderer.getStringWidth(text), y, color);
 	}
 
 	private ItemStack pickBlock(BlockPos pos) {

@@ -23,6 +23,7 @@ gc.gui.10000mb=10 B
 gc.gui.100000mb=100 B
 gc.gui.allmb=最大/最小
 
+gc.gui.amount.current=%s mB
 gc.gui.amount=%.3f 桶
 gc.gui.yestoggle=切换流体传输方向
 gc.gui.notoggle=不可切换流体传输方向

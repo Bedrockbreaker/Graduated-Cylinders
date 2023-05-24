@@ -23,6 +23,7 @@ gc.gui.10000mb=10 B
 gc.gui.100000mb=100 B
 gc.gui.allmb=max/min
 
+gc.gui.amount.current=%s mB
 gc.gui.amount=%.3f Bucket(s)
 gc.gui.yestoggle=Toggle fluid transfer direction
 gc.gui.notoggle=Can't change fluid transfer direction
