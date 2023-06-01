@@ -20,6 +20,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
+import thaumcraft.api.aspects.IAspectContainer;
+import thaumcraft.api.aspects.IEssentiaContainerItem;
 
 public class FluidHelper {
 
@@ -27,9 +29,15 @@ public class FluidHelper {
 		if (itemStack.isEmpty() || itemStack.getCount() != 1) return null;
 		IFluidHandlerItem fluidHandler = FluidUtil.getFluidHandler(itemStack);
 		if (fluidHandler != null) return new ProxyFluidHandlerItem(fluidHandler);
-		if (!GraduatedCylinders.isMekLoaded) return null;
 		Item item = itemStack.getItem();
-		return (item instanceof IGasItem) ? new ProxyFluidHandlerItem((IGasItem) item, itemStack) : null;
+		if (GraduatedCylinders.isMekanismLoaded) {
+			if (item instanceof IGasItem) return new ProxyFluidHandlerItem((IGasItem) item, itemStack);
+		} else if (GraduatedCylinders.isThaumcraftLoaded) {
+			if (!(item instanceof IEssentiaContainerItem)) return null;
+			IEssentiaContainerItem essentiaHandlerItem = (IEssentiaContainerItem) item;
+			if (!essentiaHandlerItem.ignoreContainedAspects()) return new ProxyFluidHandlerItem(essentiaHandlerItem, itemStack);
+		}
+		return null;
 	}
 
 	public static ProxyFluidHandler getProxyFluidHandler(World world, BlockPos pos, @Nullable EnumFacing side, ProxyType type) {
@@ -39,9 +47,18 @@ public class FluidHelper {
 		TileEntity tileEntity = world.getTileEntity(pos);
 		if (tileEntity == null) return null;
 
-		if (type == ProxyType.FLUID && tileEntity.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side)) return new ProxyFluidHandler(tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side));
-		if (GraduatedCylinders.isMekLoaded && (type == ProxyType.GASITEM || type == ProxyType.GAS) && tileEntity instanceof IGasHandler) return new ProxyFluidHandler((IGasHandler) tileEntity, side);
-		return null;
+		switch(type) {
+			case FLUID:
+				return tileEntity.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side) ? new ProxyFluidHandler(tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side)) : null;
+			case GAS:
+			case GASITEM:
+				return (GraduatedCylinders.isMekanismLoaded && tileEntity instanceof IGasHandler) ? new ProxyFluidHandler((IGasHandler) tileEntity, side) : null;
+			case ESSENTIA:
+			case ESSENTIAITEM:
+				return (GraduatedCylinders.isThaumcraftLoaded && tileEntity instanceof IAspectContainer) ? new ProxyFluidHandler((IAspectContainer) tileEntity, tileEntity, side) : null;
+			default:
+				return null;
+		}
 	}
 
 	public static ProxyFluidStack tryFluidTransfer(ProxyFluidHandler fluidDestination, ProxyFluidHandler fluidSource, ProxyFluidStack resource, boolean doTransfer) {

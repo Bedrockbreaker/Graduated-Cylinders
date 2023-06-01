@@ -3,6 +3,7 @@ package bedrockbreaker.graduatedcylinders.Proxy;
 import mekanism.api.gas.IGasItem;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
+import thaumcraft.api.aspects.IEssentiaContainerItem;
 
 public class ProxyFluidHandlerItem extends ProxyFluidHandler {
 
@@ -17,13 +18,17 @@ public class ProxyFluidHandlerItem extends ProxyFluidHandler {
 		super(gasHandlerItem, gasItemStack);
 	}
 
+	public ProxyFluidHandlerItem(IEssentiaContainerItem essentiaHandlerItem, ItemStack essentiaItemStack) {
+		super(essentiaHandlerItem, essentiaItemStack);
+	}
+
 	public ItemStack getContainer() {
 		switch (this.type) {
 			case FLUID:
 				return this.fluidHandlerItem.getContainer();
 			case GASITEM:
-				return gasItemStack;
-			case GAS:
+			case ESSENTIAITEM:
+				return itemStack;
 			default:
 				return null;
 		}

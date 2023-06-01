@@ -43,6 +43,7 @@ public class ColorCache implements ISelectiveResourceReloadListener {
 		String registryName = fluid.getRegistryName();
 		if (fluidColorCodeCache.containsKey(registryName)) return fluidColorCodeCache.get(registryName);
 		
+		// TODO: essentia will probably break this
 		TextureMap blockTextureMap = Minecraft.getMinecraft().getTextureMapBlocks();
 		TextureAtlasSprite fluidSprite = fluid.getResourceLocation() == null ? null : blockTextureMap.getTextureExtry(fluid.getResourceLocation().toString());
 

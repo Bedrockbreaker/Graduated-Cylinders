@@ -6,27 +6,35 @@ import mekanism.api.gas.GasStack;
 import mekanism.api.gas.IGasHandler;
 import mekanism.api.gas.IGasItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
+import thaumcraft.api.aspects.IAspectContainer;
+import thaumcraft.api.aspects.IEssentiaContainerItem;
 
 public class ProxyFluidHandler {
 
 	public static enum ProxyType {
 		FLUID,
 		GAS,
-		GASITEM
+		GASITEM,
+		ESSENTIA,
+		ESSENTIAITEM
 	}
 
 	protected ProxyType type;
+	protected ItemStack itemStack;
+	protected TileEntity tileEntity;
+	protected EnumFacing side;
 
 	protected IFluidHandler fluidHandler;
 
 	protected IGasHandler gasHandler;
-	protected EnumFacing side;
-
 	protected IGasItem gasHandlerItem;
-	protected ItemStack gasItemStack;
+
+	protected IAspectContainer essentiaHandler;
+	protected IEssentiaContainerItem essentiaHandlerItem;
 
 	public ProxyFluidHandler(IFluidHandler fluidHandler) {
 		this.type = ProxyType.FLUID;
@@ -42,7 +50,20 @@ public class ProxyFluidHandler {
 	public ProxyFluidHandler(IGasItem gasHandlerItem, ItemStack gasItemStack) {
 		this.type = ProxyType.GASITEM;
 		this.gasHandlerItem = gasHandlerItem;
-		this.gasItemStack = gasItemStack;
+		this.itemStack = gasItemStack;
+	}
+
+	public ProxyFluidHandler(IAspectContainer essentiaHandler, TileEntity tileEntity, EnumFacing side) {
+		this.type = ProxyType.ESSENTIA;
+		this.essentiaHandler = essentiaHandler;
+		this.tileEntity = tileEntity;
+		this.side = side;
+	}
+
+	public ProxyFluidHandler(IEssentiaContainerItem essentiaHandlerItem, ItemStack essentiaItemStack) {
+		this.type = ProxyType.ESSENTIAITEM;
+		this.essentiaHandlerItem = essentiaHandlerItem;
+		this.itemStack = essentiaItemStack;
 	}
 
 	public ProxyType getType() {
@@ -56,7 +77,11 @@ public class ProxyFluidHandler {
 			case GAS:
 				return new ProxyTanksProperties(this.gasHandler.getTankInfo());
 			case GASITEM:
-				return new ProxyTanksProperties(this.gasHandlerItem, this.gasItemStack);
+				return new ProxyTanksProperties(this.gasHandlerItem, this.itemStack);
+			case ESSENTIA:
+				return new ProxyTanksProperties(this.essentiaHandler, this.tileEntity);
+			case ESSENTIAITEM:
+				return new ProxyTanksProperties(this.essentiaHandlerItem, this.itemStack);
 			default:
 				return null;
 		}
@@ -71,11 +96,12 @@ public class ProxyFluidHandler {
 			case GASITEM:
 				// Mekanism adds emulated receiveGas for tile entity gas handlers, but not one for items??
 				// Also, yes, I'm bypassing the rate limiting on gas transfer. No, I don't care.
-				GasStack storedGas = this.gasHandlerItem.getGas(this.gasItemStack);
+				GasStack storedGas = this.gasHandlerItem.getGas(this.itemStack);
 				if (resource == null || resource.gasStack == null || resource.amount <= 0 || (storedGas != null && !resource.gasStack.isGasEqual(storedGas))) return 0;
-				int toFill = Math.min(this.gasHandlerItem.getMaxGas(this.gasItemStack) - (storedGas == null ? 0 : storedGas.amount), resource.amount);
-				if (toFill > 0 && doFill) this.gasHandlerItem.setGas(this.gasItemStack, new GasStack(resource.gasStack.getGas(), toFill + (storedGas == null ? 0 : storedGas.amount)));
+				int toFill = Math.min(this.gasHandlerItem.getMaxGas(this.itemStack) - (storedGas == null ? 0 : storedGas.amount), resource.amount);
+				if (toFill > 0 && doFill) this.gasHandlerItem.setGas(this.itemStack, new GasStack(resource.gasStack.getGas(), toFill + (storedGas == null ? 0 : storedGas.amount)));
 				return toFill;
+			// TODO: essentia
 			default:
 				return 0;
 		}
@@ -93,11 +119,12 @@ public class ProxyFluidHandler {
 			case GASITEM:
 				// Mekanism adds emulated drawGas for tile entity gas handlers, but not one for items??
 				// Also, yes, I'm bypassing the rate limiting on gas transfer. No, I don't care.
-				if (this.gasHandlerItem.getGas(this.gasItemStack) == null || maxAmount <= 0) return null;
-				GasStack removedGas2 = new GasStack(this.gasHandlerItem.getGas(this.gasItemStack).getGas(), Math.min(this.gasHandlerItem.getGas(this.gasItemStack).amount, maxAmount));
+				if (this.gasHandlerItem.getGas(this.itemStack) == null || maxAmount <= 0) return null;
+				GasStack removedGas2 = new GasStack(this.gasHandlerItem.getGas(this.itemStack).getGas(), Math.min(this.gasHandlerItem.getGas(this.itemStack).amount, maxAmount));
 				if (removedGas2.amount <= 0) return null;
-				if (doDrain) this.gasHandlerItem.setGas(this.gasItemStack, new GasStack(removedGas2.getGas(), this.gasHandlerItem.getGas(this.gasItemStack).amount - removedGas2.amount));
+				if (doDrain) this.gasHandlerItem.setGas(this.itemStack, new GasStack(removedGas2.getGas(), this.gasHandlerItem.getGas(this.itemStack).amount - removedGas2.amount));
 				return new ProxyFluidStack(removedGas2);
+			// TODO: essentia
 			default:
 				return null;
 		}
@@ -115,11 +142,12 @@ public class ProxyFluidHandler {
 			case GASITEM:
 				// Mekanism adds emulated drawGas for tile entity gas handlers, but not one for items??
 				// Also, yes, I'm bypassing the rate limiting on gas transfer. No, I don't care.
-				if (resource == null || resource.gasStack == null || resource.amount <= 0 || !resource.gasStack.isGasEqual(this.gasHandlerItem.getGas(this.gasItemStack))) return null;
-				GasStack removedGas2 = new GasStack(this.gasHandlerItem.getGas(this.gasItemStack).getGas(), Math.min(this.gasHandlerItem.getGas(this.gasItemStack).amount, resource.amount));
+				if (resource == null || resource.gasStack == null || resource.amount <= 0 || !resource.gasStack.isGasEqual(this.gasHandlerItem.getGas(this.itemStack))) return null;
+				GasStack removedGas2 = new GasStack(this.gasHandlerItem.getGas(this.itemStack).getGas(), Math.min(this.gasHandlerItem.getGas(this.itemStack).amount, resource.amount));
 				if (removedGas2.amount <= 0) return null;
-				if (doDrain) this.gasHandlerItem.setGas(this.gasItemStack, new GasStack(removedGas2.getGas(), this.gasHandlerItem.getGas(this.gasItemStack).amount - removedGas2.amount));
+				if (doDrain) this.gasHandlerItem.setGas(this.itemStack, new GasStack(removedGas2.getGas(), this.gasHandlerItem.getGas(this.itemStack).amount - removedGas2.amount));
 				return new ProxyFluidStack(removedGas2);
+			// TODO: essentia
 			default:
 				return null;
 		}
@@ -134,6 +162,10 @@ public class ProxyFluidHandler {
 				return prefix + this.gasHandler;
 			case GASITEM:
 				return prefix + this.gasHandlerItem;
+			case ESSENTIA:
+				return prefix + this.essentiaHandler;
+			case ESSENTIAITEM:
+				return prefix + this.essentiaHandlerItem;
 			default:
 				return "[Uh, oh! Broken ProxyFluidHandler!]";
 		}
