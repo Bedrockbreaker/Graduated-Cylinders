@@ -1,9 +1,8 @@
-package bedrockbreaker.graduatedcylinders.Proxy;
+package bedrockbreaker.graduatedcylinders.Proxy.FluidStacks;
 
 import javax.annotation.Nullable;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -15,8 +14,6 @@ public interface IProxyFluidStack {
 	public int getAmount();
 
 	public boolean isFluidEqual(@Nullable IProxyFluidStack other);
-
-	public ItemStack getFilledBucket();
 
 	public int getColor();
 

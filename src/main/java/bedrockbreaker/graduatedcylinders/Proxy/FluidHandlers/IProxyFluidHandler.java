@@ -1,6 +1,9 @@
-package bedrockbreaker.graduatedcylinders.Proxy;
+package bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers;
 
 import javax.annotation.Nullable;
+
+import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.IProxyTankProperties;
 
 public interface IProxyFluidHandler {
 

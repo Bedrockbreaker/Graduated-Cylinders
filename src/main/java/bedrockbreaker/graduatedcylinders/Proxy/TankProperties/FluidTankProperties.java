@@ -1,5 +1,6 @@
-package bedrockbreaker.graduatedcylinders.Proxy;
+package bedrockbreaker.graduatedcylinders.Proxy.TankProperties;
 
+import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.FluidStackGC;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
 public class FluidTankProperties implements IProxyTankProperties {

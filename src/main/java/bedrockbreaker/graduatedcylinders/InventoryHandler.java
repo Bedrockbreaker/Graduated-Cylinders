@@ -4,8 +4,8 @@ import org.lwjgl.input.Mouse;
 
 import bedrockbreaker.graduatedcylinders.Packets.PacketContainerTransferFluid;
 import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;

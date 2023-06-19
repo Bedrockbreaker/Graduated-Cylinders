@@ -1,5 +1,6 @@
-package bedrockbreaker.graduatedcylinders.Proxy;
+package bedrockbreaker.graduatedcylinders.Proxy.TankProperties;
 
+import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.GasStackGC;
 import mekanism.api.gas.IGasItem;
 import net.minecraft.item.ItemStack;
 

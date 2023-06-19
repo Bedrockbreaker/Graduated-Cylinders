@@ -1,4 +1,4 @@
-package bedrockbreaker.graduatedcylinders.Proxy;
+package bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers;
 
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;

@@ -1,16 +1,13 @@
-package bedrockbreaker.graduatedcylinders.Proxy;
+package bedrockbreaker.graduatedcylinders.Proxy.FluidStacks;
 
 import javax.annotation.Nullable;
 
 import mekanism.api.gas.GasStack;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.init.SoundEvents;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidUtil;
 
 // AKA "GasStackGraduatedCylinders" to avoid name conflict
 public class GasStackGC implements IProxyFluidStack {
@@ -31,10 +28,6 @@ public class GasStackGC implements IProxyFluidStack {
 
 	public boolean isFluidEqual(@Nullable IProxyFluidStack other) {
 		return other == null || !(other instanceof GasStackGC) ? false : this.gasStack.isGasEqual(((GasStackGC) other).gasStack);
-	}
-
-	public ItemStack getFilledBucket() {
-		return this.gasStack.getGas().hasFluid() ? FluidUtil.getFilledBucket(new FluidStack(this.gasStack.getGas().getFluid(), 1000)) : ItemStack.EMPTY;
 	}
 
 	public int getColor() {

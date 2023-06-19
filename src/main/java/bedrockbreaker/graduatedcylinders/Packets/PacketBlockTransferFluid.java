@@ -1,9 +1,9 @@
 package bedrockbreaker.graduatedcylinders.Packets;
 
 import bedrockbreaker.graduatedcylinders.FluidHelper;
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidHandlerItem;
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandlerItem;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
