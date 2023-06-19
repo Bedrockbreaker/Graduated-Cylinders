@@ -1,7 +1,11 @@
-package bedrockbreaker.graduatedcylinders.Proxy;
+package bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers;
 
 import javax.annotation.Nullable;
 
+import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.GasStackGC;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.GasTankProperties;
+import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.IProxyTankProperties;
 import mekanism.api.gas.GasStack;
 import mekanism.api.gas.IGasHandler;
 import net.minecraft.util.EnumFacing;

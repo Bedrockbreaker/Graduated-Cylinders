@@ -2,8 +2,8 @@ package bedrockbreaker.graduatedcylinders.Packets;
 
 import bedrockbreaker.graduatedcylinders.FluidHelper;
 import bedrockbreaker.graduatedcylinders.FluidHelper.FindTransferrableTankResult;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
 import bedrockbreaker.graduatedcylinders.FluidTransferGui;
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidStack;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
@@ -56,6 +56,7 @@ public class PacketOpenFluidGUI implements IMessage {
 				this.valid = false;
 				return;
 			}
+			// Load the fluidstacks determined from the server, instead of relying on the client knowledge of the fluidstacks above
 			this.heldFluidStack = fluidStack.loadFromNBT(ByteBufUtils.readTag(buffer));
 			this.blockFluidStack = fluidStack.loadFromNBT(ByteBufUtils.readTag(buffer));
 		} catch(IndexOutOfBoundsException error) {

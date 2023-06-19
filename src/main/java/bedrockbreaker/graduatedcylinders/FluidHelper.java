@@ -2,14 +2,14 @@ package bedrockbreaker.graduatedcylinders;
 
 import javax.annotation.Nullable;
 
-import bedrockbreaker.graduatedcylinders.Proxy.FluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlerItem;
-import bedrockbreaker.graduatedcylinders.Proxy.GasHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.GasHandlerItem;
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidHandlerItem;
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidStack;
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyTankProperties;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.FluidHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.FluidHandlerItem;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.GasHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.GasHandlerItem;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandlerItem;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.IProxyTankProperties;
 import mekanism.api.gas.IGasHandler;
 import mekanism.api.gas.IGasItem;
 import net.minecraft.block.Block;
@@ -28,11 +28,15 @@ public class FluidHelper {
 
 	public static IProxyFluidHandlerItem getProxyFluidHandler(ItemStack itemStack) {
 		if (itemStack.isEmpty() || itemStack.getCount() != 1) return null;
+
 		IFluidHandlerItem fluidHandler = FluidUtil.getFluidHandler(itemStack);
 		if (fluidHandler != null) return new FluidHandlerItem(fluidHandler);
-		if (!GraduatedCylinders.isMekLoaded) return null;
+
 		Item item = itemStack.getItem();
-		return (item instanceof IGasItem) ? new GasHandlerItem((IGasItem) item, itemStack) : null;
+
+		if (GraduatedCylinders.isMekLoaded && item instanceof IGasItem) return new GasHandlerItem((IGasItem) item, itemStack);
+
+		return null;
 	}
 
 	public static IProxyFluidHandler getMatchingProxyFluidHandler(World world, BlockPos pos, @Nullable EnumFacing side, IProxyFluidHandler fluidHandlerMatch) {

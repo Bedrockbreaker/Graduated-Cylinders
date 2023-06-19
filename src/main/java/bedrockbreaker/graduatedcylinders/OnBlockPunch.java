@@ -3,7 +3,7 @@ package bedrockbreaker.graduatedcylinders;
 import bedrockbreaker.graduatedcylinders.FluidHelper.FindTransferrableTankResult;
 import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
 import bedrockbreaker.graduatedcylinders.Packets.PacketOpenFluidGUI;
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandler;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;

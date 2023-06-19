@@ -3,8 +3,7 @@ package bedrockbreaker.graduatedcylinders;
 import java.util.HashMap;
 import java.util.function.Predicate;
 
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidStack;
-import net.minecraft.client.Minecraft;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.text.TextFormatting;
@@ -38,8 +37,8 @@ public class ColorCache implements ISelectiveResourceReloadListener {
 	};
 
 	@SideOnly(Side.CLIENT)
-	public static String getFluidColorCode(IProxyFluidStack fluid, int baseColor) {
-		String registryName = fluid.getUnlocalizedName();
+	public static String getFluidColorCode(IProxyFluidStack fluidStack, int baseColor) {
+		String registryName = fluidStack.getUnlocalizedName();
 		if (fluidColorCodeCache.containsKey(registryName)) return fluidColorCodeCache.get(registryName);
 
 		// Average the color of the sprite using CIELAB color space
@@ -48,7 +47,7 @@ public class ColorCache implements ISelectiveResourceReloadListener {
 		float totalA = 0;
 		float totalB = 0;
 		int totalTexels = 0;
-		TextureAtlasSprite fluidSprite = fluid.getResourceLocation() == null ? null : Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getResourceLocation().toString());
+		TextureAtlasSprite fluidSprite = fluidStack.getSprite();
 		int[][] texels = (fluidSprite == null || fluidSprite.getFrameCount() == 0) ? new int[][]{{0xFFFFFFFF}} : fluidSprite.getFrameTextureData(0);
 		for (int[] row : texels) {
 			for (int argb : row) {
@@ -104,7 +103,7 @@ public class ColorCache implements ISelectiveResourceReloadListener {
 			chosenColorIndex = i;
 		}
 
-		// The index in the array + 2 just so happens to correspond to the text formatting code (black - 0 and dark blue - 1 are skipped)
+		// The index in the array + 2 corresponds to the text formatting code (black: 0 and dark blue: 1 are skipped)
 		fluidColorCodeCache.put(registryName, "\u00A7" + Integer.toHexString(chosenColorIndex + 2)); // Range 2-9A-F
 		return fluidColorCodeCache.get(registryName);
 	}

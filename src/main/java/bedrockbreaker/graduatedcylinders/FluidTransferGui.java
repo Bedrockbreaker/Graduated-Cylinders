@@ -14,9 +14,9 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.primitives.Ints;
 
 import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidStack;
-import bedrockbreaker.graduatedcylinders.Proxy.IProxyTankProperties;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.IProxyTankProperties;
 import bedrockbreaker.graduatedcylinders.FluidHelper.FindTransferrableTankResult;
 import bedrockbreaker.graduatedcylinders.Packets.PacketBlockTransferFluid;
 import net.minecraft.block.state.IBlockState;
@@ -215,7 +215,6 @@ public class FluidTransferGui extends GuiScreen {
 		GlStateManager.color((color >> 16 & 255) / 255f, (color >> 8 & 255) / 255f, (color & 255) / 255f);
 		this.drawTexturedModalRect(centerX - 26, centerY - 92, this.fluidSprite, 32, 32);
 		GlStateManager.color(1f, 1f, 1f);
-		//if (!this.fluidItem.isEmpty()) this.drawItemStack(this.fluidItem, centerX - 26, centerY - 92);
 
 		// Tooltips
 		if (mouseX >= centerX - 62 && mouseX <= centerX - 30 && mouseY >= centerY + 6 && mouseY <= centerY + 38) this.renderToolTip(this.heldItem, mouseX, mouseY);
