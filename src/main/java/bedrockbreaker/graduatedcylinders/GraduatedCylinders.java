@@ -13,14 +13,16 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 public class GraduatedCylinders {
 	public static final String MODID = "graduatedcylinders";
 	public static final String NAME = "Graduated Cylinders";
-	public static final String VERSION = "2.6.5";
+	public static final String VERSION = "2.7.0";
 
 	public static Logger console = LogManager.getLogger("Graduated Cylinders");
-	public static boolean isMekLoaded = false;
+	public static boolean isMekanismLoaded = false;
+	public static boolean isThaumcraftLoaded = false;
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		PacketHandler.register(MODID);
-		GraduatedCylinders.isMekLoaded = Loader.isModLoaded("mekanism");
+		GraduatedCylinders.isMekanismLoaded = Loader.isModLoaded("mekanism");
+		GraduatedCylinders.isThaumcraftLoaded = Loader.isModLoaded("thaumcraft");
 	}
 }

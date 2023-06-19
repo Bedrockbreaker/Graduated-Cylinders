@@ -13,7 +13,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = '1.12.2-2.6.5'
+version = '1.12.2-2.7.0'
 group = 'bedrockbreaker.graduatedcylinders' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'GraduatedCylinders'
 
@@ -70,6 +70,8 @@ dependencies {
 
     compileOnly fg.deobf("curse.maven:mekanismapi-268560:2835176") // Mekanism's real maven doesn't have files for 1.12
     //runtimeOnly fg.deobf("curse.maven:mekanism-268560:2835175")
+    compileOnly fg.deobf("curse.maven:thaumcraft-223628:2629023")
+    //runtimeOnly fg.deobf("curse.maven:thaumcraft-223628:2629023")
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..

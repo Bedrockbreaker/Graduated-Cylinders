@@ -65,4 +65,3 @@ public class GasStackGC implements IProxyFluidStack {
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 		return this.gasStack.write(nbt);
 	}
-}

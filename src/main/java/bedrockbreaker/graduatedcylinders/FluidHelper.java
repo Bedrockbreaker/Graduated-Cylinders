@@ -2,6 +2,8 @@ package bedrockbreaker.graduatedcylinders;
 
 import javax.annotation.Nullable;
 
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.EssentiaHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.EssentiaHandlerItem;
 import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.FluidHandler;
 import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.FluidHandlerItem;
 import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.GasHandler;
@@ -23,6 +25,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
+import thaumcraft.api.aspects.IAspectContainer;
+import thaumcraft.api.aspects.IEssentiaContainerItem;
 
 public class FluidHelper {
 
@@ -30,11 +34,17 @@ public class FluidHelper {
 		if (itemStack.isEmpty() || itemStack.getCount() != 1) return null;
 
 		IFluidHandlerItem fluidHandler = FluidUtil.getFluidHandler(itemStack);
+
 		if (fluidHandler != null) return new FluidHandlerItem(fluidHandler);
 
 		Item item = itemStack.getItem();
 
-		if (GraduatedCylinders.isMekLoaded && item instanceof IGasItem) return new GasHandlerItem((IGasItem) item, itemStack);
+		if (GraduatedCylinders.isMekanismLoaded && item instanceof IGasItem) return new GasHandlerItem((IGasItem) item, itemStack);
+		
+		if (GraduatedCylinders.isThaumcraftLoaded && item instanceof IEssentiaContainerItem) {
+			IEssentiaContainerItem essentiaHandlerItem = (IEssentiaContainerItem) item;
+			if (!essentiaHandlerItem.ignoreContainedAspects()) return new EssentiaHandlerItem(essentiaHandlerItem, itemStack);
+		}
 
 		return null;
 	}
@@ -47,7 +57,8 @@ public class FluidHelper {
 		if (tileEntity == null) return null;
 
 		if (fluidHandlerMatch instanceof FluidHandler && tileEntity.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side)) return new FluidHandler(tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side));
-		if (GraduatedCylinders.isMekLoaded && (fluidHandlerMatch instanceof GasHandlerItem || fluidHandlerMatch instanceof GasHandler) && tileEntity instanceof IGasHandler) return new GasHandler((IGasHandler) tileEntity, side);
+		if (GraduatedCylinders.isMekanismLoaded && (fluidHandlerMatch instanceof GasHandlerItem || fluidHandlerMatch instanceof GasHandler) && tileEntity instanceof IGasHandler) return new GasHandler((IGasHandler) tileEntity, side);
+		if (GraduatedCylinders.isThaumcraftLoaded && (fluidHandlerMatch instanceof EssentiaHandlerItem || fluidHandlerMatch instanceof EssentiaHandler) && tileEntity instanceof IAspectContainer) return new EssentiaHandler((IAspectContainer) tileEntity, tileEntity, side);
 		return null;
 	}
 
