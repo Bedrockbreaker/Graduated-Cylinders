@@ -32,6 +32,7 @@ public class FluidHelper {
 
 	public static IProxyFluidHandlerItem getProxyFluidHandler(ItemStack itemStack) {
 		if (itemStack.isEmpty() || itemStack.getCount() != 1) return null;
+
 		IFluidHandlerItem fluidHandler = FluidUtil.getFluidHandler(itemStack);
 
 		if (fluidHandler != null) return new FluidHandlerItem(fluidHandler);

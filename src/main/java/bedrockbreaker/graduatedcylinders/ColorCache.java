@@ -37,8 +37,8 @@ public class ColorCache implements ISelectiveResourceReloadListener {
 	};
 
 	@SideOnly(Side.CLIENT)
-	public static String getFluidColorCode(IProxyFluidStack fluid, int baseColor) {
-		String registryName = fluid.getUnlocalizedName();
+	public static String getFluidColorCode(IProxyFluidStack fluidStack, int baseColor) {
+		String registryName = fluidStack.getUnlocalizedName();
 		if (fluidColorCodeCache.containsKey(registryName)) return fluidColorCodeCache.get(registryName);
 
 		// Average the color of the sprite using CIELAB color space
@@ -47,7 +47,7 @@ public class ColorCache implements ISelectiveResourceReloadListener {
 		float totalA = 0;
 		float totalB = 0;
 		int totalTexels = 0;
-		TextureAtlasSprite fluidSprite = fluid.getSprite();
+		TextureAtlasSprite fluidSprite = fluidStack.getSprite();
 		int[][] texels = (fluidSprite == null || fluidSprite.getFrameCount() == 0) ? new int[][]{{0xFFFFFFFF}} : fluidSprite.getFrameTextureData(0);
 		for (int[] row : texels) {
 			for (int argb : row) {
