@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 public class GraduatedCylinders {
 	public static final String MODID = "graduatedcylinders";
 	public static final String NAME = "Graduated Cylinders";
-	public static final String VERSION = "2.6.4";
+	public static final String VERSION = "2.6.5";
 
 	public static Logger console = LogManager.getLogger("Graduated Cylinders");
 	public static boolean isMekLoaded = false;

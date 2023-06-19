@@ -1,11 +1,14 @@
 package bedrockbreaker.graduatedcylinders.Packets;
 
-import bedrockbreaker.graduatedcylinders.FluidTransferGui;
+import bedrockbreaker.graduatedcylinders.FluidHelper;
 import bedrockbreaker.graduatedcylinders.FluidHelper.FindTransferrableTankResult;
-import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.FluidTransferGui;
+import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidStack;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
@@ -13,6 +16,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class PacketOpenFluidGUI implements IMessage {
 	
@@ -20,15 +24,15 @@ public class PacketOpenFluidGUI implements IMessage {
 	private BlockPos pos;
 	private int side;
 	private FindTransferrableTankResult transferResults;
-	private ProxyFluidStack heldFluidStack;
-	private ProxyFluidStack blockFluidStack;
+	private IProxyFluidStack heldFluidStack;
+	private IProxyFluidStack blockFluidStack;
 	private boolean valid;
 
 	public PacketOpenFluidGUI() {
 		this.valid = false;
 	}
 
-	public PacketOpenFluidGUI(ItemStack heldItem, BlockPos pos, int side, FindTransferrableTankResult transferResults, ProxyFluidStack heldFluidStack, ProxyFluidStack blockFluidStack) {
+	public PacketOpenFluidGUI(ItemStack heldItem, BlockPos pos, int side, FindTransferrableTankResult transferResults, IProxyFluidStack heldFluidStack, IProxyFluidStack blockFluidStack) {
 		this.heldItem = heldItem;
 		this.pos = pos;
 		this.side = side;
@@ -39,14 +43,21 @@ public class PacketOpenFluidGUI implements IMessage {
 	}
 
 	@Override
+	@SideOnly(Side.CLIENT)
 	public void fromBytes(ByteBuf buffer) {
 		try {
 			this.heldItem = new ItemStack(ByteBufUtils.readTag(buffer));
 			this.pos = new BlockPos(buffer.readInt(), buffer.readInt(), buffer.readInt());
 			this.side = buffer.readInt();
 			this.transferResults = new FindTransferrableTankResult(buffer.readInt(), buffer.readInt(), buffer.readBoolean(), buffer.readBoolean());
-			this.heldFluidStack = ProxyFluidStack.loadFluidStackFromNBT(ByteBufUtils.readTag(buffer));
-			this.blockFluidStack = ProxyFluidStack.loadFluidStackFromNBT(ByteBufUtils.readTag(buffer));
+			IProxyFluidStack fluidStack = FluidHelper.getProxyFluidHandler(this.heldItem).getTankProperties(this.transferResults.leftTank).getContents();
+			if (fluidStack == null) fluidStack = FluidHelper.getMatchingProxyFluidHandler(Minecraft.getMinecraft().world, this.pos, EnumFacing.getFront(this.side), FluidHelper.getProxyFluidHandler(this.heldItem)).getTankProperties(this.transferResults.rightTank).getContents();
+			if (fluidStack == null) { // This shouldn't ever happen
+				this.valid = false;
+				return;
+			}
+			this.heldFluidStack = fluidStack.loadFromNBT(ByteBufUtils.readTag(buffer));
+			this.blockFluidStack = fluidStack.loadFromNBT(ByteBufUtils.readTag(buffer));
 		} catch(IndexOutOfBoundsException error) {
 			System.out.println(error);
 		}
@@ -56,7 +67,7 @@ public class PacketOpenFluidGUI implements IMessage {
 	@Override
 	public void toBytes(ByteBuf buffer) {
 		if (!this.valid) return;
-		// Transfer heldItem by NBT, which carrries capabilities (looking at you, Astral Sorcery -_-)
+		// Transfer heldItem by NBT, which includes capabilities (looking at you ByteBufUtils.writeItemStack() -_-)
 		ByteBufUtils.writeTag(buffer, this.heldItem.writeToNBT(new NBTTagCompound()));
 		buffer.writeInt(this.pos.getX());
 		buffer.writeInt(this.pos.getY());
@@ -66,8 +77,8 @@ public class PacketOpenFluidGUI implements IMessage {
 		buffer.writeInt(this.transferResults.rightTank);
 		buffer.writeBoolean(this.transferResults.canExport);
 		buffer.writeBoolean(this.transferResults.canImport);
-		ByteBufUtils.writeTag(buffer, heldFluidStack != null ? heldFluidStack.writeToNBT(new NBTTagCompound()) : null);
-		ByteBufUtils.writeTag(buffer, blockFluidStack != null ? blockFluidStack.writeToNBT(new NBTTagCompound()) : null);
+		ByteBufUtils.writeTag(buffer, heldFluidStack == null ? null : heldFluidStack.writeToNBT(new NBTTagCompound()));
+		ByteBufUtils.writeTag(buffer, blockFluidStack == null ? null : blockFluidStack.writeToNBT(new NBTTagCompound()));
 	}
 
 	public static class Handler implements IMessageHandler<PacketOpenFluidGUI, IMessage> {
