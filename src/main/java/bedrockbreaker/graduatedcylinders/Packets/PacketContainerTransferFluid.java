@@ -1,8 +1,8 @@
 package bedrockbreaker.graduatedcylinders.Packets;
 
 import bedrockbreaker.graduatedcylinders.FluidHelper;
-import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidHandlerItem;
-import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidHandlerItem;
+import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidStack;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -55,16 +55,16 @@ public class PacketContainerTransferFluid implements IMessage {
 				Container container = player.openContainer;
 				Slot hoveredSlot = container.inventorySlots.get(message.slot);
 
-				ProxyFluidHandlerItem heldFluidHandler = FluidHelper.getProxyFluidHandler(player.inventory.getItemStack());
-				ProxyFluidHandlerItem underFluidHandler = FluidHelper.getProxyFluidHandler(hoveredSlot.getStack());
+				IProxyFluidHandlerItem heldFluidHandler = FluidHelper.getProxyFluidHandler(player.inventory.getItemStack());
+				IProxyFluidHandlerItem underFluidHandler = FluidHelper.getProxyFluidHandler(hoveredSlot.getStack());
 
 				int transferAmount = FluidHelper.getTransferAmount(heldFluidHandler, underFluidHandler);
 				if (transferAmount == 0) return;
 
-				ProxyFluidStack fluidStack = heldFluidHandler.getTankProperties().get(0).getContents();
-				if (fluidStack == null) fluidStack = underFluidHandler.getTankProperties().get(0).getContents();
+				IProxyFluidStack fluidStack = heldFluidHandler.getTankProperties(0).getContents();
+				if (fluidStack == null) fluidStack = underFluidHandler.getTankProperties(0).getContents();
 				if (fluidStack == null) return;
-				fluidStack = new ProxyFluidStack(fluidStack, Math.abs(transferAmount));
+				fluidStack = fluidStack.copy(fluidStack, Math.abs(transferAmount));
 
 				if (FluidHelper.tryFluidTransfer(transferAmount < 0 ? underFluidHandler : heldFluidHandler, transferAmount < 0 ? heldFluidHandler : underFluidHandler, fluidStack, true) != null) player.world.playSound(null, player.getPosition(), transferAmount < 0 ? fluidStack.getEmptySound() : fluidStack.getFillSound(), SoundCategory.PLAYERS, 1.0F, 1.0F);
 				

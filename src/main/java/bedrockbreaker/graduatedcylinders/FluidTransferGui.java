@@ -14,9 +14,9 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.primitives.Ints;
 
 import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidStack;
-import bedrockbreaker.graduatedcylinders.Proxy.ProxyTanksProperties.ProxyTankProperties;
+import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Proxy.IProxyTankProperties;
 import bedrockbreaker.graduatedcylinders.FluidHelper.FindTransferrableTankResult;
 import bedrockbreaker.graduatedcylinders.Packets.PacketBlockTransferFluid;
 import net.minecraft.block.state.IBlockState;
@@ -25,7 +25,9 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.item.ItemStack;
@@ -44,14 +46,14 @@ public class FluidTransferGui extends GuiScreen {
 	private boolean initialized = false;
 
 	private final ItemStack heldItem;
-	private final ProxyFluidHandler heldFluidHandler;
+	private final IProxyFluidHandler heldFluidHandler;
 	private final World world;
 	private final BlockPos pos;
 	private final ItemStack blockItem;
-	private ProxyFluidStack fluidStack;
-	private ItemStack fluidItem;
+	private IProxyFluidStack fluidStack;
+	private TextureAtlasSprite fluidSprite;
 	private EnumFacing selectedFace;
-	private ProxyFluidHandler blockFluidHandler;
+	private IProxyFluidHandler blockFluidHandler;
 	private int heldTankIndex;
 	private int blockTankIndex;
 	private int max;
@@ -68,11 +70,11 @@ public class FluidTransferGui extends GuiScreen {
 	private List<GuiButton> heldTanksButtons = new ArrayList<GuiButton>();
 	private List<GuiButton> blockTanksButtons = new ArrayList<GuiButton>();
 
-	public static void open(ItemStack heldItem, BlockPos pos, int side, FindTransferrableTankResult transferResults, ProxyFluidStack heldFluidStack, ProxyFluidStack blockFluidStack) {
+	public static void open(ItemStack heldItem, BlockPos pos, int side, FindTransferrableTankResult transferResults, IProxyFluidStack heldFluidStack, IProxyFluidStack blockFluidStack) {
 		Minecraft.getMinecraft().displayGuiScreen(new FluidTransferGui(heldItem, pos, EnumFacing.getFront(side), transferResults, heldFluidStack, blockFluidStack));
 	}
 
-	public FluidTransferGui(ItemStack heldItem, BlockPos pos, EnumFacing side, FindTransferrableTankResult transferResults, ProxyFluidStack heldFluidStack, ProxyFluidStack blockFluidStack) {
+	public FluidTransferGui(ItemStack heldItem, BlockPos pos, EnumFacing side, FindTransferrableTankResult transferResults, IProxyFluidStack heldFluidStack, IProxyFluidStack blockFluidStack) {
 		super();
 
 		if (heldItem == null) throw new IllegalArgumentException(); // IDE complaint.
@@ -84,19 +86,19 @@ public class FluidTransferGui extends GuiScreen {
 		this.heldTankIndex = transferResults.leftTank;
 		this.world = minecraft.world;
 		this.pos = pos;
-		this.blockFluidHandler = FluidHelper.getProxyFluidHandler(world, pos, side, this.heldFluidHandler.getType());
+		this.blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(world, pos, side, this.heldFluidHandler);
 		this.blockItem = this.pickBlock(pos);
 		this.selectedFace = side;
 		this.blockTankIndex = transferResults.rightTank;
 
-		ProxyTankProperties heldFluidTank = this.heldFluidHandler.getTankProperties().get(heldTankIndex);
-		ProxyTankProperties blockFluidTank = this.blockFluidHandler.getTankProperties().get(blockTankIndex);
+		IProxyTankProperties heldFluidTank = this.heldFluidHandler.getTankProperties(heldTankIndex);
+		IProxyTankProperties blockFluidTank = this.blockFluidHandler.getTankProperties(blockTankIndex);
 
 		// Need to create excess variable because it yells at me for not checking for null.
-		ProxyFluidStack fluidStack = heldFluidStack == null ? blockFluidStack : heldFluidStack;
+		IProxyFluidStack fluidStack = heldFluidStack == null ? blockFluidStack : heldFluidStack;
 		if (fluidStack == null) throw new NullPointerException();
 		this.fluidStack = fluidStack;
-		this.fluidItem = fluidStack.getFilledBucket();
+		this.fluidSprite = fluidStack.getSprite();
 
 		this.max = Math.min(heldFluidTank.getCapacity(), blockFluidTank.getCapacity());
 		this.forced = (transferResults.canExport && !transferResults.canImport) || (!transferResults.canExport && transferResults.canImport);
@@ -169,8 +171,8 @@ public class FluidTransferGui extends GuiScreen {
 		final int centerY = this.height/2;
 		final String cmd = Minecraft.IS_RUNNING_ON_MAC ? ".cmd" : "";
 		final int leftMargin = this.width - (this.fontRenderer.getStringWidth(I18n.format("gc.gui.100000mb.combo" + cmd)) + this.fontRenderer.getStringWidth(I18n.format("gc.gui.allmb")) + 10);
-		final String heldAmount = I18n.format("gc.gui.amount.current", heldFluidHandler.getTankProperties().get(heldTankIndex).getContents() != null ? heldFluidHandler.getTankProperties().get(heldTankIndex).getContents().amount : 0);
-		final String blockAmount = I18n.format("gc.gui.amount.current", blockFluidHandler.getTankProperties().get(blockTankIndex).getContents() != null ? blockFluidHandler.getTankProperties().get(blockTankIndex).getContents().amount : 0);
+		final String heldAmount = I18n.format("gc.gui.amount.current", heldFluidHandler.getTankProperties(heldTankIndex).getContents() != null ? heldFluidHandler.getTankProperties(heldTankIndex).getContents().getAmount() : 0);
+		final String blockAmount = I18n.format("gc.gui.amount.current", blockFluidHandler.getTankProperties(blockTankIndex).getContents() != null ? blockFluidHandler.getTankProperties(blockTankIndex).getContents().getAmount() : 0);
 
 		this.drawDefaultBackground();
 		this.textAmount.drawTextBox();
@@ -205,11 +207,15 @@ public class FluidTransferGui extends GuiScreen {
 		this.drawRightAlignedString(I18n.format("gc.gui.10000mb"), this.width - 5, this.height - 45, 0xAAAAAA);
 		this.drawRightAlignedString(I18n.format("gc.gui.100000mb"), this.width - 5, this.height - 30, 0xAAAAAA);
 		this.drawRightAlignedString(I18n.format("gc.gui.allmb"), this.width - 5, this.height - 15, 0xAAAAAA);
-		
+	
 		// Itemstacks
 		this.drawItemStack(this.heldItem, centerX - 61, centerY + 6);
 		this.drawItemStack(this.blockItem, centerX + 10, centerY + 6);
-		if (!this.fluidItem.isEmpty()) this.drawItemStack(this.fluidItem, centerX - 26, centerY - 92);
+		int color = this.fluidStack.getColor();
+		GlStateManager.color((color >> 16 & 255) / 255f, (color >> 8 & 255) / 255f, (color & 255) / 255f);
+		this.drawTexturedModalRect(centerX - 26, centerY - 92, this.fluidSprite, 32, 32);
+		GlStateManager.color(1f, 1f, 1f);
+		//if (!this.fluidItem.isEmpty()) this.drawItemStack(this.fluidItem, centerX - 26, centerY - 92);
 
 		// Tooltips
 		if (mouseX >= centerX - 62 && mouseX <= centerX - 30 && mouseY >= centerY + 6 && mouseY <= centerY + 38) this.renderToolTip(this.heldItem, mouseX, mouseY);

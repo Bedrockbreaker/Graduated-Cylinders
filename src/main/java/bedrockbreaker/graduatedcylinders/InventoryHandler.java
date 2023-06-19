@@ -4,8 +4,8 @@ import org.lwjgl.input.Mouse;
 
 import bedrockbreaker.graduatedcylinders.Packets.PacketContainerTransferFluid;
 import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -32,14 +32,14 @@ public class InventoryHandler {
 		Slot hoveredSlot = ((GuiContainer) screen).getSlotUnderMouse();
 		if (hoveredSlot == null || !hoveredSlot.isEnabled() || !hoveredSlot.canTakeStack(minecraft.player)) return;
 
-		ProxyFluidHandler heldFluidHandler = FluidHelper.getProxyFluidHandler(minecraft.player.inventory.getItemStack());
-		ProxyFluidHandler underFluidHandler = FluidHelper.getProxyFluidHandler(hoveredSlot.getStack());
+		IProxyFluidHandler heldFluidHandler = FluidHelper.getProxyFluidHandler(minecraft.player.inventory.getItemStack());
+		IProxyFluidHandler underFluidHandler = FluidHelper.getProxyFluidHandler(hoveredSlot.getStack());
 
 		final int transferAmount = FluidHelper.getTransferAmount(heldFluidHandler, underFluidHandler);
 		if (transferAmount == 0) return;
 
-		ProxyFluidStack fluid = heldFluidHandler.getTankProperties().get(0).getContents();
-		if (fluid == null) fluid = underFluidHandler.getTankProperties().get(0).getContents();
+		IProxyFluidStack fluid = heldFluidHandler.getTankProperties(0).getContents();
+		if (fluid == null) fluid = underFluidHandler.getTankProperties(0).getContents();
 		if (fluid == null) throw new NullPointerException(); // IDE complaint
 
 		screen.drawHoveringText(I18n.format("gc.inventory.rightclick", transferAmount < 0 ? "->" : "<-", ColorCache.getFluidColorCode(fluid, fluid.getColor()) + TextFormatting.BOLD, Math.abs(transferAmount), TextFormatting.RESET), event.getMouseX(), event.getMouseY());

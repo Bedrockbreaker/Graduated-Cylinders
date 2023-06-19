@@ -2,11 +2,14 @@ package bedrockbreaker.graduatedcylinders;
 
 import javax.annotation.Nullable;
 
-import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidHandlerItem;
-import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidStack;
-import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidHandler.ProxyType;
-import bedrockbreaker.graduatedcylinders.Proxy.ProxyTanksProperties.ProxyTankProperties;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlerItem;
+import bedrockbreaker.graduatedcylinders.Proxy.GasHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.GasHandlerItem;
+import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidHandlerItem;
+import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Proxy.IProxyTankProperties;
 import mekanism.api.gas.IGasHandler;
 import mekanism.api.gas.IGasItem;
 import net.minecraft.block.Block;
@@ -25,95 +28,80 @@ import thaumcraft.api.aspects.IEssentiaContainerItem;
 
 public class FluidHelper {
 
-	public static ProxyFluidHandlerItem getProxyFluidHandler(ItemStack itemStack) {
+	public static IProxyFluidHandlerItem getProxyFluidHandler(ItemStack itemStack) {
 		if (itemStack.isEmpty() || itemStack.getCount() != 1) return null;
 		IFluidHandlerItem fluidHandler = FluidUtil.getFluidHandler(itemStack);
-		if (fluidHandler != null) return new ProxyFluidHandlerItem(fluidHandler);
-		Item item = itemStack.getItem();
+		if (fluidHandler != null) return new FluidHandlerItem(fluidHandler);
 		if (GraduatedCylinders.isMekanismLoaded) {
-			if (item instanceof IGasItem) return new ProxyFluidHandlerItem((IGasItem) item, itemStack);
-		} else if (GraduatedCylinders.isThaumcraftLoaded) {
-			if (!(item instanceof IEssentiaContainerItem)) return null;
-			IEssentiaContainerItem essentiaHandlerItem = (IEssentiaContainerItem) item;
-			if (!essentiaHandlerItem.ignoreContainedAspects()) return new ProxyFluidHandlerItem(essentiaHandlerItem, itemStack);
+			Item item = itemStack.getItem();
+			if (item instanceof IGasItem) return new GasHandlerItem((IGasItem) item, itemStack);
 		}
-		return null;
+		if (GraduatedCylinders.isThaumcraftLoaded) {
+			if (!(item instanceof IEssentiaContainerItem)) break;
+			IEssentiaContainerItem essentiaHandlerItem = (IEssentiaContainerItem) item;
+			if (!essentiaHandlerItem.ignoreContainedAspects()) return new EssentiaHandlerItem(essentiaHandlerItem, itemStack);
+		}
 	}
 
-	public static ProxyFluidHandler getProxyFluidHandler(World world, BlockPos pos, @Nullable EnumFacing side, ProxyType type) {
+	public static IProxyFluidHandler getMatchingProxyFluidHandler(World world, BlockPos pos, @Nullable EnumFacing side, IProxyFluidHandler fluidHandlerMatch) {
 		IBlockState state = world.getBlockState(pos);
 		Block block = state.getBlock();
 		if (!block.hasTileEntity(state)) return null;
 		TileEntity tileEntity = world.getTileEntity(pos);
 		if (tileEntity == null) return null;
 
-		switch(type) {
-			case FLUID:
-				return tileEntity.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side) ? new ProxyFluidHandler(tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side)) : null;
-			case GAS:
-			case GASITEM:
-				return (GraduatedCylinders.isMekanismLoaded && tileEntity instanceof IGasHandler) ? new ProxyFluidHandler((IGasHandler) tileEntity, side) : null;
-			case ESSENTIA:
-			case ESSENTIAITEM:
-				return (GraduatedCylinders.isThaumcraftLoaded && tileEntity instanceof IAspectContainer) ? new ProxyFluidHandler((IAspectContainer) tileEntity, tileEntity, side) : null;
-			default:
-				return null;
-		}
+		if (fluidHandlerMatch instanceof FluidHandler && tileEntity.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side)) return new FluidHandler(tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side));
+		if (GraduatedCylinders.isMekanismLoaded && (fluidHandlerMatch instanceof GasHandlerItem || fluidHandlerMatch instanceof GasHandler) && tileEntity instanceof IGasHandler) return new GasHandler((IGasHandler) tileEntity, side);
+		if (GraduatedCylinders.isThaumcraftLoaded && (fluidHandlerMatch instanceof EssentiaHandlerItem || fluidHandlerMatch instanceof EssentiaHandler) && tileEntity instanceof IAspectContainer) return new EssentiaHandler((IAspectContainer) tileEntity, tileEntity, side);
+		return null;
 	}
 
-	public static ProxyFluidStack tryFluidTransfer(ProxyFluidHandler fluidDestination, ProxyFluidHandler fluidSource, ProxyFluidStack resource, boolean doTransfer) {
-		ProxyFluidStack drainable = fluidSource.drain(resource, false);
-		return drainable != null && drainable.amount > 0 && resource.isFluidEqual(drainable) ? FluidHelper.tryFluidTransfer_Internal(fluidDestination, fluidSource, drainable, doTransfer) : null;
+	public static IProxyFluidStack tryFluidTransfer(IProxyFluidHandler fluidDestination, IProxyFluidHandler fluidSource, IProxyFluidStack resource, boolean doTransfer) {
+		IProxyFluidStack drainable = fluidSource.drain(resource, false);
+		return drainable != null && drainable.getAmount() > 0 && resource.isFluidEqual(drainable) ? FluidHelper.tryFluidTransfer_Internal(fluidDestination, fluidSource, drainable, doTransfer) : null;
 	}
 
-	public static FindTransferrableTankResult findTransferrableTank(ProxyFluidHandler handler1, ProxyFluidHandler handler2) {
+	public static FindTransferrableTankResult findTransferrableTank(IProxyFluidHandler handler1, IProxyFluidHandler handler2) {
 		if (handler1 == null || handler2 == null) return null;
-		for (int i = 0; i < handler1.getTankProperties().getLength(); i++) {
-			ProxyFluidStack fluidStack1 = handler1.getTankProperties().get(i).getContents();
-			for (int j = 0; j < handler2.getTankProperties().getLength(); j++) {
-				ProxyFluidStack fluidStack2 = handler2.getTankProperties().get(j).getContents();
+		for (int i = 0; i < handler1.getNumTanks(); i++) {
+			IProxyFluidStack fluidStack1 = handler1.getTankProperties(i).getContents();
+			for (int j = 0; j < handler2.getNumTanks(); j++) {
+				IProxyFluidStack fluidStack2 = handler2.getTankProperties(j).getContents();
 				if ((fluidStack1 == null && fluidStack2 == null) || (fluidStack1 != null && fluidStack2 != null && !fluidStack1.isFluidEqual(fluidStack2))) continue;
-				ProxyFluidStack simulatedFluidStack = new ProxyFluidStack(fluidStack1 == null ? fluidStack2 : fluidStack1, Integer.MAX_VALUE);
-				ProxyFluidStack simulatedExportFluid = FluidHelper.tryFluidTransfer(handler2, handler1, simulatedFluidStack, false);
-				ProxyFluidStack simulatedImportFluid = FluidHelper.tryFluidTransfer(handler1, handler2, simulatedFluidStack, false);
-				if ((simulatedExportFluid != null && simulatedExportFluid.amount > 0) || (simulatedImportFluid != null && simulatedImportFluid.amount > 0)) return new FindTransferrableTankResult(i, j, simulatedExportFluid != null && simulatedExportFluid.amount > 0, simulatedImportFluid != null && simulatedImportFluid.amount > 0);
+				IProxyFluidStack workingStack = fluidStack1 == null ? fluidStack2 : fluidStack1;
+				if (workingStack == null) return null; // If this returns, something terrible must have happened.
+				IProxyFluidStack simulatedFluidStack = workingStack.copy(workingStack, Integer.MAX_VALUE);
+				IProxyFluidStack simulatedExportFluid = FluidHelper.tryFluidTransfer(handler2, handler1, simulatedFluidStack, false);
+				IProxyFluidStack simulatedImportFluid = FluidHelper.tryFluidTransfer(handler1, handler2, simulatedFluidStack, false);
+				if ((simulatedExportFluid != null && simulatedExportFluid.getAmount() > 0) || (simulatedImportFluid != null && simulatedImportFluid.getAmount() > 0)) return new FindTransferrableTankResult(i, j, simulatedExportFluid != null && simulatedExportFluid.getAmount() > 0, simulatedImportFluid != null && simulatedImportFluid.getAmount() > 0);
 			}
 		}
 		return null;
 	}
 
-	public static int getTransferAmount(ProxyFluidHandler handler1, ProxyFluidHandler handler2) {
-		if (handler1 == null || handler2 == null || handler1.getType() != handler2.getType()) return 0;
+	public static int getTransferAmount(IProxyFluidHandler handler1, IProxyFluidHandler handler2) {
+		if (handler1 == null || handler2 == null || handler1.getClass() != handler2.getClass()) return 0;
 
-		ProxyTankProperties itemOneProps = handler1.getTankProperties().get(0);
-		ProxyTankProperties itemTwoProps = handler2.getTankProperties().get(0);
-		ProxyFluidStack itemOneContents = itemOneProps.getContents();
-		ProxyFluidStack itemTwoContents = itemTwoProps.getContents();
+		IProxyTankProperties itemOneProps = handler1.getTankProperties(0);
+		IProxyTankProperties itemTwoProps = handler2.getTankProperties(0);
+		IProxyFluidStack itemOneContents = itemOneProps.getContents();
+		IProxyFluidStack itemTwoContents = itemTwoProps.getContents();
 		if (itemOneContents != null && itemTwoContents != null && !itemOneContents.isFluidEqual(itemTwoContents)) return 0;
 
-		int itemOneAmount = itemOneContents == null ? 0 : itemOneContents.amount;
-		int itemTwoAmount = itemTwoContents == null ? 0 : itemTwoContents.amount;
+		int itemOneAmount = itemOneContents == null ? 0 : itemOneContents.getAmount();
+		int itemTwoAmount = itemTwoContents == null ? 0 : itemTwoContents.getAmount();
 		if ((itemOneAmount == itemOneProps.getCapacity() && itemTwoAmount == itemTwoProps.getCapacity()) || itemOneAmount + itemTwoAmount == 0) return 0;
 
 		return itemTwoAmount == 0 || itemOneAmount == itemOneProps.getCapacity() ? -Math.min(itemTwoProps.getCapacity() - itemTwoAmount, itemOneAmount) : Math.min(itemOneProps.getCapacity() - itemOneAmount, itemTwoAmount);
 	}
 
 	@Nullable
-	private static ProxyFluidStack tryFluidTransfer_Internal(ProxyFluidHandler fluidDestination, ProxyFluidHandler fluidSource, ProxyFluidStack drainable, boolean doTransfer) {
+	private static IProxyFluidStack tryFluidTransfer_Internal(IProxyFluidHandler fluidDestination, IProxyFluidHandler fluidSource, IProxyFluidStack drainable, boolean doTransfer) {
 		int fillableAmount = fluidDestination.fill(drainable, false);
-		if (fillableAmount > 0) {
-			if (doTransfer) {
-				ProxyFluidStack drained = fluidSource.drain(fillableAmount, true);
-				if (drained != null) {
-					drained.amount = fluidDestination.fill(drainable, true);
-					return drained;
-				}
-			} else {
-				drainable.amount = fillableAmount;
-				return drainable;
-			}
-		}
-		return null;
+		if (fillableAmount <= 0) return null;
+		if (!doTransfer) return drainable.copy(drainable, fillableAmount);
+		IProxyFluidStack drained = fluidSource.drain(fillableAmount, true);
+		return drained == null ? null : drained.copy(drained, fluidDestination.fill(drainable, true));
 	}
 
 	public static class FindTransferrableTankResult {

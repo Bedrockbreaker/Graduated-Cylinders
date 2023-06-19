@@ -3,10 +3,9 @@ package bedrockbreaker.graduatedcylinders;
 import java.util.HashMap;
 import java.util.function.Predicate;
 
-import bedrockbreaker.graduatedcylinders.Proxy.ProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Proxy.IProxyFluidStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.resource.IResourceType;
@@ -39,13 +38,9 @@ public class ColorCache implements ISelectiveResourceReloadListener {
 	};
 
 	@SideOnly(Side.CLIENT)
-	public static String getFluidColorCode(ProxyFluidStack fluid, int baseColor) {
-		String registryName = fluid.getRegistryName();
+	public static String getFluidColorCode(IProxyFluidStack fluid, int baseColor) {
+		String registryName = fluid.getUnlocalizedName();
 		if (fluidColorCodeCache.containsKey(registryName)) return fluidColorCodeCache.get(registryName);
-		
-		// TODO: essentia will probably break this
-		TextureMap blockTextureMap = Minecraft.getMinecraft().getTextureMapBlocks();
-		TextureAtlasSprite fluidSprite = fluid.getResourceLocation() == null ? null : blockTextureMap.getTextureExtry(fluid.getResourceLocation().toString());
 
 		// Average the color of the sprite using CIELAB color space
 		// See http://www.brucelindbloom.com/index.html?Math.html
@@ -53,6 +48,7 @@ public class ColorCache implements ISelectiveResourceReloadListener {
 		float totalA = 0;
 		float totalB = 0;
 		int totalTexels = 0;
+		TextureAtlasSprite fluidSprite = fluid.getResourceLocation() == null ? null : Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(fluid.getResourceLocation().toString());
 		int[][] texels = (fluidSprite == null || fluidSprite.getFrameCount() == 0) ? new int[][]{{0xFFFFFFFF}} : fluidSprite.getFrameTextureData(0);
 		for (int[] row : texels) {
 			for (int argb : row) {

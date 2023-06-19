@@ -68,7 +68,7 @@ repositories {
 dependencies {
     minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2860'
 
-    compileOnly fg.deobf("curse.maven:mekanismapi-268560:2835176") // Their maven doesn't have files for 1.12
+    compileOnly fg.deobf("curse.maven:mekanismapi-268560:2835176") // Mekanism's real maven doesn't have files for 1.12
     //runtimeOnly fg.deobf("curse.maven:mekanism-268560:2835175")
     compileOnly fg.deobf("curse.maven:thaumcraft-223628:2629023")
     //runtimeOnly fg.deobf("curse.maven:thaumcraft-223628:2629023")
