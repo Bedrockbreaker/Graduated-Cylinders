@@ -27,7 +27,7 @@ public class FluidStackGC implements IProxyFluidStack {
 	}
 
 	public boolean isFluidEqual(@Nullable IProxyFluidStack other) {
-		return other == null || !(other instanceof FluidStackGC) ? false : this.fluidStack.isFluidEqual(((FluidStackGC) other).fluidStack);
+		return other instanceof FluidStackGC ? this.fluidStack.isFluidEqual(((FluidStackGC) other).fluidStack) : false;
 	}
 
 	public int getColor() {
@@ -64,5 +64,9 @@ public class FluidStackGC implements IProxyFluidStack {
 
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 		return this.fluidStack.writeToNBT(nbt);
+	}
+
+	public String toString() {
+		return this.getLocalizedName() + " @ " + this.getAmount();
 	}
 }

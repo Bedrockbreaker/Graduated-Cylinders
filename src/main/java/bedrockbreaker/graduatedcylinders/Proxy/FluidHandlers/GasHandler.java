@@ -8,6 +8,7 @@ import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.GasTankProperties;
 import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.IProxyTankProperties;
 import mekanism.api.gas.GasStack;
 import mekanism.api.gas.IGasHandler;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 
 public class GasHandler implements IProxyFluidHandler {
@@ -18,6 +19,11 @@ public class GasHandler implements IProxyFluidHandler {
 	public GasHandler(IGasHandler gasHandler, EnumFacing side) {
 		this.gasHandler = gasHandler;
 		this.side = side;
+	}
+
+	public GasStackGC loadFluidStackFromNBT(NBTTagCompound nbt) {
+		GasStack gasStack = GasStack.readFromNBT(nbt);
+		return gasStack == null ? null : new GasStackGC(gasStack);
 	}
 
 	public IProxyTankProperties getTankProperties(int tankIndex) {

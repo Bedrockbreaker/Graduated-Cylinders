@@ -7,8 +7,12 @@ import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
 import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.GasTankPropertiesItem;
 import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.IProxyTankProperties;
 import mekanism.api.gas.GasStack;
+import mekanism.api.gas.IGasHandler;
 import mekanism.api.gas.IGasItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 
 public class GasHandlerItem implements IProxyFluidHandlerItem {
 
@@ -18,6 +22,19 @@ public class GasHandlerItem implements IProxyFluidHandlerItem {
 	public GasHandlerItem(IGasItem gasHandlerItem, ItemStack itemStack) {
 		this.gasHandlerItem = gasHandlerItem;
 		this.itemStack = itemStack;
+	}
+
+	public GasStackGC loadFluidStackFromNBT(NBTTagCompound nbt) {
+		GasStack gasStack = GasStack.readFromNBT(nbt);
+		return gasStack == null ? null : new GasStackGC(gasStack);
+	}
+
+	public boolean isMatchingHandlerType(TileEntity tileEntity, EnumFacing side) {
+		return tileEntity instanceof IGasHandler;
+	}
+
+	public GasHandler getMatchingHandler(TileEntity tileEntity, EnumFacing side) {
+		return new GasHandler((IGasHandler) tileEntity, side);
 	}
 
 	public IProxyTankProperties getTankProperties(int tankIndex) {

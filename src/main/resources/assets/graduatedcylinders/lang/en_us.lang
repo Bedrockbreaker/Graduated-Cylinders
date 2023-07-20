@@ -1,8 +1,9 @@
 # GUI
 gc.gui.instructions=Change using the buttons, movement keys, scroll wheel, or typing
 gc.gui.toggle=[%s]: Toggle
+gc.gui.cycle=[TAB]: Next fluid
 gc.gui.accept=[%s]: Accept
-gc.gui.cancel=[Esc]: Cancel
+gc.gui.cancel=[ESC]: Cancel
 
 gc.gui.1mb.combo=Ctrl+Shift:
 gc.gui.1mb.combo.cmd=Cmd+Shift:
@@ -23,10 +24,15 @@ gc.gui.10000mb=10 B
 gc.gui.100000mb=100 B
 gc.gui.allmb=max/min
 
-gc.gui.amount.current=%s mB
+gc.gui.suffix=%s mB
 gc.gui.amount=%.3f Bucket(s)
 gc.gui.yestoggle=Toggle fluid transfer direction
 gc.gui.notoggle=Can't change fluid transfer direction
+
+gc.gui.selectfluid=%2$sClick to select
+gc.gui.selected=%sSelected
+gc.gui.fluidblocked=%s▌ %sNon transferrable
+gc.gui.sideblocked=%s▌ %sNot selectable
 
 # Inventory
 gc.inventory.rightclick=Right Click: %s %s%s mB%s

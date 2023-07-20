@@ -1,8 +1,9 @@
 # GUI
-gc.gui.instructions=Uze da buttNs, roll keyz, skroLl toy, or sits on keybored
-gc.gui.toggle=[%s]: do a barrel roll
+gc.gui.instructions=Uze da buttNz, rol k3yz, skroLl toy, or sitz on keyb0red
+gc.gui.toggle=[%s]: do a barr3l rol
+gc.gui.cycle=[TAB]: N3xt flav0r
 gc.gui.accept=[%s]: Dun
-gc.gui.cancel=[Esc]: nah
+gc.gui.cancel=[ESC]: nah
 
 gc.gui.1mb.combo=Ktrl+ShiF:
 gc.gui.1mb.combo.cmd=Kmd+ShiF:
@@ -21,12 +22,17 @@ gc.gui.100mb=100 mB
 gc.gui.1000mb=1 B
 gc.gui.10000mb=10 B
 gc.gui.100000mb=100 B
-gc.gui.allmb=lots/emptie
+gc.gui.allmb=lotz/emptie
 
-gc.gui.amount.current=%s mB
+gc.gui.suffix=%s mB
 gc.gui.amount=%.3f Bukkit(z)
-gc.gui.yestoggle=Muv likwid bakwords
-gc.gui.notoggle=No canz muv likwid bakwords
+gc.gui.yestoggle=Muv likwid bakw0rdz
+gc.gui.notoggle=No canz muv likwid bakw0rdz
+
+gc.gui.selectfluid=%2$sI CH00Z3 Y0U!
+gc.gui.selected=%sMy act1v3 flav0r
+gc.gui.fluidblocked=%s▌ %sFaint3d
+gc.gui.sideblocked=%s▌ %sPC 3mpty
 
 # Inventory
 gc.inventory.rightclick=Riet Paw: %s %s%s mB%s

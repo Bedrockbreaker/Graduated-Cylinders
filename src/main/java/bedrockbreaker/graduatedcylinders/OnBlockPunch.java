@@ -1,9 +1,16 @@
 package bedrockbreaker.graduatedcylinders;
 
-import bedrockbreaker.graduatedcylinders.FluidHelper.FindTransferrableTankResult;
+import java.util.ArrayList;
+
+import org.apache.commons.lang3.tuple.Pair;
+
 import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
 import bedrockbreaker.graduatedcylinders.Packets.PacketOpenFluidGUI;
 import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandlerItem;
+import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Util.FluidHelper;
+import bedrockbreaker.graduatedcylinders.Util.FluidHelper.TransferrableFluidResult;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
@@ -21,28 +28,41 @@ public class OnBlockPunch {
 		if (event.getWorld().isRemote || event.getEntityPlayer().isCreative()) return;
 
 		ItemStack heldItem = event.getItemStack();
-		IProxyFluidHandler heldFluidHandler = FluidHelper.getProxyFluidHandler(heldItem);
+		IProxyFluidHandlerItem heldFluidHandler = FluidHelper.getProxyFluidHandler(heldItem);
 		if (heldFluidHandler == null) return;
 
 		EnumFacing eventSide = event.getFace();
-		EnumFacing defaultSide = eventSide == null ? EnumFacing.NORTH : eventSide;
+		EnumFacing defaultSide = eventSide == null ? EnumFacing.DOWN : eventSide;
 
-		IProxyFluidHandler blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(event.getWorld(), event.getPos(), defaultSide, heldFluidHandler);
-		FindTransferrableTankResult transferResults = FluidHelper.findTransferrableTank(heldFluidHandler, blockFluidHandler);
-		if (transferResults == null) {
-			for (EnumFacing side : EnumFacing.VALUES) {
-				if (side == defaultSide) continue;
-				blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(event.getWorld(), event.getPos(), side, heldFluidHandler);
-				transferResults = FluidHelper.findTransferrableTank(heldFluidHandler, blockFluidHandler);
-				if (transferResults != null) {
-					defaultSide = side;
-					break;
+		ArrayList<ArrayList<TransferrableFluidResult>> allTransferResults = new ArrayList<ArrayList<TransferrableFluidResult>>(6);
+		ArrayList<IProxyFluidStack> heldFluidStacks = new ArrayList<IProxyFluidStack>();
+		ArrayList<ArrayList<IProxyFluidStack>> blockFluidStacks = new ArrayList<ArrayList<IProxyFluidStack>>();
+		Pair<EnumFacing, TransferrableFluidResult> defaultIndex = Pair.of(defaultSide, new TransferrableFluidResult(0, 0, false, false));
+		for (int i = 0; i < 6; i++) { // Pre-fill the parent array
+			allTransferResults.add(new ArrayList<TransferrableFluidResult>());
+			blockFluidStacks.add(new ArrayList<IProxyFluidStack>());
+		}
+
+		// Calculate transfer results for all item-block tank pairs on each face
+		// Ew, triple for-loop, I know, but the total loop count will almost never even be > 100 (which would require numHeldTanks * numBlockTanks > 100/6)
+		for (int i = -1; i < 6; i++) {
+			if (i == defaultSide.getIndex()) continue;
+			EnumFacing side = i == -1 ? defaultSide : EnumFacing.getFront(i);
+			IProxyFluidHandler blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(event.getWorld(), event.getPos(), side, heldFluidHandler);
+			if (blockFluidHandler == null) continue;
+			for (int j = 0; j < heldFluidHandler.getNumTanks(); j++) {
+				if (heldFluidStacks.size() < heldFluidHandler.getNumTanks()) heldFluidStacks.add(heldFluidHandler.getTankProperties(j).getContents());
+				for (int k = 0; k < blockFluidHandler.getNumTanks(); k++) {
+					if (j == 0) blockFluidStacks.get(side.getIndex()).add(blockFluidHandler.getTankProperties(k).getContents());
+					TransferrableFluidResult transferResult = FluidHelper.getTransferResult(heldFluidHandler, j, blockFluidHandler, k);
+					Pair<EnumFacing, TransferrableFluidResult> index = Pair.of(side, transferResult);
+					allTransferResults.get(side.getIndex()).add(transferResult);
+					if ((!(defaultIndex.getRight().canExport || defaultIndex.getRight().canImport) && (transferResult.canExport || transferResult.canImport)) || ((defaultIndex.getRight().canExport ^ defaultIndex.getRight().canImport) && transferResult.canExport && transferResult.canImport)) defaultIndex = index;
 				}
 			}
-			if (transferResults == null) return;
 		}
-		if (blockFluidHandler == null) throw new NullPointerException("Something terribly wrong has happened..."); // This should logically never throw.
+		if (!(defaultIndex.getRight().canExport || defaultIndex.getRight().canImport)) return;
 
-		PacketHandler.INSTANCE.sendTo(new PacketOpenFluidGUI(heldItem, event.getPos(), defaultSide.getIndex(), transferResults, heldFluidHandler.getTankProperties(transferResults.leftTank).getContents(), blockFluidHandler.getTankProperties(transferResults.rightTank).getContents()), (EntityPlayerMP) event.getEntityPlayer());
+		PacketHandler.INSTANCE.sendTo(new PacketOpenFluidGUI(heldItem, event.getPos(), allTransferResults, defaultIndex.getRight().sourceTank, defaultIndex.getLeft().getIndex(), defaultIndex.getRight().destinationTank, heldFluidStacks, blockFluidStacks), (EntityPlayerMP) event.getEntityPlayer());
 	}
 }

@@ -27,7 +27,7 @@ public class GasStackGC implements IProxyFluidStack {
 	}
 
 	public boolean isFluidEqual(@Nullable IProxyFluidStack other) {
-		return other == null || !(other instanceof GasStackGC) ? false : this.gasStack.isGasEqual(((GasStackGC) other).gasStack);
+		return other instanceof GasStackGC ? this.gasStack.isGasEqual(((GasStackGC) other).gasStack) : false;
 	}
 
 	public int getColor() {

@@ -1,8 +1,9 @@
-package bedrockbreaker.graduatedcylinders;
+package bedrockbreaker.graduatedcylinders.Util;
 
 import java.util.HashMap;
 import java.util.function.Predicate;
 
+import bedrockbreaker.graduatedcylinders.GraduatedCylinders;
 import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.IResourceManager;
@@ -62,7 +63,7 @@ public class ColorCache implements ISelectiveResourceReloadListener {
 				r = r <= .04045 ? r / 12.92f : (float) Math.pow((r + .055) / 1.055, 2.4);
 				g = g <= .04045 ? g / 12.92f : (float) Math.pow((g + .055) / 1.055, 2.4);
 				b = b <= .04045 ? b / 12.92f : (float) Math.pow((b + .055) / 1.055, 2.4);
-				// 2. Do some matrix math, only without the actual matrix since I'm lazy.
+				// 2. Do some matrix math, only without the actual matrix since I'd immediately have to decompose it after this
 				float x = .4124564f * r + .3575761f * g + .1804375f * b;
 				float y = .2126729f * r + .7151522f * g + .0721750f * b;
 				float z = .0193339f * r + .1191920f * g + .9503041f * b;

@@ -1,9 +1,9 @@
 package bedrockbreaker.graduatedcylinders.Packets;
 
-import bedrockbreaker.graduatedcylinders.FluidHelper;
 import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandler;
 import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandlerItem;
 import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Util.FluidHelper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -28,11 +28,8 @@ public class PacketBlockTransferFluid implements IMessage {
 	private int side;
 	private int blockTankIndex;
 	private int amount;
-	private boolean valid;
 
-	public PacketBlockTransferFluid() {
-		this.valid = false;
-	}
+	public PacketBlockTransferFluid() {}
 
 	public PacketBlockTransferFluid(ItemStack heldItem, int heldTankIndex, BlockPos pos, int side, int blockTankIndex, int amount) {
 		this.heldItem = heldItem;
@@ -41,7 +38,6 @@ public class PacketBlockTransferFluid implements IMessage {
 		this.side = side;
 		this.blockTankIndex = blockTankIndex;
 		this.amount = amount;
-		this.valid = true;
 	}
 
 	@Override
@@ -56,12 +52,10 @@ public class PacketBlockTransferFluid implements IMessage {
 		} catch(IndexOutOfBoundsException error) {
 			System.out.println(error);
 		}
-		this.valid = true;
 	}
 
 	@Override
 	public void toBytes(ByteBuf buffer) {
-		if (!this.valid) return;
 		ByteBufUtils.writeTag(buffer, heldItem.writeToNBT(new NBTTagCompound()));
 		buffer.writeInt(this.heldTankIndex);
 		buffer.writeInt(this.pos.getX());
@@ -77,7 +71,7 @@ public class PacketBlockTransferFluid implements IMessage {
 		@Override
 		@SuppressWarnings("null")
 		public IMessage onMessage(PacketBlockTransferFluid message, MessageContext ctx) {
-			if (!message.valid || ctx.side != Side.SERVER) return null;
+			if (ctx.side != Side.SERVER) return null;
 			FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
 				if (message.amount == 0) return;
 

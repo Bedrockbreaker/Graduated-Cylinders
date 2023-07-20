@@ -1,8 +1,9 @@
 # GUI
 gc.gui.instructions=使用按钮、移动键、鼠标滚轮或直接键入来更改数值
 gc.gui.toggle=[%s]：切换
+gc.gui.cycle=[TAB]：下一种液体
 gc.gui.accept=[%s]：确定
-gc.gui.cancel=[Esc]：取消
+gc.gui.cancel=[ESC]：取消
 
 gc.gui.1mb.combo=Ctrl+Shift：
 gc.gui.1mb.combo.cmd=Cmd+Shift：
@@ -23,10 +24,15 @@ gc.gui.10000mb=10 B
 gc.gui.100000mb=100 B
 gc.gui.allmb=最大/最小
 
-gc.gui.amount.current=%s mB
+gc.gui.suffix=%s mB
 gc.gui.amount=%.3f 桶
 gc.gui.yestoggle=切换流体传输方向
 gc.gui.notoggle=不可切换流体传输方向
+
+gc.gui.selectfluid=%2$s单击选择
+gc.gui.selected=%s选择
+gc.gui.fluidblocked=%s▌ %s不能运输
+gc.gui.sideblocked=%s▌ %s无法选择
 
 # Inventory
 gc.inventory.rightclick=右击：%s %s%s mB%s

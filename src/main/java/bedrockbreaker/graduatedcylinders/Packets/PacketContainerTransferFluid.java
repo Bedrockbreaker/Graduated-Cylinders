@@ -1,8 +1,8 @@
 package bedrockbreaker.graduatedcylinders.Packets;
 
-import bedrockbreaker.graduatedcylinders.FluidHelper;
 import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandlerItem;
 import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.Util.FluidHelper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -18,15 +18,11 @@ import net.minecraftforge.fml.relauncher.Side;
 public class PacketContainerTransferFluid implements IMessage {
 
 	private int slot;
-	private boolean valid;
 
-	public PacketContainerTransferFluid() {
-		this.valid = false;
-	}
+	public PacketContainerTransferFluid() {}
 
 	public PacketContainerTransferFluid(int slot) {
 		this.slot = slot;
-		this.valid = true;
 	}
 
 	@Override
@@ -36,12 +32,10 @@ public class PacketContainerTransferFluid implements IMessage {
 		} catch(IndexOutOfBoundsException error) {
 			System.out.println(error);
 		}
-		this.valid = true;
 	}
 
 	@Override
 	public void toBytes(ByteBuf buffer) {
-		if (!this.valid) return;
 		buffer.writeInt(this.slot);
 	}
 
@@ -49,7 +43,7 @@ public class PacketContainerTransferFluid implements IMessage {
 		
 		@Override
 		public IMessage onMessage(PacketContainerTransferFluid message, MessageContext ctx) {
-			if (!message.valid || ctx.side != Side.SERVER) return null;
+			if (ctx.side != Side.SERVER) return null;
 			FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
 				EntityPlayer player = ctx.getServerHandler().player;
 				Container container = player.openContainer;
