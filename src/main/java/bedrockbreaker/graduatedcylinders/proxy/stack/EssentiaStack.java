@@ -1,7 +1,8 @@
-package bedrockbreaker.graduatedcylinders.Proxy.FluidStacks;
+package bedrockbreaker.graduatedcylinders.proxy.stack;
 
 import javax.annotation.Nullable;
 
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.nbt.NBTTagCompound;
@@ -9,7 +10,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import thaumcraft.api.aspects.AspectList;
 
-// An essentia stack represents an AspectList, but with only ever 1 aspect
 public class EssentiaStack implements IProxyFluidStack {
 
 	public AspectList essentiaStack;
@@ -56,7 +56,6 @@ public class EssentiaStack implements IProxyFluidStack {
 	}
 
 	public TextureAtlasSprite getSprite() {
-		// FIXME: this probably doesn't work. The icons probably aren't stored in the block atlas.
 		return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(this.getResourceLocation().toString());
 	}
 

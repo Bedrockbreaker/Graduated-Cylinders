@@ -1,19 +1,20 @@
 # GUI
-gc.gui.instructions=Uze da buttNs, roll keyz, skroLl toy, or sits on keybored
-gc.gui.toggle=[%s]: do a barrel roll
+gc.gui.instructions=Uze da buttNz, rol k3yz, skroLl toy, or sitz on keyb0red
+gc.gui.toggle=[%s]: do a barr3l rol
+gc.gui.cycle=[TAB]: N3xt flav0r
 gc.gui.accept=[%s]: Dun
-gc.gui.cancel=[Esc]: nah
+gc.gui.cancel=[ESC]: nah
 
-gc.gui.1mb.combo=Ktrl+ShiF:
-gc.gui.1mb.combo.cmd=Kmd+ShiF:
-gc.gui.10mb.combo=Ktrl:
-gc.gui.10mb.combo.cmd=Kmd:
-gc.gui.100mb.combo=Sift:
-gc.gui.1000mb.combo=(no key):
-gc.gui.10000mb.combo=Shigt+ALT:
-gc.gui.100000mb.combo=Ktrl+SHfit+Alt:
-gc.gui.100000mb.combo.cmd=Kmd+SHfit+Alt:
-gc.gui.allmb.combo=aLR:
+gc.gui.combo1=Ktrl+ShiF:
+gc.gui.combo1.cmd=Kmd+ShiF:
+gc.gui.combo2=Ktrl:
+gc.gui.combo2.cmd=Kmd:
+gc.gui.combo3=Sift:
+gc.gui.combo4=(no key):
+gc.gui.combo5=Shigt+ALT:
+gc.gui.combo6=Ktrl+SHfit+Alt:
+gc.gui.combo6.cmd=Kmd+SHfit+Alt:
+gc.gui.combo7=aLR:
 
 gc.gui.1mb=1 mB
 gc.gui.10mb=10 mB
@@ -21,12 +22,30 @@ gc.gui.100mb=100 mB
 gc.gui.1000mb=1 B
 gc.gui.10000mb=10 B
 gc.gui.100000mb=100 B
-gc.gui.allmb=lots/emptie
+gc.gui.allmb=lotz/emptie
 
-gc.gui.amount.current=%s mB
-gc.gui.amount=%.3f Bukkit(z)
-gc.gui.yestoggle=Muv likwid bakwords
-gc.gui.notoggle=No canz muv likwid bakwords
+gc.gui.16mb=1 nuggie
+gc.gui.72mb=1/2 pap3r we1ght
+gc.gui.144mb=1 ingut
+gc.gui.1296mb=9 ingotz
+gc.gui.9216mb=bank robbery
+
+gc.gui.bucket=%.3f Bukkit(z)
+gc.gui.mb=%s mB
+gc.gui.ingot=%s ingit(z)
+gc.gui.ingot.short=%s i
+gc.gui.nugget=%s bawl(z)
+gc.gui.nugget.short=%s n
+
+gc.gui.yestoggle=Muv likwid bakw0rdz
+gc.gui.notoggle=No canz muv likwid bakw0rdz
+gc.gui.ingottoggle=Dwarf mode
+gc.gui.ingotmode=[crouch+%s]
+
+gc.gui.selectfluid=%2$sI CH00Z3 Y0U!
+gc.gui.selected=%sMy act1v3 flav0r
+gc.gui.fluidblocked=%s▌ %sFaint3d
+gc.gui.sideblocked=%s▌ %sPC 3mpty
 
 # Inventory
 gc.inventory.rightclick=Riet Paw: %s %s%s mB%s

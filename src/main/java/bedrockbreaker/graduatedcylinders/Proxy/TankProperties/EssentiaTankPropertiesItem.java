@@ -1,11 +1,12 @@
-package bedrockbreaker.graduatedcylinders.Proxy.TankProperties;
+package bedrockbreaker.graduatedcylinders.proxy.tankproperties;
 
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.EssentiaStack;
+import bedrockbreaker.graduatedcylinders.api.IProxyTankProperties;
+import bedrockbreaker.graduatedcylinders.proxy.stack.EssentiaStack;
 import net.minecraft.item.ItemStack;
 import thaumcraft.api.aspects.IEssentiaContainerItem;
 
 public class EssentiaTankPropertiesItem implements IProxyTankProperties {
-
+	
 	protected IEssentiaContainerItem essentiaHandlerItem;
 	protected ItemStack itemStack;
 

@@ -1,19 +1,20 @@
 # GUI
 gc.gui.instructions=Change using the buttons, movement keys, scroll wheel, or typing
-gc.gui.toggle=[%s]: Toggle
+gc.gui.toggle=[%s]: Toggle Direction
+gc.gui.cycle=[TAB]: Next fluid
 gc.gui.accept=[%s]: Accept
-gc.gui.cancel=[Esc]: Cancel
+gc.gui.cancel=[ESC]: Cancel
 
-gc.gui.1mb.combo=Ctrl+Shift:
-gc.gui.1mb.combo.cmd=Cmd+Shift:
-gc.gui.10mb.combo=Ctrl:
-gc.gui.10mb.combo.cmd=Cmd:
-gc.gui.100mb.combo=Shift:
-gc.gui.1000mb.combo=(None):
-gc.gui.10000mb.combo=Shift+Alt:
-gc.gui.100000mb.combo=Ctrl+Shift+Alt:
-gc.gui.100000mb.combo.cmd=Cmd+Shift+Alt:
-gc.gui.allmb.combo=Alt:
+gc.gui.combo1=Ctrl+Shift:
+gc.gui.combo1.cmd=Cmd+Shift:
+gc.gui.combo2=Ctrl:
+gc.gui.combo2.cmd=Cmd:
+gc.gui.combo3=Shift:
+gc.gui.combo4=(None):
+gc.gui.combo5=Shift+Alt:
+gc.gui.combo6=Ctrl+Shift+Alt:
+gc.gui.combo6.cmd=Cmd+Shift+Alt:
+gc.gui.combo7=Alt:
 
 gc.gui.1mb=1 mB
 gc.gui.10mb=10 mB
@@ -23,10 +24,28 @@ gc.gui.10000mb=10 B
 gc.gui.100000mb=100 B
 gc.gui.allmb=max/min
 
-gc.gui.amount.current=%s mB
-gc.gui.amount=%.3f Bucket(s)
+gc.gui.16mb=1 Nugget
+gc.gui.72mb=1/2 Ingot
+gc.gui.144mb=1 Ingot
+gc.gui.1296mb=9 Ingots
+gc.gui.9216mb=64 Ingots
+
+gc.gui.bucket=%.3f Bucket(s)
+gc.gui.mb=%s mB
+gc.gui.ingot=%s Ingot(s)
+gc.gui.ingot.short=%s I
+gc.gui.nugget=%s Nugget(s)
+gc.gui.nugget.short=%s N
+
 gc.gui.yestoggle=Toggle fluid transfer direction
 gc.gui.notoggle=Can't change fluid transfer direction
+gc.gui.ingottoggle=Toggle Ingot Mode
+gc.gui.ingotmode=[SHIFT+%s]
+
+gc.gui.selectfluid=%2$sClick to select
+gc.gui.selected=%sSelected
+gc.gui.fluidblocked=%s▌ %sNon transferrable
+gc.gui.sideblocked=%s▌ %sNot selectable
 
 # Inventory
 gc.inventory.rightclick=Right Click: %s %s%s mB%s

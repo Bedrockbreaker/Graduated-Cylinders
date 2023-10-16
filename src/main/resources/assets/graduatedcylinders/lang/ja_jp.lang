@@ -1,19 +1,20 @@
 # GUI
 gc.gui.instructions=＋・－ボタン、移動キー、スクロールホイール、タイピングして量を増減する
 gc.gui.toggle=[%s]: 切り替え
+gc.gui.cycle=[TAB]: 次の流体
 gc.gui.accept=[%s]: OK
-gc.gui.cancel=[Esc]: キャンセル
+gc.gui.cancel=[ESC]: キャンセル
 
-gc.gui.1mb.combo=Ctrl+Shift:
-gc.gui.1mb.combo.cmd=Cmd+Shift:
-gc.gui.10mb.combo=Ctrl:
-gc.gui.10mb.combo.cmd=Cmd:
-gc.gui.100mb.combo=Shift:
-gc.gui.1000mb.combo=(なし):
-gc.gui.10000mb.combo=Shift+Alt:
-gc.gui.100000mb.combo=Ctrl+Shift+Alt:
-gc.gui.100000mb.combo.cmd=Cmd+Shift+Alt:
-gc.gui.allmb.combo=Alt:
+gc.gui.combo1=Ctrl+Shift:
+gc.gui.combo1.cmd=Cmd+Shift:
+gc.gui.combo2=Ctrl:
+gc.gui.combo2.cmd=Cmd:
+gc.gui.combo3=Shift:
+gc.gui.combo4=(なし):
+gc.gui.combo5=Shift+Alt:
+gc.gui.combo6=Ctrl+Shift+Alt:
+gc.gui.combo6.cmd=Cmd+Shift+Alt:
+gc.gui.combo7=Alt:
 
 gc.gui.1mb=1 mB
 gc.gui.10mb=10 mB
@@ -23,10 +24,28 @@ gc.gui.10000mb=10 B
 gc.gui.100000mb=100 B
 gc.gui.allmb=最大数・最小数
 
-gc.gui.amount.current=%s mB
-gc.gui.amount=%.3fバケツ
+gc.gui.16mb=1塊
+gc.gui.72mb=1/2インゴット
+gc.gui.144mb=1インゴット
+gc.gui.1296mb=9インゴット
+gc.gui.9216mb=64インゴット
+
+gc.gui.bucket=%.3fバケツ
+gc.gui.mb=%s mB
+gc.gui.ingot=%sインゴット
+gc.gui.ingot.short=%s I
+gc.gui.nugget=%s塊
+gc.gui.nugget.short=%s N
+
 gc.gui.yestoggle=流れ方向を切り替える
 gc.gui.notoggle=流れ方向を切り替えられない
+gc.gui.ingottoggle=インゴットモードを切り替える
+gc.gui.ingotmode=[SHIFT+%s]
+
+gc.gui.selectfluid=%2$sクリックで選択する
+gc.gui.selected=%s選択中
+gc.gui.fluidblocked=%s▌ %s移送できない
+gc.gui.sideblocked=%s▌ %s選択できない
 
 # Inventory
 gc.inventory.rightclick=右クリック: %s %s%s mB%s

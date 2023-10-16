@@ -1,12 +1,17 @@
-package bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers;
+package bedrockbreaker.graduatedcylinders.proxy.handler;
 
 import javax.annotation.Nullable;
 
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.FluidStackGC;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
-import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.FluidTankProperties;
-import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.IProxyTankProperties;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.api.IProxyTankProperties;
+import bedrockbreaker.graduatedcylinders.proxy.stack.FluidStackGC;
+import bedrockbreaker.graduatedcylinders.proxy.tankproperties.FluidTankProperties;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 
 public class FluidHandler implements IProxyFluidHandler {
@@ -15,6 +20,15 @@ public class FluidHandler implements IProxyFluidHandler {
 
 	public FluidHandler(IFluidHandler fluidHandler) {
 		this.fluidHandler = fluidHandler;
+	}
+
+	public FluidStackGC loadFluidStackFromNBT(NBTTagCompound nbt) {
+		FluidStack fluidStack = FluidStack.loadFluidStackFromNBT(nbt);
+		return fluidStack == null ? null : new FluidStackGC(fluidStack);
+	}
+
+	public boolean isMatchingHandlerType(TileEntity tileEntity, EnumFacing side) {
+		return tileEntity.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side);
 	}
 
 	public IProxyTankProperties getTankProperties(int tankIndex) {

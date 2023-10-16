@@ -2,10 +2,12 @@ package bedrockbreaker.graduatedcylinders;
 
 import org.lwjgl.input.Mouse;
 
-import bedrockbreaker.graduatedcylinders.Packets.PacketContainerTransferFluid;
-import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.network.PacketContainerTransferFluid;
+import bedrockbreaker.graduatedcylinders.network.PacketHandler;
+import bedrockbreaker.graduatedcylinders.util.ColorCache;
+import bedrockbreaker.graduatedcylinders.util.FluidHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -61,7 +63,7 @@ public class InventoryHandler {
 
 		PacketHandler.INSTANCE.sendToServer(new PacketContainerTransferFluid(hoveredSlot.slotNumber));
 		// There seems to be a vanilla bug which causes inserting/swapping items with right click to ignore the event cancellation.
-		// This means the following line really doesn't do anything, but it should in a perfect world..
-		event.setCanceled(true);
+		// This means the following line really doesn't do anything, but it should in a perfect world...
+		//event.setCanceled(true);
 	}
 }

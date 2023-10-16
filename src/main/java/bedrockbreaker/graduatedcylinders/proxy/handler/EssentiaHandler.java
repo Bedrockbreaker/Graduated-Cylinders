@@ -1,17 +1,19 @@
-package bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers;
+package bedrockbreaker.graduatedcylinders.proxy.handler;
 
 import javax.annotation.Nullable;
 
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.EssentiaStack;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
-import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.EssentiaTankProperties;
-import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.IProxyTankProperties;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.api.IProxyTankProperties;
+import bedrockbreaker.graduatedcylinders.proxy.stack.EssentiaStack;
+import bedrockbreaker.graduatedcylinders.proxy.tankproperties.EssentiaTankProperties;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import thaumcraft.api.aspects.IAspectContainer;
 
 public class EssentiaHandler implements IProxyFluidHandler {
-
+	
 	protected IAspectContainer essentiaHandler;
 	protected TileEntity tileEntity;
 	protected EnumFacing side;
@@ -45,5 +47,11 @@ public class EssentiaHandler implements IProxyFluidHandler {
 	public EssentiaStack drain(IProxyFluidStack resource, boolean doDrain) {
 		// TODO: drain function for essentia tile entity handlers
 		return null;
+	}
+
+	@Override
+	public IProxyFluidStack loadFluidStackFromNBT(NBTTagCompound nbt) {
+		// TODO: load fluid stack from NBT
+		throw new UnsupportedOperationException("Unimplemented method 'loadFluidStackFromNBT'");
 	}
 }

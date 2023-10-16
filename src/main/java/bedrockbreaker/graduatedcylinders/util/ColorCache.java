@@ -1,20 +1,20 @@
-package bedrockbreaker.graduatedcylinders;
+package bedrockbreaker.graduatedcylinders.util;
 
 import java.util.HashMap;
-import java.util.function.Predicate;
 
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.GraduatedCylinders;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.client.resource.IResourceType;
-import net.minecraftforge.client.resource.ISelectiveResourceReloadListener;
-import net.minecraftforge.client.resource.VanillaResourceType;
+import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class ColorCache implements ISelectiveResourceReloadListener {
+@EventBusSubscriber(modid = GraduatedCylinders.MODID, value = Side.CLIENT)
+public class ColorCache {
 
 	public static final HashMap<String, String> fluidColorCodeCache = new HashMap<String, String>();
 	
@@ -36,7 +36,6 @@ public class ColorCache implements ISelectiveResourceReloadListener {
 		{100f, -0.0033483072923723434f, 0.0006189409285983771f} // WHITE (no clue if those decimals are just float imprecision or not)
 	};
 
-	@SideOnly(Side.CLIENT)
 	public static String getFluidColorCode(IProxyFluidStack fluidStack, int baseColor) {
 		String registryName = fluidStack.getUnlocalizedName();
 		if (fluidColorCodeCache.containsKey(registryName)) return fluidColorCodeCache.get(registryName);
@@ -62,7 +61,7 @@ public class ColorCache implements ISelectiveResourceReloadListener {
 				r = r <= .04045 ? r / 12.92f : (float) Math.pow((r + .055) / 1.055, 2.4);
 				g = g <= .04045 ? g / 12.92f : (float) Math.pow((g + .055) / 1.055, 2.4);
 				b = b <= .04045 ? b / 12.92f : (float) Math.pow((b + .055) / 1.055, 2.4);
-				// 2. Do some matrix math, only without the actual matrix since I'm lazy.
+				// 2. Do some matrix math, only without the actual matrix since I'd immediately have to decompose it after this
 				float x = .4124564f * r + .3575761f * g + .1804375f * b;
 				float y = .2126729f * r + .7151522f * g + .0721750f * b;
 				float z = .0193339f * r + .1191920f * g + .9503041f * b;
@@ -108,11 +107,8 @@ public class ColorCache implements ISelectiveResourceReloadListener {
 		return fluidColorCodeCache.get(registryName);
 	}
 
-	@Override
-	@SideOnly(Side.CLIENT)
-	public void onResourceManagerReload(IResourceManager resourceManager, Predicate<IResourceType> resourcePredicate) {
-		if (!resourcePredicate.test(VanillaResourceType.MODELS)) return;
-		GraduatedCylinders.console.info("Clearing fluid color cache...");
+	@SubscribeEvent
+	public static void onResourceReload(TextureStitchEvent.Pre event) {
 		ColorCache.fluidColorCodeCache.clear();
 	}
 }
