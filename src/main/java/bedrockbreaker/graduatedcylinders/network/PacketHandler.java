@@ -1,4 +1,4 @@
-package bedrockbreaker.graduatedcylinders.Packets;
+package bedrockbreaker.graduatedcylinders.network;
 
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;

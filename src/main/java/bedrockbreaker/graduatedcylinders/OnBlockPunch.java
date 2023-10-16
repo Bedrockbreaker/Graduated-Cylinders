@@ -4,13 +4,13 @@ import java.util.ArrayList;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
-import bedrockbreaker.graduatedcylinders.Packets.PacketOpenFluidGUI;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandlerItem;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
-import bedrockbreaker.graduatedcylinders.Util.FluidHelper;
-import bedrockbreaker.graduatedcylinders.Util.FluidHelper.TransferrableFluidResult;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandlerItem;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.network.PacketHandler;
+import bedrockbreaker.graduatedcylinders.network.PacketOpenFluidGUI;
+import bedrockbreaker.graduatedcylinders.util.FluidHelper;
+import bedrockbreaker.graduatedcylinders.util.FluidHelper.TransferrableFluidResult;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;

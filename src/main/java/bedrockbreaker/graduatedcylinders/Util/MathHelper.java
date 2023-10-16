@@ -1,4 +1,4 @@
-package bedrockbreaker.graduatedcylinders.Util;
+package bedrockbreaker.graduatedcylinders.util;
 
 public class MathHelper {
 

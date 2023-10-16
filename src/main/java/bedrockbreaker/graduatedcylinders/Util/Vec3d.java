@@ -1,4 +1,4 @@
-package bedrockbreaker.graduatedcylinders.Util;
+package bedrockbreaker.graduatedcylinders.util;
 
 import net.minecraft.util.math.BlockPos;
 

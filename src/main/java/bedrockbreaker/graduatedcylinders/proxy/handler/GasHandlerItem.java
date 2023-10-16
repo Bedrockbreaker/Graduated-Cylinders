@@ -1,11 +1,12 @@
-package bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers;
+package bedrockbreaker.graduatedcylinders.proxy.handler;
 
 import javax.annotation.Nullable;
 
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.GasStackGC;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
-import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.GasTankPropertiesItem;
-import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.IProxyTankProperties;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandlerItem;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.api.IProxyTankProperties;
+import bedrockbreaker.graduatedcylinders.proxy.stack.GasStackGC;
+import bedrockbreaker.graduatedcylinders.proxy.tankproperties.GasTankPropertiesItem;
 import mekanism.api.gas.GasStack;
 import mekanism.api.gas.IGasHandler;
 import mekanism.api.gas.IGasItem;

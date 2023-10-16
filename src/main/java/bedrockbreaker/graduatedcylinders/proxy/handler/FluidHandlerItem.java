@@ -1,5 +1,6 @@
-package bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers;
+package bedrockbreaker.graduatedcylinders.proxy.handler;
 
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandlerItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
