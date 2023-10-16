@@ -1,8 +1,8 @@
-package bedrockbreaker.graduatedcylinders.Util;
+package bedrockbreaker.graduatedcylinders.util;
 
-import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
-import bedrockbreaker.graduatedcylinders.Util.FluidHelper.TransferrableFluidResult;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.util.FluidHelper.TransferrableFluidResult;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.common.network.ByteBufUtils;

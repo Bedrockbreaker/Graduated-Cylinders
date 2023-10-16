@@ -1,39 +1,29 @@
-package bedrockbreaker.graduatedcylinders.Util;
+package bedrockbreaker.graduatedcylinders.util;
 
 import javax.annotation.Nullable;
 
-import bedrockbreaker.graduatedcylinders.GraduatedCylinders;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.FluidHandlerItem;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.GasHandlerItem;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandlerItem;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
-import bedrockbreaker.graduatedcylinders.Proxy.TankProperties.IProxyTankProperties;
-import mekanism.api.gas.IGasItem;
+import bedrockbreaker.graduatedcylinders.FluidHandlerRegistry;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandlerItem;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.api.IProxyTankProperties;
+import bedrockbreaker.graduatedcylinders.api.MetaHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 
 public class FluidHelper {
 
 	public static IProxyFluidHandlerItem getProxyFluidHandler(ItemStack itemStack) {
 		if (itemStack.isEmpty() || itemStack.getCount() != 1) return null;
 
-		// TODO: implement some form of regsitry/api
-
-		IFluidHandlerItem fluidHandler = FluidUtil.getFluidHandler(itemStack);
-		if (fluidHandler != null) return new FluidHandlerItem(fluidHandler);
-
-		Item item = itemStack.getItem();
-
-		if (GraduatedCylinders.isMekanismLoaded && item instanceof IGasItem) return new GasHandlerItem((IGasItem) item, itemStack);
+		for (MetaHandler metaHandler : FluidHandlerRegistry.registry.getValuesCollection()) {
+			if (metaHandler.hasHandler(itemStack)) return metaHandler.getHandler(itemStack);
+		}
 
 		return null;
 	}

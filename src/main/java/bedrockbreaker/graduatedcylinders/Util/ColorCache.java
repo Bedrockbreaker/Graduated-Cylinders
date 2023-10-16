@@ -1,10 +1,10 @@
-package bedrockbreaker.graduatedcylinders.Util;
+package bedrockbreaker.graduatedcylinders.util;
 
 import java.util.HashMap;
 import java.util.function.Predicate;
 
 import bedrockbreaker.graduatedcylinders.GraduatedCylinders;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.text.TextFormatting;

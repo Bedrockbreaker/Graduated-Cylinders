@@ -9,56 +9,17 @@ buildscript {
 }
 
 apply plugin: 'net.minecraftforge.gradle'
-// Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = '1.12.2-2.7.0'
-group = 'bedrockbreaker.graduatedcylinders' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+version = "${minecraft_version}-${mod_version}"
+group = 'bedrockbreaker.graduatedcylinders'
 archivesBaseName = 'GraduatedCylinders'
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
 minecraft {
-    // The mappings can be changed at any time, and must be in the following format.
-    // snapshot_YYYYMMDD   Snapshot are built nightly.
-    // stable_#            Stables are built at the discretion of the MCP team.
-    // Use non-default mappings at your own risk. they may not always work.
-    // Simply re-run your setup task after changing the mappings to update your workspace.
-    //mappings channel: 'snapshot', version: '20171003-1.12'
     mappings channel: 'snapshot', version: '20171003-1.12'
-    // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
-    
-    // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-
-    // Default run configurations.
-    // These can be tweaked, removed, or duplicated as needed.
-    runs {
-        client {
-            workingDirectory project.file('run')
-
-            // Recommended logging data for a userdev environment
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            // Recommended logging level for the console
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                graduatedcylinders {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        server {
-
-            // Recommended logging data for a userdev environment
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            // Recommended logging level for the console
-            property 'forge.logging.console.level', 'debug'
-        }
-    }
 }
 
 repositories {
@@ -72,26 +33,32 @@ dependencies {
     //runtimeOnly fg.deobf("curse.maven:mekanism-268560:2835175")
 }
 
-// Example for how to get properties into the manifest for reading by the runtime..
 jar {
     manifest {
         attributes([
             "Specification-Title": "graduatedcylinders",
-            "Specification-Vendor": "graduatedcylinderssareus",
-            "Specification-Version": "1", // We are version 1 of ourselves
+            "Specification-Vendor": "graduatedcylinders",
+            "Specification-Version": "1",
             "Implementation-Title": project.name,
             "Implementation-Version": "${version}",
-            "Implementation-Vendor" :"graduatedcylinderssareus",
+            "Implementation-Vendor" :"graduatedcylinders",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
 }
 
-// Example configuration to allow publishing using the maven-publish task
-// This is the preferred method to reobfuscate your jar file
+task apiJar(type: Jar) {
+    classifier = "api"
+    from(sourceSets.main.allJava)
+    from(sourceSets.main.output)
+    include "bedrockbreaker/graduatedcylinders/api/**"
+}
+
+artifacts {
+    archives apiJar
+}
+
 jar.finalizedBy('reobfJar') 
-// However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing
-//publish.dependsOn('reobfJar')
 
 publishing {
     publications {

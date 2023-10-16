@@ -14,17 +14,17 @@ import org.lwjgl.opengl.GL11;
 
 import com.google.common.primitives.Ints;
 
-import bedrockbreaker.graduatedcylinders.Packets.PacketBlockTransferFluid;
-import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandlerItem;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
-import bedrockbreaker.graduatedcylinders.Util.ColorCache;
-import bedrockbreaker.graduatedcylinders.Util.FluidHelper;
-import bedrockbreaker.graduatedcylinders.Util.FluidHelper.TransferrableFluidResult;
-import bedrockbreaker.graduatedcylinders.Util.GuiFluidSprite;
-import bedrockbreaker.graduatedcylinders.Util.MathHelper;
-import bedrockbreaker.graduatedcylinders.Util.Scene3DRenderer;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandlerItem;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.network.PacketBlockTransferFluid;
+import bedrockbreaker.graduatedcylinders.network.PacketHandler;
+import bedrockbreaker.graduatedcylinders.util.ColorCache;
+import bedrockbreaker.graduatedcylinders.util.FluidHelper;
+import bedrockbreaker.graduatedcylinders.util.FluidHelper.TransferrableFluidResult;
+import bedrockbreaker.graduatedcylinders.util.GuiFluidSprite;
+import bedrockbreaker.graduatedcylinders.util.MathHelper;
+import bedrockbreaker.graduatedcylinders.util.Scene3DRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;

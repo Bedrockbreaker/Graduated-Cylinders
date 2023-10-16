@@ -1,7 +1,8 @@
-package bedrockbreaker.graduatedcylinders.Proxy.FluidStacks;
+package bedrockbreaker.graduatedcylinders.proxy.stack;
 
 import javax.annotation.Nullable;
 
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import mekanism.api.gas.GasStack;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.init.SoundEvents;

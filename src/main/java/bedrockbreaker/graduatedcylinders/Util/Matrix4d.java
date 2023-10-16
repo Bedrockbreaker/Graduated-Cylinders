@@ -1,4 +1,4 @@
-package bedrockbreaker.graduatedcylinders.Util;
+package bedrockbreaker.graduatedcylinders.util;
 
 // Because the normal Matrix4d class sucks
 public class Matrix4d {

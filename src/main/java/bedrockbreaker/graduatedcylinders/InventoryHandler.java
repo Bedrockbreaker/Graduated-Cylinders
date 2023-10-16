@@ -2,12 +2,12 @@ package bedrockbreaker.graduatedcylinders;
 
 import org.lwjgl.input.Mouse;
 
-import bedrockbreaker.graduatedcylinders.Packets.PacketContainerTransferFluid;
-import bedrockbreaker.graduatedcylinders.Packets.PacketHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
-import bedrockbreaker.graduatedcylinders.Util.ColorCache;
-import bedrockbreaker.graduatedcylinders.Util.FluidHelper;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.network.PacketContainerTransferFluid;
+import bedrockbreaker.graduatedcylinders.network.PacketHandler;
+import bedrockbreaker.graduatedcylinders.util.ColorCache;
+import bedrockbreaker.graduatedcylinders.util.FluidHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;

@@ -1,4 +1,4 @@
-package bedrockbreaker.graduatedcylinders.Util;
+package bedrockbreaker.graduatedcylinders.util;
 
 import java.awt.Rectangle;
 import java.nio.FloatBuffer;
@@ -10,7 +10,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
 
 import bedrockbreaker.graduatedcylinders.GraduatedCylinders;
-import bedrockbreaker.graduatedcylinders.Util.FluidHelper.TransferrableFluidResult;
+import bedrockbreaker.graduatedcylinders.util.FluidHelper.TransferrableFluidResult;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;

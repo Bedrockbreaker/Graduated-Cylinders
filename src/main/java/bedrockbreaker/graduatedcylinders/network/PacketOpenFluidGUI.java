@@ -1,14 +1,14 @@
-package bedrockbreaker.graduatedcylinders.Packets;
+package bedrockbreaker.graduatedcylinders.network;
 
-import bedrockbreaker.graduatedcylinders.Proxy.FluidHandlers.IProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.IProxyFluidStack;
-import bedrockbreaker.graduatedcylinders.Util.BufferHelper;
-import bedrockbreaker.graduatedcylinders.Util.FluidHelper;
-import bedrockbreaker.graduatedcylinders.Util.FluidHelper.TransferrableFluidResult;
+import bedrockbreaker.graduatedcylinders.util.BufferHelper;
+import bedrockbreaker.graduatedcylinders.util.FluidHelper;
+import bedrockbreaker.graduatedcylinders.util.FluidHelper.TransferrableFluidResult;
 
 import java.util.ArrayList;
 
 import bedrockbreaker.graduatedcylinders.FluidTransferGui;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;

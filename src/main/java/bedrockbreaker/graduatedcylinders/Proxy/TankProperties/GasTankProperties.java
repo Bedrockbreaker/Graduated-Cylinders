@@ -1,6 +1,7 @@
-package bedrockbreaker.graduatedcylinders.Proxy.TankProperties;
+package bedrockbreaker.graduatedcylinders.proxy.tankproperties;
 
-import bedrockbreaker.graduatedcylinders.Proxy.FluidStacks.GasStackGC;
+import bedrockbreaker.graduatedcylinders.api.IProxyTankProperties;
+import bedrockbreaker.graduatedcylinders.proxy.stack.GasStackGC;
 import mekanism.api.gas.GasTankInfo;
 
 public class GasTankProperties implements IProxyTankProperties {
