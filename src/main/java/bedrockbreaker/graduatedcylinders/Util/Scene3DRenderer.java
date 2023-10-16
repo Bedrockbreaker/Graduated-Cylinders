@@ -173,7 +173,7 @@ public class Scene3DRenderer {
 		long timeSinceInit = System.currentTimeMillis() - this.initTime;
 		if (Mouse.getEventButton() == -1 || Mouse.getEventButtonState() || timeSinceInit < 500 || this.viewMatrix == null || this.projectionMatrix == null || this.viewport == null) return;
 		if (Mouse.getEventButton() == 1) { // right click
-			if (this.hoveredFace != null && (this.allowedFaces.get(this.hoveredFace.getIndex()).canExport || this.allowedFaces.get(this.hoveredFace.getIndex()).canImport)) this.selectedFace = this.hoveredFace;
+			if (this.hoveredFace != null && this.allowedFaces.get(this.hoveredFace.getIndex()).canTransfer()) this.selectedFace = this.hoveredFace;
 		} else if (Mouse.getEventButton() == 2) { // middle click
 			this.renderNeighbors = !this.renderNeighbors;
 		}
@@ -228,9 +228,8 @@ public class Scene3DRenderer {
 		this.viewMatrix.setTranslation(cameraPosTemp);
 		this.transposeViewMatrix = new Matrix4d(this.viewMatrix).transpose();
 		this.inverseViewMatrix = null;
-
-		// TODO: this probably always returns true
-		return this.viewMatrix != null && this.projectionMatrix != null && this.viewport != null;
+		
+		return true;
 	}
 
 	private void applyCamera(float partialTick) {
@@ -421,7 +420,7 @@ public class Scene3DRenderer {
 		buffer.setTranslation(translation.x, translation.y, translation.z);
 		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
 		this.drawOverlay(buffer, blockOrigin, this.selectedFace, Scene3DRenderer.selectedFaceSprite, true);
-		if (this.hoveredFace != null) this.drawOverlay(buffer, blockOrigin, this.hoveredFace, this.allowedFaces.get(this.hoveredFace.getIndex()).canExport || this.allowedFaces.get(this.hoveredFace.getIndex()).canImport ? Scene3DRenderer.hoveredFaceSprite : Scene3DRenderer.blockedFaceSprite, false);		
+		if (this.hoveredFace != null) this.drawOverlay(buffer, blockOrigin, this.hoveredFace, this.allowedFaces.get(this.hoveredFace.getIndex()).canTransfer() ? Scene3DRenderer.hoveredFaceSprite : Scene3DRenderer.blockedFaceSprite, false);		
 		Tessellator.getInstance().draw();
 		buffer.setTranslation(0, 0, 0);
 	}
