@@ -21,8 +21,8 @@ public class GuiFluidSprite extends Gui {
 	public float height = 0;
 	public int color = 0xFFFFFFFF; // ARGB
 
-	public float transitionLength = 10; // ticks
-	public float elapsedTime = 10; // ticks
+	public float transitionLength = 5; // ticks
+	public float elapsedTime = 5; // ticks
 
 	public float startX = 0;
 	public float startY = 0;
@@ -66,11 +66,11 @@ public class GuiFluidSprite extends Gui {
 		float t = this.elapsedTime / this.transitionLength;
 		
 		// Interpolate properties. The conditional operators help alleviate some of the jittering resulting from casting float -> int
-		this.x = this.x == this.endX ? this.x : MathHelper.clampedEaseInOutQuad(this.startX, this.endX, t);
-		this.y = this.y == this.endY ? this.y : MathHelper.clampedEaseInOutQuad(this.startY, this.endY, t);
-		this.width = this.width == this.endWidth ? this.width : MathHelper.clampedEaseInOutQuad(this.startWidth, this.endWidth, t);
-		this.height = this.height == this.endHeight ? this.height : MathHelper.clampedEaseInOutQuad(this.startHeight, this.endHeight, t);
-		this.color = this.color >>> 24 == this.endOpacity ? this.color : (this.color & 0xFFFFFF) | (((int) MathHelper.clampedEaseOutCubic(this.startOpacity, this.endOpacity, t)) << 24); // Only transition opacity
+		this.x = this.x == this.endX ? this.x : Math.round(MathHelper.clampedEaseInOutQuad(this.startX, this.endX, t));
+		this.y = this.y == this.endY ? this.y : Math.round(MathHelper.clampedEaseInOutQuad(this.startY, this.endY, t));
+		this.width = this.width == this.endWidth ? this.width : Math.round(MathHelper.clampedEaseInOutQuad(this.startWidth, this.endWidth, t));
+		this.height = this.height == this.endHeight ? this.height : Math.round(MathHelper.clampedEaseInOutQuad(this.startHeight, this.endHeight, t));
+		this.color = this.color >>> 24 == this.endOpacity ? this.color : (this.color & 0xFFFFFF) | (Math.round(MathHelper.clampedEaseOutCubic(this.startOpacity, this.endOpacity, t)) << 24); // Only transition opacity
 
 
 		if (this.color >>> 24 == 0) return;
