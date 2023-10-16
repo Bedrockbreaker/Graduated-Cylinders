@@ -1,21 +1,20 @@
 package bedrockbreaker.graduatedcylinders.util;
 
 import java.util.HashMap;
-import java.util.function.Predicate;
 
 import bedrockbreaker.graduatedcylinders.GraduatedCylinders;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.client.resource.IResourceType;
-import net.minecraftforge.client.resource.ISelectiveResourceReloadListener;
-import net.minecraftforge.client.resource.VanillaResourceType;
+import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class ColorCache implements ISelectiveResourceReloadListener {
+@EventBusSubscriber(modid = GraduatedCylinders.MODID, value = Side.CLIENT)
+public class ColorCache {
 
 	public static final HashMap<String, String> fluidColorCodeCache = new HashMap<String, String>();
 	
@@ -37,7 +36,6 @@ public class ColorCache implements ISelectiveResourceReloadListener {
 		{100f, -0.0033483072923723434f, 0.0006189409285983771f} // WHITE (no clue if those decimals are just float imprecision or not)
 	};
 
-	@SideOnly(Side.CLIENT)
 	public static String getFluidColorCode(IProxyFluidStack fluidStack, int baseColor) {
 		String registryName = fluidStack.getUnlocalizedName();
 		if (fluidColorCodeCache.containsKey(registryName)) return fluidColorCodeCache.get(registryName);
@@ -109,11 +107,8 @@ public class ColorCache implements ISelectiveResourceReloadListener {
 		return fluidColorCodeCache.get(registryName);
 	}
 
-	@Override
-	@SideOnly(Side.CLIENT)
-	public void onResourceManagerReload(IResourceManager resourceManager, Predicate<IResourceType> resourcePredicate) {
-		if (!resourcePredicate.test(VanillaResourceType.MODELS)) return;
-		GraduatedCylinders.console.info("Clearing fluid color cache...");
+	@SubscribeEvent
+	public static void onResourceReload(TextureStitchEvent.Pre event) {
 		ColorCache.fluidColorCodeCache.clear();
 	}
 }
