@@ -4,7 +4,6 @@ import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -35,6 +34,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.EnumFacing;
@@ -66,8 +66,7 @@ public class FluidTransferGui extends GuiScreen {
 
 	private ArrayList<IProxyFluidStack> blockFluidStacks = new ArrayList<IProxyFluidStack>();
 	private HashMap<Pair<Integer, Integer>, TransferrableFluidResult> transferResults = new HashMap<Pair<Integer, Integer>, TransferrableFluidResult>();
-	// TODO: save last selected fluid in allowedFaces, while only defaulting to the best transfer results when initialized
-	private ArrayList<TransferrableFluidResult> allowedFaces = new ArrayList<TransferrableFluidResult>(); // list of the best (or first) transfer results on each side of the block
+	private ArrayList<TransferrableFluidResult> allowedFaces = new ArrayList<TransferrableFluidResult>(); // Array of length 6 (for each face of a block)
 	private ArrayList<GuiFluidSprite> heldFluidSprites = new ArrayList<GuiFluidSprite>();
 	private ArrayList<GuiFluidSprite> blockFluidSprites = new ArrayList<GuiFluidSprite>();
 	private GuiFluidSprite hoveredSprite;
@@ -77,14 +76,17 @@ public class FluidTransferGui extends GuiScreen {
 	public int maxAmount;
 	public boolean transferDirectionForced;
 	public boolean isExporting;
+	public boolean ingotMode;
 	public int amount = 0;
 
 	private Scene3DRenderer sceneRenderer;
 	private int buttonId = 0;
 	private GuiTextField textAmount;
+	private int instructionsWidth = 0;
 	private GuiButton incFluidButton;
 	private GuiButton decFluidButton;
 	private GuiButton exportButton;
+	private GuiButton ingotButton;
 
 	public static void open(ItemStack heldItem, BlockPos pos, ArrayList<ArrayList<TransferrableFluidResult>> sidedTransferResults, int heldTankIndex, int side, int blockTankIndex, ArrayList<IProxyFluidStack> heldFluidStacks, ArrayList<ArrayList<IProxyFluidStack>> sidedBlockFluidStacks) {
 		Minecraft.getMinecraft().displayGuiScreen(new FluidTransferGui(heldItem, pos, sidedTransferResults, heldTankIndex, side, blockTankIndex, heldFluidStacks, sidedBlockFluidStacks));
@@ -106,7 +108,7 @@ public class FluidTransferGui extends GuiScreen {
 		for (ArrayList<TransferrableFluidResult> transferResults : sidedTransferResults) {
 			TransferrableFluidResult indices = new TransferrableFluidResult(0, 0, false, false);
 			for (TransferrableFluidResult transferResult : transferResults) {
-				if ((!(indices.canExport || indices.canImport) && (transferResult.canExport || transferResult.canImport)) || ((indices.canExport ^ indices.canImport) && transferResult.canExport && transferResult.canImport)) indices = transferResult;
+				if ((!indices.canTransfer() && transferResult.canTransfer()) || ((indices.canExport ^ indices.canImport) && transferResult.canExport && transferResult.canImport)) indices = transferResult;
 				if (transferResult.canExport && transferResult.canImport) break;
 			}
 			this.allowedFaces.add(indices);
@@ -125,7 +127,7 @@ public class FluidTransferGui extends GuiScreen {
 		
 		this.transferResults.clear();
 		this.blockFluidStacks.clear();
-		this.heldFluidSprites.clear(); // this probably doesn't actually need to be cleared and reinitialized
+		this.heldFluidSprites.clear();
 		this.blockFluidSprites.clear();
 
 		for (IProxyFluidStack fluidStack : this.sidedBlockFluidStacks.get(side)) {
@@ -150,7 +152,7 @@ public class FluidTransferGui extends GuiScreen {
 
 	protected boolean changeSelectedFace(EnumFacing face) {
 		int side = face.getIndex();
-		if (!(this.allowedFaces.get(side).canExport || this.allowedFaces.get(side).canImport)) return false;
+		if (!this.allowedFaces.get(side).canTransfer()) return false;
 		this.updateCaches(this.allowedFaces.get(side).sourceTank, side, this.allowedFaces.get(side).destinationTank);
 		this.applyToSprites((GuiFluidSprite sprite, boolean isHeldSprite, boolean isSelectedSprite, int tankIndex) -> {
 			sprite.setPos(this.width / 2 - 18, this.height / 2 - (this.isExporting ^ isHeldSprite ? 44 : 76));
@@ -205,8 +207,9 @@ public class FluidTransferGui extends GuiScreen {
 		// Do the stuff
 		this.heldTankIndex = tankIndices.getLeft();
 		this.blockTankIndex = tankIndices.getRight();
+		this.allowedFaces.set(this.selectedFace.getIndex(), this.getTransferCapability());
 		this.maxAmount = Math.min(this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity(), this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity());
-		this.transferDirectionForced = (this.getTransferCapability().canExport && !this.getTransferCapability().canImport) || (!this.getTransferCapability().canExport && this.getTransferCapability().canImport);
+		this.transferDirectionForced = this.getTransferCapability().canExport ^ this.getTransferCapability().canImport;
 		this.isExporting = this.transferDirectionForced ? this.getTransferCapability().canExport : defaultTransferDirection;
 		this.exportButton.displayString = this.isExporting ? "->" : "<-";
 		this.exportButton.enabled = !this.transferDirectionForced;
@@ -236,11 +239,22 @@ public class FluidTransferGui extends GuiScreen {
 		this.exportButton = new GuiButton(buttonId++, centerX - 72, centerY + 28, 20, 20, this.isExporting ? "->" : "<-");
 		this.addButton(this.exportButton);
 
+		this.ingotMode = GameSettings.isKeyDown(this.mc.gameSettings.keyBindSprint);
+		this.ingotButton = new GuiButton(buttonId++, centerX - 90, centerY - 20, 20, 20, "");
+		this.addButton(this.ingotButton);
+
 		this.textAmount = new GuiTextField(0, this.fontRenderer, centerX - 60, centerY - 20, 100, 20);
 		this.textAmount.setText(Integer.toString(this.amount));
 		this.textAmount.setMaxStringLength(10);
 		this.textAmount.setFocused(true);
 		this.textAmount.setCanLoseFocus(false);
+
+		// Accounts for string lengths from different languages
+		this.instructionsWidth = this.fontRenderer.getStringWidth(I18n.format("gc.gui.allmb"));
+		this.instructionsWidth = Math.max(this.instructionsWidth, this.fontRenderer.getStringWidth(I18n.format("gc.gui.16mb")));
+		this.instructionsWidth = Math.max(this.instructionsWidth, this.fontRenderer.getStringWidth(I18n.format("gc.gui.72mb")));
+		this.instructionsWidth = Math.max(this.instructionsWidth, this.fontRenderer.getStringWidth(I18n.format("gc.gui.9216mb")));
+		this.instructionsWidth = this.fontRenderer.getStringWidth(I18n.format("gc.gui.combo6" + (Minecraft.IS_RUNNING_ON_MAC ? ".cmd" : ""))) + this.instructionsWidth + 10;
 
 		this.selectFluid(Pair.of(this.heldTankIndex, this.blockTankIndex), 0, Minecraft.getMinecraft().player.isSneaking(), false);
 		this.sceneRenderer.init();
@@ -253,7 +267,6 @@ public class FluidTransferGui extends GuiScreen {
 		this.numTransferrableBlockFluids = 0;
 		int heldTankRelativeIndex = this.heldFluidSprites.get(this.heldTankIndex) == null ? 0 : this.heldFluidSprites.get(this.heldTankIndex).renderIndex;
 		int blockTankRelativeIndex = this.blockFluidSprites.get(this.blockTankIndex) == null ? 0 : this.blockFluidSprites.get(this.blockTankIndex).renderIndex;
-		GraduatedCylinders.console.info("Initializing sprites");
 		this.applyToSprites((GuiFluidSprite sprite, boolean isHeldSprite, boolean isSelectedSprite, int tankIndex) -> {
 			sprite.renderIndex -= isHeldSprite ? heldTankRelativeIndex : blockTankRelativeIndex;
 			if (isSelectedSprite) {
@@ -277,50 +290,66 @@ public class FluidTransferGui extends GuiScreen {
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		GameSettings settings = Minecraft.getMinecraft().gameSettings;
-		final float scale = new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor();
-		final int centerX = this.width / 2;
-		final int centerY = this.height / 2;
-		final String cmd = Minecraft.IS_RUNNING_ON_MAC ? ".cmd" : "";
-		final int leftMargin = this.width - (this.fontRenderer.getStringWidth(I18n.format("gc.gui.100000mb.combo" + cmd)) + this.fontRenderer.getStringWidth(I18n.format("gc.gui.allmb")) + 10);
+		float scale = new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor();
+		int centerX = this.width / 2;
+		int centerY = this.height / 2;
+		String cmd = Minecraft.IS_RUNNING_ON_MAC ? ".cmd" : "";
+		int leftMargin = this.width - this.instructionsWidth;
 
 		this.drawDefaultBackground();
 		this.textAmount.drawTextBox();
 		super.drawScreen(mouseX, mouseY, partialTicks);
 
-		// Fluid amounts and name above text field
-		this.drawCenteredString(this.fontRenderer, I18n.format("gc.gui.suffix", this.heldFluidStacks.get(this.heldTankIndex) != null ? this.heldFluidStacks.get(this.heldTankIndex).getAmount() : 0), centerX - 98, centerY + 75, 0xAAAAAA);
-		this.drawCenteredString(this.fontRenderer, I18n.format("gc.gui.suffix", this.blockFluidStacks.get(this.blockTankIndex) != null ? this.blockFluidStacks.get(this.blockTankIndex).getAmount() : 0), centerX - 10, centerY + 75, 0xAAAAAA);
+		// TODO: render mB as well while in ingot mode?
+		// Fluid amounts and current fluid name
+		String displayHeldAmount = this.displayAmount(this.heldFluidStacks.get(this.heldTankIndex) != null ? this.heldFluidStacks.get(this.heldTankIndex).getAmount() : 0, false);
+		this.drawCenteredString(this.fontRenderer, displayHeldAmount, centerX - 98 - Math.max(this.fontRenderer.getStringWidth(displayHeldAmount) / 2 - 26, 0), centerY + 75, 0xAAAAAA);
+		String displayTankAmount = this.displayAmount(this.blockFluidStacks.get(this.blockTankIndex) != null ? this.blockFluidStacks.get(this.blockTankIndex).getAmount() : 0, false);
+		this.drawCenteredString(this.fontRenderer, displayTankAmount, centerX - 10 + Math.max(this.fontRenderer.getStringWidth(displayTankAmount) / 2 - 42, 0), centerY + 75, 0xAAAAAA);
+		if (this.amount > 0) {
+			int heldAmount = this.heldFluidStacks.get(this.heldTankIndex) != null ? this.heldFluidStacks.get(this.heldTankIndex).getAmount() : 0;
+			int heldOverflowLimit = Integer.MAX_VALUE - heldAmount;
+			String displayHeldAmountNew = this.displayAmount(MathHelper.clamp(heldAmount + (this.isExporting ? -this.amount : (this.amount > heldOverflowLimit ? heldOverflowLimit : this.amount)), 0, this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity()), false);
+			this.drawCenteredString(this.fontRenderer, displayHeldAmountNew, centerX - 98 - Math.max(this.fontRenderer.getStringWidth(displayHeldAmountNew) / 2 - 26, 0), centerY + 90, this.isExporting ? 0xAA0000 : 0x00AA00); // §4 dark_red : §2 dark_green
+			int tankAmount = this.blockFluidStacks.get(this.blockTankIndex) != null ? this.blockFluidStacks.get(this.blockTankIndex).getAmount() : 0;
+			int tankOverflowLimit = Integer.MAX_VALUE - tankAmount;
+			String displayTankAmountNew = this.displayAmount(MathHelper.clamp(tankAmount + (this.isExporting ? (this.amount > tankOverflowLimit ? tankOverflowLimit : this.amount) : -this.amount), 0, this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity()), false);
+			this.drawCenteredString(this.fontRenderer, displayTankAmountNew, centerX - 10 + Math.max(this.fontRenderer.getStringWidth(displayTankAmountNew) / 2 - 42, 0), centerY + 90, this.isExporting ? 0x00AA00 : 0xAA0000); // §4 dark_green : §2 dark_red
+		}
+		String displayAmount = this.displayAmount(this.amount, true);
+		this.drawString(this.fontRenderer, displayAmount, centerX - 56 - Math.max(this.fontRenderer.getStringWidth(displayAmount) - 96, 0), centerY - 30, 0xAAAAAA);
 		this.drawCenteredString(this.fontRenderer, this.getColorizedFluidName(this.getWorkingFluidStack()), centerX - 10, centerY - 50, 0xFFFFFF);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.amount", this.amount/1000f), centerX - 56, centerY - 30, 0xAAAAAA);
 
 		// Instructions in top-right corner
 		int h = -10;
 		this.drawRightAlignedString(I18n.format("gc.gui.instructions"), this.width - 5, h += 15, 0xAAAAAA);
+		// this.drawRightAlignedString(I18n.format("gc.gui.ingotmode", settings.keyBindJump.getDisplayName()), this.width - 5, h += 15, 0xAAAAAA);
 		if (!this.transferDirectionForced) this.drawRightAlignedString(I18n.format("gc.gui.toggle", settings.keyBindJump.getDisplayName()), this.width - 5, h += 15, 0xAAAAAA);
 		if (this.numTransferrableHeldFluids > 1 || this.numTransferrableBlockFluids > 1) this.drawRightAlignedString(I18n.format("gc.gui.cycle"), this.width - 5, h += 15, 0xAAAAAA);
 		this.drawRightAlignedString(I18n.format("gc.gui.accept", settings.keyBindInventory.getDisplayName()), this.width - 5, h += 15, 0xAAAAAA);
 		this.drawRightAlignedString(I18n.format("gc.gui.cancel"), this.width - 5, h += 15, 0xAAAAAA);
 
 		// Combo shortcuts, left-aligned in bottom-right corner
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.1mb.combo" + cmd), leftMargin, this.height - 105, 0xAAAAAA);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.10mb.combo" + cmd), leftMargin, this.height - 90, 0xAAAAAA);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.100mb.combo"), leftMargin, this.height - 75, 0xAAAAAA);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.1000mb.combo"), leftMargin, this.height - 60, 0xAAAAAA);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.10000mb.combo"), leftMargin, this.height - 45, 0xAAAAAA);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.100000mb.combo" + cmd), leftMargin, this.height - 30, 0xAAAAAA);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.allmb.combo"), leftMargin, this.height - 15, 0xAAAAAA);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo1" + cmd), leftMargin, this.height - 105, 0xAAAAAA);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo2" + cmd), leftMargin, this.height - 90, 0xAAAAAA);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo3"), leftMargin, this.height - 75, 0xAAAAAA);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo4"), leftMargin, this.height - 60, 0xAAAAAA);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo5"), leftMargin, this.height - 45, 0xAAAAAA);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo6" + cmd), leftMargin, this.height - 30, 0xAAAAAA);
+		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo7"), leftMargin, this.height - 15, 0xAAAAAA);
 
 		// Combo fluid amounts, right-aligned in bottom-right corner
 		this.drawRightAlignedString(I18n.format("gc.gui.1mb"), this.width - 5, this.height - 105, 0xAAAAAA);
-		this.drawRightAlignedString(I18n.format("gc.gui.10mb"), this.width - 5, this.height - 90, 0xAAAAAA);
-		this.drawRightAlignedString(I18n.format("gc.gui.100mb"), this.width - 5, this.height - 75, 0xAAAAAA);
-		this.drawRightAlignedString(I18n.format("gc.gui.1000mb"), this.width - 5, this.height - 60, 0xAAAAAA);
-		this.drawRightAlignedString(I18n.format("gc.gui.10000mb"), this.width - 5, this.height - 45, 0xAAAAAA);
-		this.drawRightAlignedString(I18n.format("gc.gui.100000mb"), this.width - 5, this.height - 30, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format(this.ingotMode ? "gc.gui.16mb" : "gc.gui.10mb"), this.width - 5, this.height - 90, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format(this.ingotMode ? "gc.gui.72mb" : "gc.gui.100mb"), this.width - 5, this.height - 75, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format(this.ingotMode ? "gc.gui.144mb" : "gc.gui.1000mb"), this.width - 5, this.height - 60, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format(this.ingotMode ? "gc.gui.1296mb" : "gc.gui.10000mb"), this.width - 5, this.height - 45, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format(this.ingotMode ? "gc.gui.9216mb" : "gc.gui.100000mb"), this.width - 5, this.height - 30, 0xAAAAAA);
 		this.drawRightAlignedString(I18n.format("gc.gui.allmb"), this.width - 5, this.height - 15, 0xAAAAAA);
 
-		// Draw held item stack
-		this.drawItemStack(this.heldItem, centerX - 114, centerY + 22);
+		// Draw held item stack and ingot mode button
+		this.drawItemStack(this.heldItem, centerX - 114, centerY + 22, 2);
+		this.drawItemStack(new ItemStack(this.ingotMode ? Items.IRON_INGOT : Items.BUCKET), centerX - 88, centerY - 18);
 
 		// Render Sprites
 		RenderHelper.disableStandardItemLighting();
@@ -331,13 +360,13 @@ public class FluidTransferGui extends GuiScreen {
 		this.hoveredSprite = null;
 		this.applyToSprites((GuiFluidSprite sprite, boolean isHeldSprite, boolean isSelectedSprite, int tankIndex) -> {
 			if (sprite.isMouseOver(mouseX, mouseY) && !(this.isExporting ^ isHeldSprite)) {
-				List<String> textLines = new ArrayList<String>();
+				ArrayList<String> textLines = new ArrayList<String>();
 				textLines.add(this.getColorizedFluidName(sprite.fluidStack));
-				textLines.add(I18n.format("gc.gui.suffix", TextFormatting.GRAY.toString() + sprite.fluidStack.getAmount()));
+				textLines.add(TextFormatting.GRAY + this.displayAmount(sprite.fluidStack.getAmount(), false));
 				if (!isSelectedSprite) {
 					this.hoveredSprite = sprite;
 					TransferrableFluidResult transferResult = this.transferResults.get(Pair.of(isHeldSprite ? tankIndex : this.heldTankIndex, isHeldSprite ? this.blockTankIndex : tankIndex));
-					textLines.add(I18n.format(transferResult.canExport || transferResult.canImport ? "gc.gui.selectfluid" : "gc.gui.fluidblocked", TextFormatting.RED, TextFormatting.GRAY.toString() + TextFormatting.ITALIC));
+					textLines.add(I18n.format(transferResult.canTransfer() ? "gc.gui.selectfluid" : "gc.gui.fluidblocked", TextFormatting.RED, TextFormatting.GRAY.toString() + TextFormatting.ITALIC));
 				} else {
 					textLines.add(I18n.format("gc.gui.selected",  TextFormatting.GRAY.toString() + TextFormatting.ITALIC));
 				}
@@ -394,7 +423,13 @@ public class FluidTransferGui extends GuiScreen {
 		// Extra tooltips
 		if (mouseX >= centerX - 114 && mouseX < centerX -82  && mouseY >= centerY + 22 && mouseY < centerY + 54) this.renderToolTip(this.heldItem, mouseX, mouseY);
 		if (this.exportButton.isMouseOver()) this.drawHoveringText(I18n.format(this.transferDirectionForced ? "gc.gui.notoggle" : "gc.gui.yestoggle"), mouseX, mouseY);
-		if (this.sceneRenderer.hoveredFace != null && !(this.allowedFaces.get(this.sceneRenderer.hoveredFace.getIndex()).canExport || this.allowedFaces.get(this.sceneRenderer.hoveredFace.getIndex()).canImport)) this.drawHoveringText(I18n.format("gc.gui.sideblocked", TextFormatting.RED, TextFormatting.GRAY.toString() + TextFormatting.ITALIC), sceneX + sceneWidth, sceneY + sceneHeight / 2 + 5);
+		if (this.ingotButton.isMouseOver()) {
+			ArrayList<String> lines = new ArrayList<String>();
+			lines.add(I18n.format("gc.gui.ingottoggle"));
+			lines.add(I18n.format("gc.gui.ingotmode", settings.keyBindJump.getDisplayName()));
+			this.drawHoveringText(lines, mouseX, mouseY);
+		}
+		if (this.sceneRenderer.hoveredFace != null && !this.allowedFaces.get(this.sceneRenderer.hoveredFace.getIndex()).canTransfer()) this.drawHoveringText(I18n.format("gc.gui.sideblocked", TextFormatting.RED, TextFormatting.GRAY.toString() + TextFormatting.ITALIC), sceneX + sceneWidth, sceneY + sceneHeight / 2 + 5);
 	}
 
 	@Override
@@ -405,6 +440,8 @@ public class FluidTransferGui extends GuiScreen {
 			this.setAmount(this.amount - delta());
 		} else if (button == this.exportButton) {
 			this.toggleTransferDirection();
+		} else if (button == this.ingotButton) {
+			this.ingotMode = !this.ingotMode;
 		}
 	}
 
@@ -418,13 +455,13 @@ public class FluidTransferGui extends GuiScreen {
 	public void handleMouseInput() throws IOException {
 		if (!this.initialized) return;
 
-		final int scrollAmount = Mouse.getDWheel();
+		int scrollAmount = Mouse.getDWheel();
 		if (scrollAmount != 0) this.setAmount(this.amount + delta() * MathHelper.clamp(scrollAmount, -1, 1));
 
 		if ((Mouse.getEventButton() == 0 || Mouse.getEventButton() == 1) && Mouse.getEventButtonState() && this.hoveredSprite != null) {
 			Pair<Integer, Integer> tankIndices = Pair.of(this.isExporting ? this.hoveredSprite.tankIndex : this.heldTankIndex, this.isExporting ? this.blockTankIndex : this.hoveredSprite.tankIndex);
 			TransferrableFluidResult transferResult = this.transferResults.get(tankIndices);
-			if (transferResult.canExport || transferResult.canImport) this.selectFluid(tankIndices, Mouse.getEventButton() == 0 ? this.amount : this.hoveredSprite.fluidStack.getAmount(), this.isExporting, true);
+			if (transferResult.canTransfer()) this.selectFluid(tankIndices, Mouse.getEventButton() == 0 ? this.amount : this.hoveredSprite.fluidStack.getAmount(), this.isExporting, true);
 		}
 
 		this.sceneRenderer.handleMouseinput();
@@ -437,6 +474,7 @@ public class FluidTransferGui extends GuiScreen {
 	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 		this.textAmount.mouseClicked(mouseX, mouseY, mouseButton);
+		if (mouseButton == 1 && (this.isExporting ? this.heldFluidSprites.get(this.heldTankIndex) : this.blockFluidSprites.get(this.blockTankIndex)).isMouseOver(mouseX, mouseY)) this.setAmount((this.isExporting ? this.heldFluidStacks.get(this.heldTankIndex) : this.blockFluidStacks.get(this.blockTankIndex)).getAmount());
 		this.handleKeyInput(mouseButton - 100, mouseX, mouseY);
 	}
 
@@ -444,11 +482,15 @@ public class FluidTransferGui extends GuiScreen {
 	private void handleKeyInput(char typedChar, int keyCode, int mouseX, int mouseY) {
 		GameSettings settings = Minecraft.getMinecraft().gameSettings;
 
-		if (keyCode == settings.keyBindInventory.getKeyCode()) {
+		if (keyCode == settings.keyBindInventory.getKeyCode()) { // Open/close inventory to confirm transfer
 			Minecraft.getMinecraft().displayGuiScreen(null);
 			PacketHandler.INSTANCE.sendToServer(new PacketBlockTransferFluid(this.heldItem, this.heldTankIndex, this.pos, this.selectedFace.getIndex(), this.blockTankIndex, this.amount * (this.isExporting ? -1 : 1)));
-		} else if (keyCode == settings.keyBindJump.getKeyCode()) {
-			this.toggleTransferDirection();
+		} else if (keyCode == settings.keyBindJump.getKeyCode()) { // Jump
+			if (GuiScreen.isShiftKeyDown()) { // Shift + Jump to toggle ingot mode
+				this.ingotMode = !this.ingotMode;
+			} else { // Normal jump to toggle transfer direction
+				this.toggleTransferDirection();
+			}
 		} else if (keyCode == settings.keyBindForward.getKeyCode() || keyCode == 200) {  // Forward key or up arrow
 			this.setAmount(this.amount + delta());
 		} else if (keyCode == settings.keyBindBack.getKeyCode() || keyCode == 208) { // Back key or down arrow
@@ -466,7 +508,7 @@ public class FluidTransferGui extends GuiScreen {
 				if (sprite == null) continue;
 				Pair<Integer, Integer> tankIndices = Pair.of(this.isExporting ? sprite.tankIndex : this.heldTankIndex, this.isExporting ? this.blockTankIndex : sprite.tankIndex);
 				TransferrableFluidResult transferResult = this.transferResults.get(tankIndices);
-				if (!transferResult.canExport && !transferResult.canImport) continue;
+				if (!transferResult.canTransfer()) continue;
 				this.selectFluid(tankIndices, this.amount, this.isExporting, true);
 				break;
 			}
@@ -503,11 +545,15 @@ public class FluidTransferGui extends GuiScreen {
 	}
 
 	private void drawItemStack(ItemStack stack, int x, int y) {
-		x /= 2;
-		y /= 2;
+		this.drawItemStack(stack, x, y, 1);
+	}
+
+	private void drawItemStack(ItemStack stack, int x, int y, float scale) {
+		x /= scale;
+		y /= scale;
 		RenderHelper.disableStandardItemLighting();
 		RenderHelper.enableGUIStandardItemLighting();
-		GL11.glScalef(2.0F, 2.0F, 2.0F);
+		GL11.glScalef(scale, scale, scale);
 		this.zLevel = 200.0F;
 		this.itemRender.zLevel = 200.0F;
 		FontRenderer font = stack.getItem().getFontRenderer(stack);
@@ -515,7 +561,7 @@ public class FluidTransferGui extends GuiScreen {
 		this.itemRender.renderItemAndEffectIntoGUI(stack, x, y);
 		this.itemRender.renderItemOverlayIntoGUI(font, stack, x, y, "");
 		RenderHelper.enableGUIStandardItemLighting();
-		GL11.glScalef(0.5F, 0.5F, 0.5F);
+		GL11.glScalef(1/scale, 1/scale, 1/scale);
 		this.zLevel = 0.0F;
 		this.itemRender.zLevel = 0.0F;
 	}
@@ -525,7 +571,33 @@ public class FluidTransferGui extends GuiScreen {
 		this.textAmount.setText(Integer.toString(this.amount));
 	}
 
+	private String displayAmount(int amountIn, boolean useBucketLongName) {
+		if (!this.ingotMode) return useBucketLongName ? I18n.format("gc.gui.bucket", amountIn / 1000f) : I18n.format("gc.gui.mb", amountIn);
+
+		float ingots = amountIn / 144 + (amountIn % 144 > 0 && amountIn % 72 == 0 ? .5f : 0);
+		amountIn -= ingots * 144;
+		int nuggets = amountIn / 16;
+		amountIn -= nuggets * 16;
+
+		int numUnits = (ingots > 0 ? 1 : 0) + (nuggets > 0 ? 1 : 0) + (amountIn > 0 ? 1 : 0);
+		if (numUnits > 1) { // If (need to display multiple units) {use shorthand unit names}
+			ArrayList<String> units = new ArrayList<String>(4);
+			if (ingots > 0) units.add(I18n.format("gc.gui.ingot.short", String.format("%.1f", ingots).replaceFirst("[.,]0$", "")));
+			if (nuggets > 0) units.add(I18n.format("gc.gui.nugget.short", nuggets));
+			if (amountIn > 0) units.add(I18n.format("gc.gui.mb", amountIn));
+			return String.join(", ", units);
+		} else if (numUnits == 0) {
+			return I18n.format("gc.gui.ingot", "0");
+		} else if (ingots > 0) {
+			return I18n.format("gc.gui.ingot", String.format("%.1f", ingots).replaceFirst("[.,]0$", ""));
+		} else if (nuggets > 0) {
+			return I18n.format("gc.gui.nugget", nuggets);
+		}
+		return I18n.format("gc.gui.mb", amountIn);
+	}
+
 	private int delta() {
+		if (this.ingotMode) return isShiftKeyDown() ? (isCtrlKeyDown() ? (isAltKeyDown() ? 9216 : 1) : (isAltKeyDown() ? 1296 : 72)) : (isCtrlKeyDown() ? 16 : (isAltKeyDown() ? (this.amount < this.maxAmount % 144 ? this.maxAmount - this.maxAmount % 144 : this.maxAmount) : 144));
 		return isShiftKeyDown() ? (isCtrlKeyDown() ? (isAltKeyDown() ? 100000 : 1) : (isAltKeyDown() ? 10000 : 100)) : (isCtrlKeyDown() ? 10 : (isAltKeyDown() ? this.maxAmount : 1000));
 	}
 

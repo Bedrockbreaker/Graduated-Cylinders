@@ -5,16 +5,16 @@ gc.gui.cycle=[TAB]：下一种液体
 gc.gui.accept=[%s]：确定
 gc.gui.cancel=[ESC]：取消
 
-gc.gui.1mb.combo=Ctrl+Shift：
-gc.gui.1mb.combo.cmd=Cmd+Shift：
-gc.gui.10mb.combo=Ctrl：
-gc.gui.10mb.combo.cmd=Cmd：
-gc.gui.100mb.combo=Shift：
-gc.gui.1000mb.combo=（无）：
-gc.gui.10000mb.combo=Shift+Alt：
-gc.gui.100000mb.combo=Ctrl+Shift+Alt：
-gc.gui.100000mb.combo.cmd=Cmd+Shift+Alt：
-gc.gui.allmb.combo=Alt：
+gc.gui.combo1=Ctrl+Shift：
+gc.gui.combo1.cmd=Cmd+Shift：
+gc.gui.combo2=Ctrl：
+gc.gui.combo2.cmd=Cmd：
+gc.gui.combo3=Shift：
+gc.gui.combo4=（无）：
+gc.gui.combo5=Shift+Alt：
+gc.gui.combo6=Ctrl+Shift+Alt：
+gc.gui.combo6.cmd=Cmd+Shift+Alt：
+gc.gui.combo7=Alt：
 
 gc.gui.1mb=1 mB
 gc.gui.10mb=10 mB
@@ -24,10 +24,23 @@ gc.gui.10000mb=10 B
 gc.gui.100000mb=100 B
 gc.gui.allmb=最大/最小
 
-gc.gui.suffix=%s mB
-gc.gui.amount=%.3f 桶
+gc.gui.16mb=1 粒
+gc.gui.72mb=1/2 锭
+gc.gui.144mb=1 锭
+gc.gui.1296mb=9 锭
+gc.gui.9216mb=64 锭
+
+gc.gui.bucket=%.3f 桶
+gc.gui.mb=%s mB
+gc.gui.ingot=%s 锭
+gc.gui.ingot.short=%s 锭
+gc.gui.nugget=%s 粒
+gc.gui.nugget.short=%s 粒
+
 gc.gui.yestoggle=切换流体传输方向
 gc.gui.notoggle=不可切换流体传输方向
+gc.gui.ingottoggle=切换锭模式
+gc.gui.ingotmode=[SHIFT+%s]
 
 gc.gui.selectfluid=%2$s单击选择
 gc.gui.selected=%s选择
