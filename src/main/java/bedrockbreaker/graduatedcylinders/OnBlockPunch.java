@@ -44,7 +44,7 @@ public class OnBlockPunch {
 		}
 
 		// Calculate transfer results for all item-block tank pairs on each face
-		// Ew, triple for-loop, I know, but the total loop count will almost never even be > 100 (which would require numHeldTanks * numBlockTanks > 100/6)
+		// Ew, triple for-loop, I know, but the total loop count will almost never even be > 100 (which would require numHeldTanks * numBlockTanks * 6 > 100)
 		for (int i = -1; i < 6; i++) {
 			if (i == defaultSide.getIndex()) continue;
 			EnumFacing side = i == -1 ? defaultSide : EnumFacing.getFront(i);
@@ -57,11 +57,11 @@ public class OnBlockPunch {
 					TransferrableFluidResult transferResult = FluidHelper.getTransferResult(heldFluidHandler, j, blockFluidHandler, k);
 					Pair<EnumFacing, TransferrableFluidResult> index = Pair.of(side, transferResult);
 					allTransferResults.get(side.getIndex()).add(transferResult);
-					if ((!(defaultIndex.getRight().canExport || defaultIndex.getRight().canImport) && (transferResult.canExport || transferResult.canImport)) || ((defaultIndex.getRight().canExport ^ defaultIndex.getRight().canImport) && transferResult.canExport && transferResult.canImport)) defaultIndex = index;
+					if ((!defaultIndex.getRight().canTransfer() && transferResult.canTransfer()) || ((defaultIndex.getRight().canExport ^ defaultIndex.getRight().canImport) && transferResult.canExport && transferResult.canImport)) defaultIndex = index;
 				}
 			}
 		}
-		if (!(defaultIndex.getRight().canExport || defaultIndex.getRight().canImport)) return;
+		if (!defaultIndex.getRight().canTransfer()) return;
 
 		PacketHandler.INSTANCE.sendTo(new PacketOpenFluidGUI(heldItem, event.getPos(), allTransferResults, defaultIndex.getRight().sourceTank, defaultIndex.getLeft().getIndex(), defaultIndex.getRight().destinationTank, heldFluidStacks, blockFluidStacks), (EntityPlayerMP) event.getEntityPlayer());
 	}

@@ -78,6 +78,9 @@ public class FluidHelper {
 		return itemTwoAmount == 0 || itemOneAmount == itemOneProps.getCapacity() ? -Math.min(itemTwoProps.getCapacity() - itemTwoAmount, itemOneAmount) : Math.min(itemOneProps.getCapacity() - itemOneAmount, itemTwoAmount);
 	}
 
+	/**
+	 * A structure indicating a pair of tanks and whether the first tank can import from or export to the second.
+	 */
 	public static class TransferrableFluidResult {
 		public final int sourceTank;
 		public final int destinationTank;
@@ -89,6 +92,10 @@ public class FluidHelper {
 			this.destinationTank = rightTankIn;
 			this.canExport = canExport;
 			this.canImport = canImport;
+		}
+
+		public boolean canTransfer() {
+			return this.canExport || this.canImport;
 		}
 	}
 }
