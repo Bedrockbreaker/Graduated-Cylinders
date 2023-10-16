@@ -64,6 +64,6 @@ public class InventoryHandler {
 		PacketHandler.INSTANCE.sendToServer(new PacketContainerTransferFluid(hoveredSlot.slotNumber));
 		// There seems to be a vanilla bug which causes inserting/swapping items with right click to ignore the event cancellation.
 		// This means the following line really doesn't do anything, but it should in a perfect world...
-		event.setCanceled(true);
+		//event.setCanceled(true);
 	}
 }
