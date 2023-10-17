@@ -30,7 +30,7 @@ gc.gui.144mb=1 锭
 gc.gui.1296mb=9 锭
 gc.gui.9216mb=64 锭
 
-gc.gui.bucket=%.3f 桶
+gc.gui.bucket=%.3f B
 gc.gui.mb=%s mB
 gc.gui.ingot=%s 锭
 gc.gui.ingot.short=%s 锭
@@ -39,12 +39,12 @@ gc.gui.nugget.short=%s 粒
 
 gc.gui.yestoggle=切换流体传输方向
 gc.gui.notoggle=不可切换流体传输方向
-gc.gui.ingottoggle=切换锭模式
+gc.gui.ingottoggle=开关锭模式
 gc.gui.ingotmode=[SHIFT+%s]
 
 gc.gui.selectfluid=%2$s单击选择
-gc.gui.selected=%s选择
-gc.gui.fluidblocked=%s▌ %s不能运输
+gc.gui.selected=%s已选择
+gc.gui.fluidblocked=%s▌ %s无法传输
 gc.gui.sideblocked=%s▌ %s无法选择
 
 # Inventory
