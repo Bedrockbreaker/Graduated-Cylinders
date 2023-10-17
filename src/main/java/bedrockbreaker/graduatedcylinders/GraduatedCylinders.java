@@ -18,7 +18,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 public class GraduatedCylinders {
 	public static final String MODID = "graduatedcylinders";
 	public static final String NAME = "Graduated Cylinders";
-	public static final String VERSION = "2.8.0";
+	public static final String VERSION = "2.8.1";
 
 	public static Logger console = LogManager.getLogger("Graduated Cylinders");
 	public static boolean isMekanismLoaded = false;
