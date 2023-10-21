@@ -63,6 +63,7 @@ public class OnBlockPunch {
 		}
 		if (!defaultIndex.getRight().canTransfer()) return;
 
+		event.setCanceled(true);
 		PacketHandler.INSTANCE.sendTo(new PacketOpenFluidGUI(heldItem, event.getPos(), allTransferResults, defaultIndex.getRight().sourceTank, defaultIndex.getLeft().getIndex(), defaultIndex.getRight().destinationTank, heldFluidStacks, blockFluidStacks), (EntityPlayerMP) event.getEntityPlayer());
 	}
 }
