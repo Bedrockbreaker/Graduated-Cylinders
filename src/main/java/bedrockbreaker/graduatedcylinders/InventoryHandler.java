@@ -24,8 +24,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @EventBusSubscriber(value = Side.CLIENT, modid = GraduatedCylinders.MODID)
 public class InventoryHandler {
 
+	public static boolean clicked = false;
+
 	@SubscribeEvent
-	@SideOnly(Side.CLIENT)
 	public static void onDrawScreen(GuiScreenEvent.DrawScreenEvent.Post event) {
 		Minecraft minecraft = Minecraft.getMinecraft();
 		GuiScreen screen = minecraft.currentScreen;
@@ -48,22 +49,25 @@ public class InventoryHandler {
 	}
 
 	@SubscribeEvent
-	@SideOnly(Side.CLIENT)
 	public static void onRightClick(GuiScreenEvent.MouseInputEvent.Pre event) {
-		if (Mouse.getEventButton() != 1 || !Mouse.getEventButtonState()) return;
-
+		if (Mouse.getEventButton() != 1) return;
+		if (!Mouse.getEventButtonState()) { // Mouse up
+			event.setCanceled(clicked);
+			clicked = false;
+			return;
+		}
+		
 		Minecraft minecraft = Minecraft.getMinecraft();
 		GuiScreen screen = minecraft.currentScreen;
 		if (!(screen instanceof GuiContainer)) return;
-
+		
 		Slot hoveredSlot = ((GuiContainer) screen).getSlotUnderMouse();
 		if (hoveredSlot == null || !hoveredSlot.isEnabled() || !hoveredSlot.canTakeStack(minecraft.player)) return;
-
+		
 		if (FluidHelper.getTransferAmount(FluidHelper.getProxyFluidHandler(minecraft.player.inventory.getItemStack()), FluidHelper.getProxyFluidHandler(hoveredSlot.getStack())) == 0) return;
-
+		
+		InventoryHandler.clicked = true;
 		PacketHandler.INSTANCE.sendToServer(new PacketContainerTransferFluid(hoveredSlot.slotNumber));
-		// There seems to be a vanilla bug which causes inserting/swapping items with right click to ignore the event cancellation.
-		// This means the following line really doesn't do anything, but it should in a perfect world...
-		//event.setCanceled(true);
+		event.setCanceled(true);
 	}
 }

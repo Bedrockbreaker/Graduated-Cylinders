@@ -62,10 +62,8 @@ public class PacketContainerTransferFluid implements IMessage {
 
 				if (FluidHelper.tryFluidTransfer(transferAmount < 0 ? underFluidHandler : heldFluidHandler, transferAmount < 0 ? heldFluidHandler : underFluidHandler, fluidStack, true) != null) player.world.playSound(null, player.getPosition(), transferAmount < 0 ? fluidStack.getEmptySound() : fluidStack.getFillSound(), SoundCategory.PLAYERS, 1.0F, 1.0F);
 				
-				// Despite cancelling the right click event, I have to manually swap the items, resulting in a brief flash of the items swapping.
-				// See InventoryHandler.onRightClick for more details
-				hoveredSlot.putStack(heldFluidHandler.getContainer());
-				player.inventory.setItemStack(underFluidHandler.getContainer());
+				hoveredSlot.putStack(underFluidHandler.getContainer());
+				player.inventory.setItemStack(heldFluidHandler.getContainer());
 
 				if (!(player instanceof EntityPlayerMP)) return;
 				((EntityPlayerMP) player).isChangingQuantityOnly = false;
