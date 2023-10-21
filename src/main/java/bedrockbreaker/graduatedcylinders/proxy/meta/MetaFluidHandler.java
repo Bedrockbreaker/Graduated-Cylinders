@@ -20,6 +20,6 @@ public class MetaFluidHandler extends MetaHandler {
 
 	@Override
 	public FluidHandlerItem getHandler(ItemStack itemStack) {
-		return itemStack == null ? null : new FluidHandlerItem(FluidUtil.getFluidHandler(itemStack));
+		return itemStack.isEmpty() ? null : new FluidHandlerItem(FluidUtil.getFluidHandler(itemStack));
 	}
 }
