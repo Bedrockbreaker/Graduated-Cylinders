@@ -49,4 +49,4 @@ gc.gui.fluidblocked=%s▌ %sNon transferrable
 gc.gui.sideblocked=%s▌ %sNot selectable
 
 # Inventory
-gc.inventory.rightclick=Right Click: %s %s%s mB%s
+gc.inventory.rightclick=Right Click: %s %s

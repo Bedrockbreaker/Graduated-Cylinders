@@ -4,6 +4,7 @@ import org.lwjgl.input.Mouse;
 
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.api.MetaHandler;
 import bedrockbreaker.graduatedcylinders.network.PacketContainerTransferFluid;
 import bedrockbreaker.graduatedcylinders.network.PacketHandler;
 import bedrockbreaker.graduatedcylinders.util.ColorCache;
@@ -35,8 +36,10 @@ public class InventoryHandler {
 		Slot hoveredSlot = ((GuiContainer) screen).getSlotUnderMouse();
 		if (hoveredSlot == null || !hoveredSlot.isEnabled() || !hoveredSlot.canTakeStack(minecraft.player)) return;
 
-		IProxyFluidHandler heldFluidHandler = FluidHelper.getProxyFluidHandler(minecraft.player.inventory.getItemStack());
-		IProxyFluidHandler underFluidHandler = FluidHelper.getProxyFluidHandler(hoveredSlot.getStack());
+		MetaHandler metaHandler = FluidHelper.getMetaHandler(minecraft.player.inventory.getItemStack());
+		if (metaHandler == null || !metaHandler.hasHandler(hoveredSlot.getStack())) return;
+		IProxyFluidHandler heldFluidHandler = metaHandler.getHandler(minecraft.player.inventory.getItemStack());
+		IProxyFluidHandler underFluidHandler = metaHandler.getHandler(hoveredSlot.getStack());
 
 		final int transferAmount = FluidHelper.getTransferAmount(heldFluidHandler, underFluidHandler);
 		if (transferAmount == 0) return;
@@ -45,7 +48,7 @@ public class InventoryHandler {
 		if (fluid == null) fluid = underFluidHandler.getTankProperties(0).getContents();
 		if (fluid == null) throw new NullPointerException(); // IDE complaint
 
-		screen.drawHoveringText(I18n.format("gc.inventory.rightclick", transferAmount < 0 ? "->" : "<-", ColorCache.getFluidColorCode(fluid, fluid.getColor()) + TextFormatting.BOLD, Math.abs(transferAmount), TextFormatting.RESET), event.getMouseX(), event.getMouseY());
+		screen.drawHoveringText(I18n.format("gc.inventory.rightclick", transferAmount < 0 ? "->" : "<-", ColorCache.getFluidColorCode(fluid, fluid.getColor()) + TextFormatting.BOLD + metaHandler.modes.get(0).formatAmount(Math.abs(transferAmount), false) + TextFormatting.RESET), event.getMouseX(), event.getMouseY());
 	}
 
 	@SubscribeEvent

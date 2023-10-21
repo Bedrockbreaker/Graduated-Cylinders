@@ -49,4 +49,4 @@ gc.gui.fluidblocked=%s▌ %s移送できない
 gc.gui.sideblocked=%s▌ %s選択できない
 
 # Inventory
-gc.inventory.rightclick=右クリック: %s %s%s mB%s
+gc.inventory.rightclick=右クリック: %s %s

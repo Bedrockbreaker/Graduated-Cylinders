@@ -49,4 +49,4 @@ gc.gui.fluidblocked=%s▌ %sFaint3d
 gc.gui.sideblocked=%s▌ %sPC 3mpty
 
 # Inventory
-gc.inventory.rightclick=Riet Paw: %s %s%s mB%s
+gc.inventory.rightclick=Riet Paw: %s %s
