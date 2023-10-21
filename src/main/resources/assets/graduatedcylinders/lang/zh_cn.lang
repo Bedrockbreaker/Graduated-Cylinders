@@ -39,8 +39,9 @@ gc.gui.nugget.short=%s 粒
 
 gc.gui.yestoggle=切换流体传输方向
 gc.gui.notoggle=不可切换流体传输方向
-gc.gui.ingottoggle=开关锭模式
-gc.gui.ingotmode=[SHIFT+%s]
+gc.gui.cyclemode=[SHIFT+%s]
+gc.gui.bucketmode=桶模式
+gc.gui.ingotmode=锭模式
 
 gc.gui.selectfluid=%2$s单击选择
 gc.gui.selected=%s已选择

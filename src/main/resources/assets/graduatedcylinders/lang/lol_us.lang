@@ -39,8 +39,9 @@ gc.gui.nugget.short=%s n
 
 gc.gui.yestoggle=Muv likwid bakw0rdz
 gc.gui.notoggle=No canz muv likwid bakw0rdz
-gc.gui.ingottoggle=Dwarf mode
-gc.gui.ingotmode=[crouch+%s]
+gc.gui.cyclemode=[crouch+%s]
+gc.gui.bucketmode=bukk1t mode
+gc.gui.ingotmode=Dwarf mode
 
 gc.gui.selectfluid=%2$sI CH00Z3 Y0U!
 gc.gui.selected=%sMy act1v3 flav0r

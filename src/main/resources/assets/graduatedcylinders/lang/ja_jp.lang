@@ -39,8 +39,9 @@ gc.gui.nugget.short=%s N
 
 gc.gui.yestoggle=流れ方向を切り替える
 gc.gui.notoggle=流れ方向を切り替えられない
-gc.gui.ingottoggle=インゴットモードを切り替える
-gc.gui.ingotmode=[SHIFT+%s]
+gc.gui.cylcemode=[SHIFT+%s]
+gc.gui.bucketmode=バケツモード
+gc.gui.ingotmode=インゴットモード
 
 gc.gui.selectfluid=%2$sクリックで選択する
 gc.gui.selected=%s選択中

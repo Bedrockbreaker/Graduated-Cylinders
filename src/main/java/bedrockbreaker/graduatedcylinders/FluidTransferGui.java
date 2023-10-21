@@ -13,9 +13,11 @@ import org.lwjgl.opengl.GL11;
 
 import com.google.common.primitives.Ints;
 
+import bedrockbreaker.graduatedcylinders.api.IHandlerMode;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandlerItem;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.api.MetaHandler;
 import bedrockbreaker.graduatedcylinders.network.PacketBlockTransferFluid;
 import bedrockbreaker.graduatedcylinders.network.PacketHandler;
 import bedrockbreaker.graduatedcylinders.util.ColorCache;
@@ -34,7 +36,6 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.EnumFacing;
@@ -52,6 +53,7 @@ public class FluidTransferGui extends GuiScreen {
 	private final World world;
 	public final BlockPos pos;
 
+	public final MetaHandler metaHandler;
 	public final ItemStack heldItem;
 	private final IProxyFluidHandlerItem heldFluidHandler; // Based on client knowledge. Inventory desyncs are likely to cause funky issues if client fluidstacks are used
 	private IProxyFluidHandler blockFluidHandler; // Based on client knowledge. May not contain any valid fluidstacks (e.g GregTech which doesn't send client updates)
@@ -73,10 +75,13 @@ public class FluidTransferGui extends GuiScreen {
 	private int numTransferrableHeldFluids;
 	private int numTransferrableBlockFluids;
 
+	public IHandlerMode mode;
+	public int[] deltas;
+	public ArrayList<String> deltaStrings = new ArrayList<String>();
+	
 	public int maxAmount;
 	public boolean transferDirectionForced;
 	public boolean isExporting;
-	public boolean ingotMode;
 	public int amount = 0;
 
 	private Scene3DRenderer sceneRenderer;
@@ -86,7 +91,7 @@ public class FluidTransferGui extends GuiScreen {
 	private GuiButton incFluidButton;
 	private GuiButton decFluidButton;
 	private GuiButton exportButton;
-	private GuiButton ingotButton;
+	private GuiButton modeButton;
 
 	public static void open(ItemStack heldItem, BlockPos pos, ArrayList<ArrayList<TransferrableFluidResult>> sidedTransferResults, int heldTankIndex, int side, int blockTankIndex, ArrayList<IProxyFluidStack> heldFluidStacks, ArrayList<ArrayList<IProxyFluidStack>> sidedBlockFluidStacks) {
 		Minecraft.getMinecraft().displayGuiScreen(new FluidTransferGui(heldItem, pos, sidedTransferResults, heldTankIndex, side, blockTankIndex, heldFluidStacks, sidedBlockFluidStacks));
@@ -98,7 +103,8 @@ public class FluidTransferGui extends GuiScreen {
 		this.world = Minecraft.getMinecraft().world;
 		this.pos = pos;
 		this.heldItem = heldItem;
-		this.heldFluidHandler = FluidHelper.getProxyFluidHandler(heldItem);
+		this.metaHandler = FluidHelper.getMetaHandler(heldItem);
+		this.heldFluidHandler = this.metaHandler.getHandler(heldItem);
 		this.heldFluidStacks = heldFluidStacks;
 
 		this.sidedBlockFluidStacks = sidedBlockFluidStacks;
@@ -198,6 +204,16 @@ public class FluidTransferGui extends GuiScreen {
 		});
 	}
 
+	protected void cycleMode() {
+		this.mode = this.metaHandler.modes.get((this.metaHandler.modes.indexOf(this.mode) + 1) % this.metaHandler.modes.size());
+		this.deltas = this.mode.getDeltas(this.amount, this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity(), this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity());
+		this.deltaStrings = this.mode.getStringDeltas();
+
+		this.instructionsWidth = 0;
+		this.deltaStrings.forEach(s -> this.instructionsWidth = Math.max(this.instructionsWidth, this.fontRenderer.getStringWidth(s)));
+		this.instructionsWidth = this.fontRenderer.getStringWidth(I18n.format("gc.gui.combo6" + (Minecraft.IS_RUNNING_ON_MAC ? ".cmd" : ""))) + this.instructionsWidth + 10;
+	}
+
 	protected void selectFluid(Pair<Integer, Integer> tankIndices, int fluidTransferAmount, boolean defaultTransferDirection, boolean doAnimation) {
 		// Reset the sprites' relative render indices
 		int heldTankRelativeIndexOld = this.heldFluidSprites.get(this.heldTankIndex) == null ? 0 : this.heldFluidSprites.get(this.heldTankIndex).renderIndex;
@@ -214,6 +230,7 @@ public class FluidTransferGui extends GuiScreen {
 		this.exportButton.displayString = this.isExporting ? "->" : "<-";
 		this.exportButton.enabled = !this.transferDirectionForced;
 		this.setAmount(fluidTransferAmount);
+		this.deltas = this.mode.getDeltas(this.amount, this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity(), this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity());
 		this.initFluidSprites(doAnimation);
 	}
 
@@ -239,22 +256,15 @@ public class FluidTransferGui extends GuiScreen {
 		this.exportButton = new GuiButton(buttonId++, centerX - 72, centerY + 28, 20, 20, this.isExporting ? "->" : "<-");
 		this.addButton(this.exportButton);
 
-		this.ingotMode = GameSettings.isKeyDown(this.mc.gameSettings.keyBindSprint);
-		this.ingotButton = new GuiButton(buttonId++, centerX - 90, centerY - 20, 20, 20, "");
-		this.addButton(this.ingotButton);
+		this.modeButton = new GuiButton(buttonId++, centerX - 90, centerY - 20, 20, 20, "");
+		if (this.metaHandler.modes.size() > 1) this.addButton(this.modeButton);
+		this.cycleMode();
 
 		this.textAmount = new GuiTextField(0, this.fontRenderer, centerX - 60, centerY - 20, 100, 20);
 		this.textAmount.setText(Integer.toString(this.amount));
 		this.textAmount.setMaxStringLength(10);
 		this.textAmount.setFocused(true);
 		this.textAmount.setCanLoseFocus(false);
-
-		// Accounts for string lengths from different languages
-		this.instructionsWidth = this.fontRenderer.getStringWidth(I18n.format("gc.gui.allmb"));
-		this.instructionsWidth = Math.max(this.instructionsWidth, this.fontRenderer.getStringWidth(I18n.format("gc.gui.16mb")));
-		this.instructionsWidth = Math.max(this.instructionsWidth, this.fontRenderer.getStringWidth(I18n.format("gc.gui.72mb")));
-		this.instructionsWidth = Math.max(this.instructionsWidth, this.fontRenderer.getStringWidth(I18n.format("gc.gui.9216mb")));
-		this.instructionsWidth = this.fontRenderer.getStringWidth(I18n.format("gc.gui.combo6" + (Minecraft.IS_RUNNING_ON_MAC ? ".cmd" : ""))) + this.instructionsWidth + 10;
 
 		this.selectFluid(Pair.of(this.heldTankIndex, this.blockTankIndex), 0, Minecraft.getMinecraft().player.isSneaking(), false);
 		this.sceneRenderer.init();
@@ -300,30 +310,27 @@ public class FluidTransferGui extends GuiScreen {
 		this.textAmount.drawTextBox();
 		super.drawScreen(mouseX, mouseY, partialTicks);
 
-		// TODO: render mB as well while in ingot mode?
 		// Fluid amounts and current fluid name
-		String displayHeldAmount = this.displayAmount(this.heldFluidStacks.get(this.heldTankIndex) != null ? this.heldFluidStacks.get(this.heldTankIndex).getAmount() : 0, false);
+		String displayHeldAmount = this.mode.formatAmount(this.heldFluidStacks.get(this.heldTankIndex) != null ? this.heldFluidStacks.get(this.heldTankIndex).getAmount() : 0, false);
 		this.drawCenteredString(this.fontRenderer, displayHeldAmount, centerX - 98 - Math.max(this.fontRenderer.getStringWidth(displayHeldAmount) / 2 - 26, 0), centerY + 75, 0xAAAAAA);
-		String displayTankAmount = this.displayAmount(this.blockFluidStacks.get(this.blockTankIndex) != null ? this.blockFluidStacks.get(this.blockTankIndex).getAmount() : 0, false);
-		this.drawCenteredString(this.fontRenderer, displayTankAmount, centerX - 10 + Math.max(this.fontRenderer.getStringWidth(displayTankAmount) / 2 - 42, 0), centerY + 75, 0xAAAAAA);
+		String displayBlockAmount = this.mode.formatAmount(this.blockFluidStacks.get(this.blockTankIndex) != null ? this.blockFluidStacks.get(this.blockTankIndex).getAmount() : 0, false);
+		this.drawCenteredString(this.fontRenderer, displayBlockAmount, centerX - 10 + Math.max(this.fontRenderer.getStringWidth(displayBlockAmount) / 2 - 42, 0), centerY + 75, 0xAAAAAA);
 		if (this.amount > 0) {
 			int heldAmount = this.heldFluidStacks.get(this.heldTankIndex) != null ? this.heldFluidStacks.get(this.heldTankIndex).getAmount() : 0;
-			int heldOverflowLimit = Integer.MAX_VALUE - heldAmount;
-			String displayHeldAmountNew = this.displayAmount(MathHelper.clamp(heldAmount + (this.isExporting ? -this.amount : (this.amount > heldOverflowLimit ? heldOverflowLimit : this.amount)), 0, this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity()), false);
+			int blockAmount = this.blockFluidStacks.get(this.blockTankIndex) != null ? this.blockFluidStacks.get(this.blockTankIndex).getAmount() : 0;
+			int deltaMax = Math.min(this.isExporting ? Math.min(this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity() - blockAmount, heldAmount) : Math.min(this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity() - heldAmount, blockAmount), this.amount);
+			String displayHeldAmountNew = this.mode.formatAmount(heldAmount + (this.isExporting ? -deltaMax : deltaMax), false);
 			this.drawCenteredString(this.fontRenderer, displayHeldAmountNew, centerX - 98 - Math.max(this.fontRenderer.getStringWidth(displayHeldAmountNew) / 2 - 26, 0), centerY + 90, this.isExporting ? 0xAA0000 : 0x00AA00); // §4 dark_red : §2 dark_green
-			int tankAmount = this.blockFluidStacks.get(this.blockTankIndex) != null ? this.blockFluidStacks.get(this.blockTankIndex).getAmount() : 0;
-			int tankOverflowLimit = Integer.MAX_VALUE - tankAmount;
-			String displayTankAmountNew = this.displayAmount(MathHelper.clamp(tankAmount + (this.isExporting ? (this.amount > tankOverflowLimit ? tankOverflowLimit : this.amount) : -this.amount), 0, this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity()), false);
+			String displayTankAmountNew = this.mode.formatAmount(blockAmount + (this.isExporting ? deltaMax : -deltaMax), false);
 			this.drawCenteredString(this.fontRenderer, displayTankAmountNew, centerX - 10 + Math.max(this.fontRenderer.getStringWidth(displayTankAmountNew) / 2 - 42, 0), centerY + 90, this.isExporting ? 0x00AA00 : 0xAA0000); // §4 dark_green : §2 dark_red
 		}
-		String displayAmount = this.displayAmount(this.amount, true);
+		String displayAmount = this.mode.formatAmount(this.amount, true);
 		this.drawString(this.fontRenderer, displayAmount, centerX - 56 - Math.max(this.fontRenderer.getStringWidth(displayAmount) - 96, 0), centerY - 30, 0xAAAAAA);
 		this.drawCenteredString(this.fontRenderer, this.getColorizedFluidName(this.getWorkingFluidStack()), centerX - 10, centerY - 50, 0xFFFFFF);
 
 		// Instructions in top-right corner
 		int h = -10;
 		this.drawRightAlignedString(I18n.format("gc.gui.instructions"), this.width - 5, h += 15, 0xAAAAAA);
-		// this.drawRightAlignedString(I18n.format("gc.gui.ingotmode", settings.keyBindJump.getDisplayName()), this.width - 5, h += 15, 0xAAAAAA);
 		if (!this.transferDirectionForced) this.drawRightAlignedString(I18n.format("gc.gui.toggle", settings.keyBindJump.getDisplayName()), this.width - 5, h += 15, 0xAAAAAA);
 		if (this.numTransferrableHeldFluids > 1 || this.numTransferrableBlockFluids > 1) this.drawRightAlignedString(I18n.format("gc.gui.cycle"), this.width - 5, h += 15, 0xAAAAAA);
 		this.drawRightAlignedString(I18n.format("gc.gui.accept", settings.keyBindInventory.getDisplayName()), this.width - 5, h += 15, 0xAAAAAA);
@@ -339,17 +346,17 @@ public class FluidTransferGui extends GuiScreen {
 		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo7"), leftMargin, this.height - 15, 0xAAAAAA);
 
 		// Combo fluid amounts, right-aligned in bottom-right corner
-		this.drawRightAlignedString(I18n.format("gc.gui.1mb"), this.width - 5, this.height - 105, 0xAAAAAA);
-		this.drawRightAlignedString(I18n.format(this.ingotMode ? "gc.gui.16mb" : "gc.gui.10mb"), this.width - 5, this.height - 90, 0xAAAAAA);
-		this.drawRightAlignedString(I18n.format(this.ingotMode ? "gc.gui.72mb" : "gc.gui.100mb"), this.width - 5, this.height - 75, 0xAAAAAA);
-		this.drawRightAlignedString(I18n.format(this.ingotMode ? "gc.gui.144mb" : "gc.gui.1000mb"), this.width - 5, this.height - 60, 0xAAAAAA);
-		this.drawRightAlignedString(I18n.format(this.ingotMode ? "gc.gui.1296mb" : "gc.gui.10000mb"), this.width - 5, this.height - 45, 0xAAAAAA);
-		this.drawRightAlignedString(I18n.format(this.ingotMode ? "gc.gui.9216mb" : "gc.gui.100000mb"), this.width - 5, this.height - 30, 0xAAAAAA);
-		this.drawRightAlignedString(I18n.format("gc.gui.allmb"), this.width - 5, this.height - 15, 0xAAAAAA);
+		this.drawRightAlignedString(this.deltaStrings.get(0), this.width - 5, this.height - 105, 0xAAAAAA);
+		this.drawRightAlignedString(this.deltaStrings.get(1), this.width - 5, this.height - 90, 0xAAAAAA);
+		this.drawRightAlignedString(this.deltaStrings.get(2), this.width - 5, this.height - 75, 0xAAAAAA);
+		this.drawRightAlignedString(this.deltaStrings.get(3), this.width - 5, this.height - 60, 0xAAAAAA);
+		this.drawRightAlignedString(this.deltaStrings.get(4), this.width - 5, this.height - 45, 0xAAAAAA);
+		this.drawRightAlignedString(this.deltaStrings.get(5), this.width - 5, this.height - 30, 0xAAAAAA);
+		this.drawRightAlignedString(this.deltaStrings.get(6), this.width - 5, this.height - 15, 0xAAAAAA);
 
-		// Draw held item stack and ingot mode button
+		// Draw held item stack and mode icon
 		this.drawItemStack(this.heldItem, centerX - 114, centerY + 22, 2);
-		this.drawItemStack(new ItemStack(this.ingotMode ? Items.IRON_INGOT : Items.BUCKET), centerX - 88, centerY - 18);
+		if (this.metaHandler.modes.size() > 1) this.drawItemStack(this.mode.getModeIcon(), centerX - 88, centerY - 18);
 
 		// Render Sprites
 		RenderHelper.disableStandardItemLighting();
@@ -362,7 +369,7 @@ public class FluidTransferGui extends GuiScreen {
 			if (sprite.isMouseOver(mouseX, mouseY) && !(this.isExporting ^ isHeldSprite)) {
 				ArrayList<String> textLines = new ArrayList<String>();
 				textLines.add(this.getColorizedFluidName(sprite.fluidStack));
-				textLines.add(TextFormatting.GRAY + this.displayAmount(sprite.fluidStack.getAmount(), false));
+				textLines.add(TextFormatting.GRAY + this.mode.formatAmount(sprite.fluidStack.getAmount(), false));
 				if (!isSelectedSprite) {
 					this.hoveredSprite = sprite;
 					TransferrableFluidResult transferResult = this.transferResults.get(Pair.of(isHeldSprite ? tankIndex : this.heldTankIndex, isHeldSprite ? this.blockTankIndex : tankIndex));
@@ -423,10 +430,10 @@ public class FluidTransferGui extends GuiScreen {
 		// Extra tooltips
 		if (mouseX >= centerX - 114 && mouseX < centerX -82  && mouseY >= centerY + 22 && mouseY < centerY + 54) this.renderToolTip(this.heldItem, mouseX, mouseY);
 		if (this.exportButton.isMouseOver()) this.drawHoveringText(I18n.format(this.transferDirectionForced ? "gc.gui.notoggle" : "gc.gui.yestoggle"), mouseX, mouseY);
-		if (this.ingotButton.isMouseOver()) {
+		if (this.modeButton.isMouseOver()) {
 			ArrayList<String> lines = new ArrayList<String>();
-			lines.add(I18n.format("gc.gui.ingottoggle"));
-			lines.add(I18n.format("gc.gui.ingotmode", settings.keyBindJump.getDisplayName()));
+			lines.add(this.mode.getModeName());
+			lines.add(I18n.format("gc.gui.cyclemode", settings.keyBindJump.getDisplayName()));
 			this.drawHoveringText(lines, mouseX, mouseY);
 		}
 		if (this.sceneRenderer.hoveredFace != null && !this.allowedFaces.get(this.sceneRenderer.hoveredFace.getIndex()).canTransfer()) this.drawHoveringText(I18n.format("gc.gui.sideblocked", TextFormatting.RED, TextFormatting.GRAY.toString() + TextFormatting.ITALIC), sceneX + sceneWidth, sceneY + sceneHeight / 2 + 5);
@@ -435,13 +442,13 @@ public class FluidTransferGui extends GuiScreen {
 	@Override
 	protected void actionPerformed(GuiButton button) throws IOException {
 		if (button == this.incFluidButton) {
-			this.setAmount(this.amount + delta());
+			this.setAmount(this.amount + this.getDelta());
 		} else if (button == this.decFluidButton) {
-			this.setAmount(this.amount - delta());
+			this.setAmount(this.amount - this.getDelta());
 		} else if (button == this.exportButton) {
 			this.toggleTransferDirection();
-		} else if (button == this.ingotButton) {
-			this.ingotMode = !this.ingotMode;
+		} else if (button == this.modeButton) {
+			this.cycleMode();
 		}
 	}
 
@@ -456,7 +463,7 @@ public class FluidTransferGui extends GuiScreen {
 		if (!this.initialized) return;
 
 		int scrollAmount = Mouse.getDWheel();
-		if (scrollAmount != 0) this.setAmount(this.amount + delta() * MathHelper.clamp(scrollAmount, -1, 1));
+		if (scrollAmount != 0) this.setAmount(this.amount + this.getDelta() * MathHelper.clamp(scrollAmount, -1, 1));
 
 		if ((Mouse.getEventButton() == 0 || Mouse.getEventButton() == 1) && Mouse.getEventButtonState() && this.hoveredSprite != null) {
 			Pair<Integer, Integer> tankIndices = Pair.of(this.isExporting ? this.hoveredSprite.tankIndex : this.heldTankIndex, this.isExporting ? this.blockTankIndex : this.hoveredSprite.tankIndex);
@@ -486,15 +493,15 @@ public class FluidTransferGui extends GuiScreen {
 			Minecraft.getMinecraft().displayGuiScreen(null);
 			PacketHandler.INSTANCE.sendToServer(new PacketBlockTransferFluid(this.heldItem, this.heldTankIndex, this.pos, this.selectedFace.getIndex(), this.blockTankIndex, this.amount * (this.isExporting ? -1 : 1)));
 		} else if (keyCode == settings.keyBindJump.getKeyCode()) { // Jump
-			if (GuiScreen.isShiftKeyDown()) { // Shift + Jump to toggle ingot mode
-				this.ingotMode = !this.ingotMode;
+			if (GuiScreen.isShiftKeyDown()) { // Shift + Jump to cycle mode
+				this.cycleMode();
 			} else { // Normal jump to toggle transfer direction
 				this.toggleTransferDirection();
 			}
 		} else if (keyCode == settings.keyBindForward.getKeyCode() || keyCode == 200) {  // Forward key or up arrow
-			this.setAmount(this.amount + delta());
+			this.setAmount(this.amount + this.getDelta());
 		} else if (keyCode == settings.keyBindBack.getKeyCode() || keyCode == 208) { // Back key or down arrow
-			this.setAmount(this.amount - delta());
+			this.setAmount(this.amount - this.getDelta());
 		} else if (keyCode == settings.keyBindLeft.getKeyCode()) {
 			this.textAmount.textboxKeyTyped(Character.MIN_VALUE, 203); // Send a left arrow key press to the text box (to move the cursor)
 		} else if (keyCode == settings.keyBindRight.getKeyCode()) {
@@ -548,7 +555,7 @@ public class FluidTransferGui extends GuiScreen {
 		this.drawItemStack(stack, x, y, 1);
 	}
 
-	private void drawItemStack(ItemStack stack, int x, int y, float scale) {
+	private void drawItemStack(ItemStack stack, float x, float y, float scale) {
 		x /= scale;
 		y /= scale;
 		RenderHelper.disableStandardItemLighting();
@@ -558,8 +565,8 @@ public class FluidTransferGui extends GuiScreen {
 		this.itemRender.zLevel = 200.0F;
 		FontRenderer font = stack.getItem().getFontRenderer(stack);
 		if (font == null) font = this.fontRenderer;
-		this.itemRender.renderItemAndEffectIntoGUI(stack, x, y);
-		this.itemRender.renderItemOverlayIntoGUI(font, stack, x, y, "");
+		this.itemRender.renderItemAndEffectIntoGUI(stack, (int) x, (int) y);
+		this.itemRender.renderItemOverlayIntoGUI(font, stack, (int) x, (int) y, "");
 		RenderHelper.enableGUIStandardItemLighting();
 		GL11.glScalef(1/scale, 1/scale, 1/scale);
 		this.zLevel = 0.0F;
@@ -571,34 +578,17 @@ public class FluidTransferGui extends GuiScreen {
 		this.textAmount.setText(Integer.toString(this.amount));
 	}
 
-	private String displayAmount(int amountIn, boolean useBucketLongName) {
-		if (!this.ingotMode) return useBucketLongName ? I18n.format("gc.gui.bucket", amountIn / 1000f) : I18n.format("gc.gui.mb", amountIn);
-
-		float ingots = amountIn / 144 + (amountIn % 144 > 0 && amountIn % 72 == 0 ? .5f : 0);
-		amountIn -= ingots * 144;
-		int nuggets = amountIn / 16;
-		amountIn -= nuggets * 16;
-
-		int numUnits = (ingots > 0 ? 1 : 0) + (nuggets > 0 ? 1 : 0) + (amountIn > 0 ? 1 : 0);
-		if (numUnits > 1) { // If (need to display multiple units) {use shorthand unit names}
-			ArrayList<String> units = new ArrayList<String>(4);
-			if (ingots > 0) units.add(I18n.format("gc.gui.ingot.short", String.format("%.1f", ingots).replaceFirst("[.,]0$", "")));
-			if (nuggets > 0) units.add(I18n.format("gc.gui.nugget.short", nuggets));
-			if (amountIn > 0) units.add(I18n.format("gc.gui.mb", amountIn));
-			return String.join(", ", units);
-		} else if (numUnits == 0) {
-			return I18n.format("gc.gui.ingot", "0");
-		} else if (ingots > 0) {
-			return I18n.format("gc.gui.ingot", String.format("%.1f", ingots).replaceFirst("[.,]0$", ""));
-		} else if (nuggets > 0) {
-			return I18n.format("gc.gui.nugget", nuggets);
-		}
-		return I18n.format("gc.gui.mb", amountIn);
-	}
-
-	private int delta() {
-		if (this.ingotMode) return isShiftKeyDown() ? (isCtrlKeyDown() ? (isAltKeyDown() ? 9216 : 1) : (isAltKeyDown() ? 1296 : 72)) : (isCtrlKeyDown() ? 16 : (isAltKeyDown() ? (this.amount < this.maxAmount % 144 ? this.maxAmount - this.maxAmount % 144 : this.maxAmount) : 144));
-		return isShiftKeyDown() ? (isCtrlKeyDown() ? (isAltKeyDown() ? 100000 : 1) : (isAltKeyDown() ? 10000 : 100)) : (isCtrlKeyDown() ? 10 : (isAltKeyDown() ? this.maxAmount : 1000));
+	private int getDelta() {
+		/*
+		 * Ctrl+Shift:		this.deltas[0]
+		 * Ctrl:			this.deltas[1]
+		 * Shift:			this.deltas[2]
+		 * (None):			this.deltas[3]
+		 * Shift+Alt:		this.deltas[4]
+		 * Ctrl+Shift+Alt:	this.deltas[5]
+		 * Alt:				this.deltas[6]
+		 */
+		return isShiftKeyDown() ? (isCtrlKeyDown() ? (isAltKeyDown() ? this.deltas[5] : this.deltas[0]) : (isAltKeyDown() ? this.deltas[4] : this.deltas[2])) : (isCtrlKeyDown() ? this.deltas[1] : (isAltKeyDown() ? this.deltas[6] : this.deltas[3]));
 	}
 
 	private String getColorizedFluidName(IProxyFluidStack fluidStack) {

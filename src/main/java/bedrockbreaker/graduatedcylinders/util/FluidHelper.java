@@ -18,14 +18,19 @@ import net.minecraft.world.World;
 
 public class FluidHelper {
 
-	public static IProxyFluidHandlerItem getProxyFluidHandler(ItemStack itemStack) {
+	public static MetaHandler getMetaHandler(ItemStack itemStack) {
 		if (itemStack.isEmpty() || itemStack.getCount() != 1) return null;
 
 		for (MetaHandler metaHandler : FluidHandlerRegistry.registry.getValuesCollection()) {
-			if (metaHandler.hasHandler(itemStack)) return metaHandler.getHandler(itemStack);
+			if (metaHandler.hasHandler(itemStack)) return metaHandler;
 		}
 
 		return null;
+	}
+
+	public static IProxyFluidHandlerItem getProxyFluidHandler(ItemStack itemStack) {
+		MetaHandler metaHandler = FluidHelper.getMetaHandler(itemStack);
+		return metaHandler == null ? null : metaHandler.getHandler(itemStack);
 	}
 
 	public static IProxyFluidHandler getMatchingProxyFluidHandler(World world, BlockPos pos, @Nullable EnumFacing side, IProxyFluidHandlerItem fluidHandlerMatch) {

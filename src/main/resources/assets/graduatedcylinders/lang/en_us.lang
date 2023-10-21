@@ -39,8 +39,9 @@ gc.gui.nugget.short=%s N
 
 gc.gui.yestoggle=Toggle fluid transfer direction
 gc.gui.notoggle=Can't change fluid transfer direction
-gc.gui.ingottoggle=Toggle Ingot Mode
-gc.gui.ingotmode=[SHIFT+%s]
+gc.gui.cyclemode=[SHIFT+%s]
+gc.gui.bucketmode=Bucket Mode
+gc.gui.ingotmode=Ingot Mode
 
 gc.gui.selectfluid=%2$sClick to select
 gc.gui.selected=%sSelected
