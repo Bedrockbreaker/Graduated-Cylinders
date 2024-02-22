@@ -9,19 +9,17 @@ import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import bedrockbreaker.graduatedcylinders.api.IProxyTankProperties;
 import bedrockbreaker.graduatedcylinders.api.MetaHandler;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class FluidHelper {
 
 	public static MetaHandler getMetaHandler(ItemStack itemStack) {
-		if (itemStack.isEmpty() || itemStack.getCount() != 1) return null;
+		if (itemStack == null || itemStack.getItem() == null || itemStack.stackSize != 1) return null;
 
-		for (MetaHandler metaHandler : FluidHandlerRegistry.registry.getValuesCollection()) {
+		for (MetaHandler metaHandler : FluidHandlerRegistry.registry) {
 			if (metaHandler.hasHandler(itemStack)) return metaHandler;
 		}
 
@@ -34,10 +32,10 @@ public class FluidHelper {
 	}
 
 	public static IProxyFluidHandler getMatchingProxyFluidHandler(World world, BlockPos pos, @Nullable EnumFacing side, IProxyFluidHandlerItem fluidHandlerMatch) {
-		IBlockState state = world.getBlockState(pos);
-		Block block = state.getBlock();
+		int state = world.getBlockMetadata(pos.getX(), pos.getY(), pos.getZ());
+		Block block = world.getBlock(pos.getX(), pos.getY(), pos.getZ());
 		if (!block.hasTileEntity(state)) return null;
-		TileEntity tileEntity = world.getTileEntity(pos);
+		TileEntity tileEntity = world.getTileEntity(pos.getX(), pos.getY(), pos.getZ());
 		if (tileEntity == null) return null;
 		return fluidHandlerMatch.isMatchingHandlerType(tileEntity, side) ? fluidHandlerMatch.getMatchingHandler(tileEntity, side) : null;
 	}

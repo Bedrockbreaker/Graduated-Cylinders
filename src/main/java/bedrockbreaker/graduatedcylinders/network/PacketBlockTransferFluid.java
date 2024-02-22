@@ -3,22 +3,20 @@ package bedrockbreaker.graduatedcylinders.network;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandlerItem;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.util.BlockPos;
 import bedrockbreaker.graduatedcylinders.util.FluidHelper;
+import cpw.mods.fml.common.network.ByteBufUtils;
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
+import cpw.mods.fml.common.network.simpleimpl.MessageContext;
+import cpw.mods.fml.relauncher.Side;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketBlockTransferFluid implements IMessage {
 
@@ -43,7 +41,7 @@ public class PacketBlockTransferFluid implements IMessage {
 	@Override
 	public void fromBytes(ByteBuf buffer) {
 		try {
-			this.heldItem = new ItemStack(ByteBufUtils.readTag(buffer));
+			this.heldItem = ItemStack.loadItemStackFromNBT(ByteBufUtils.readTag(buffer));
 			this.heldTankIndex = buffer.readInt();
 			this.pos = new BlockPos(buffer.readInt(), buffer.readInt(), buffer.readInt());
 			this.side = buffer.readInt();
@@ -71,36 +69,34 @@ public class PacketBlockTransferFluid implements IMessage {
 		@Override
 		@SuppressWarnings("null")
 		public IMessage onMessage(PacketBlockTransferFluid message, MessageContext ctx) {
-			if (ctx.side != Side.SERVER) return null;
-			FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
-				if (message.amount == 0) return;
+			if (ctx.side != Side.SERVER || message.amount == 0) return null;
 
-				EntityPlayer player = ctx.getServerHandler().player;
-				int slot = -1;
-				for (int i = 0; i < InventoryPlayer.getHotbarSize(); i++) {
-					ItemStack stack = player.inventory.getStackInSlot(i);
-					if (!stack.isEmpty() && ItemStack.areItemStacksEqual(stack, message.heldItem)) {
-						slot = i;
-						break;
-					}
+			EntityPlayer player = ctx.getServerHandler().playerEntity;
+			int slot = -1;
+			for (int i = 0; i < InventoryPlayer.getHotbarSize(); i++) {
+				ItemStack stack = player.inventory.getStackInSlot(i);
+				if (stack != null && stack.getItem() != null && stack.stackSize > 0 && ItemStack.areItemStacksEqual(stack, message.heldItem)) {
+					slot = i;
+					break;
 				}
-				if (slot == -1) return;
+			}
+			if (slot == -1) return null;
 
-				World world = ctx.getServerHandler().player.getServerWorld();
-				IProxyFluidHandlerItem heldFluidHandler = FluidHelper.getProxyFluidHandler(message.heldItem);
-				IProxyFluidHandler blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(world, message.pos, EnumFacing.getFront(message.side), heldFluidHandler);
-				if (heldFluidHandler == null || blockFluidHandler == null) return;
+			World world = ctx.getServerHandler().playerEntity.worldObj;
+			IProxyFluidHandlerItem heldFluidHandler = FluidHelper.getProxyFluidHandler(message.heldItem);
+			IProxyFluidHandler blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(world, message.pos, EnumFacing.getFront(message.side), heldFluidHandler);
+			if (heldFluidHandler == null || blockFluidHandler == null) return null;
 
-				IProxyFluidStack fluidStack = heldFluidHandler.getTankProperties(message.heldTankIndex).getContents();
-				if (fluidStack == null) fluidStack = blockFluidHandler.getTankProperties(message.blockTankIndex).getContents();
-				if (fluidStack == null) return;
-				fluidStack = fluidStack.copy(fluidStack, Math.abs(message.amount));
+			IProxyFluidStack fluidStack = heldFluidHandler.getTankProperties(message.heldTankIndex).getContents();
+			if (fluidStack == null) fluidStack = blockFluidHandler.getTankProperties(message.blockTankIndex).getContents();
+			if (fluidStack == null) return null;
+			fluidStack = fluidStack.copy(fluidStack, Math.abs(message.amount));
 
-				if (FluidHelper.tryFluidTransfer(message.amount < 0 ? blockFluidHandler : heldFluidHandler, message.amount < 0 ? heldFluidHandler : blockFluidHandler, fluidStack, true) != null) world.playSound(null, player.getPosition(), message.amount < 0 ? fluidStack.getEmptySound() : fluidStack.getFillSound(), SoundCategory.PLAYERS, 1.0F, 1.0F);
-				world.getTileEntity(message.pos).markDirty();
+			if (FluidHelper.tryFluidTransfer(message.amount < 0 ? blockFluidHandler : heldFluidHandler, message.amount < 0 ? heldFluidHandler : blockFluidHandler, fluidStack, true) != null) world.playSound(player.posX, player.posY, player.posZ, message.amount < 0 ? fluidStack.getEmptySound() : fluidStack.getFillSound(), 1.0F, 1.0F, false);
+			world.getTileEntity(message.pos.getX(), message.pos.getY(), message.pos.getZ());
 
-				player.inventory.setInventorySlotContents(slot, heldFluidHandler.getContainer());
-			});
+			player.inventory.setInventorySlotContents(slot, heldFluidHandler.getContainer());
+
 			return null;
 		}
 	}

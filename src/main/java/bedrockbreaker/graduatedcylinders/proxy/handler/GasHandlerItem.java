@@ -46,9 +46,6 @@ public class GasHandlerItem implements IProxyFluidHandlerItem {
 		return 1;
 	}
 
-	// Mekanism adds emulated receiveGas/drawGas for tile entity gas handlers, but not one for items??
-	// Also, yes, I'm bypassing the rate limiting on gas transfer. No, I don't care.
-
 	public int fill(IProxyFluidStack resource, boolean doFill) {
 		if (!(resource instanceof GasStackGC)) return 0;
 		GasStack resourceStack = ((GasStackGC) resource).gasStack;

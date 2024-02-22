@@ -2,18 +2,14 @@ package bedrockbreaker.graduatedcylinders.util;
 
 import java.util.HashMap;
 
-import bedrockbreaker.graduatedcylinders.GraduatedCylinders;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import cpw.mods.fml.relauncher.SideOnly;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.relauncher.Side;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.event.TextureStitchEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-@EventBusSubscriber(modid = GraduatedCylinders.MODID, value = Side.CLIENT)
 public class ColorCache {
 
 	public static final HashMap<String, String> fluidColorCodeCache = new HashMap<String, String>();

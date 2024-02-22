@@ -7,52 +7,42 @@ import java.util.ArrayList;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL14;
 
-import bedrockbreaker.graduatedcylinders.GraduatedCylinders;
+import bedrockbreaker.graduatedcylinders.RegisterOverlays;
 import bedrockbreaker.graduatedcylinders.util.FluidHelper.TransferrableFluidResult;
+import cpw.mods.fml.relauncher.SideOnly;
+import cpw.mods.fml.relauncher.Side;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockRendererDispatcher;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
-import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
+import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.MinecraftForgeClient;
-import net.minecraftforge.client.event.TextureStitchEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 // Shamelessly modified from EnderIO
 // Mostly from https://github.com/SleepyTrousers/EnderIO/blob/release/1.12.2/enderio-base/src/main/java/crazypants/enderio/base/gui/IoConfigRenderer.java
 // Used accordingly under its CC0 license
 @SideOnly(Side.CLIENT)
-@EventBusSubscriber(modid = GraduatedCylinders.MODID, value = Side.CLIENT)
 public class Scene3DRenderer {
 
 	// Scene
 	private Minecraft mc = Minecraft.getMinecraft();
-	private World world = mc.player.world;
+	private World world = mc.theWorld;
 	private BlockPos blockOrigin;
 	private ArrayList<BlockPos> neighbors = new ArrayList<>();
 	private boolean isDragging = false;
@@ -80,12 +70,9 @@ public class Scene3DRenderer {
 	public EnumFacing selectedFace;
 	public ArrayList<TransferrableFluidResult> allowedFaces;
 	private static final FloatBuffer MATRIX_BUFFER = GLAllocation.createDirectFloatBuffer(16);
-	private static TextureAtlasSprite hoveredFaceSprite;
-	private static TextureAtlasSprite selectedFaceSprite;
-	private static TextureAtlasSprite blockedFaceSprite;
 
 	public Scene3DRenderer(BlockPos blockOrigin, ArrayList<TransferrableFluidResult> allowedFaces) {
-		this.world = mc.player.world;
+		this.world = mc.theWorld;
 		this.blockOrigin = blockOrigin;
 		this.allowedFaces = allowedFaces;
 		for (EnumFacing face : EnumFacing.values()) {
@@ -93,17 +80,10 @@ public class Scene3DRenderer {
 		}
 		this.origin.set(blockOrigin).add(.5);
 
-		this.pitch = -mc.player.rotationPitch;
-		this.yaw = 180 - mc.player.rotationYaw;
+		this.pitch = -mc.thePlayer.rotationPitch;
+		this.yaw = 180 - mc.thePlayer.rotationYaw;
 		this.pitchRotation.setIdentity();
 		this.yawRotation.setIdentity();
-	}
-
-	@SubscribeEvent
-	public static void registerSprites(TextureStitchEvent.Pre event) {
-		Scene3DRenderer.hoveredFaceSprite = event.getMap().registerSprite(new ResourceLocation(GraduatedCylinders.MODID, "overlay/hovered_face"));
-		Scene3DRenderer.selectedFaceSprite = event.getMap().registerSprite(new ResourceLocation(GraduatedCylinders.MODID, "overlay/selected_face"));
-		Scene3DRenderer.blockedFaceSprite = event.getMap().registerSprite(new ResourceLocation(GraduatedCylinders.MODID, "overlay/blocked_face"));
 	}
 
 	public void init() {
@@ -173,7 +153,7 @@ public class Scene3DRenderer {
 		long timeSinceInit = System.currentTimeMillis() - this.initTime;
 		if (Mouse.getEventButton() == -1 || Mouse.getEventButtonState() || timeSinceInit < 500 || this.viewMatrix == null || this.projectionMatrix == null || this.viewport == null) return;
 		if (Mouse.getEventButton() == 1) { // right click
-			if (this.hoveredFace != null && this.allowedFaces.get(this.hoveredFace.getIndex()).canTransfer()) this.selectedFace = this.hoveredFace;
+			if (this.hoveredFace != null && this.allowedFaces.get(this.hoveredFace.ordinal()).canTransfer()) this.selectedFace = this.hoveredFace;
 		} else if (Mouse.getEventButton() == 2) { // middle click
 			this.renderNeighbors = !this.renderNeighbors;
 		}
@@ -185,13 +165,13 @@ public class Scene3DRenderer {
 
 	private void updateHoveredFace(Vec3d start, Vec3d end) {
 		this.hoveredFace = null;
-		if (world.isAirBlock(this.blockOrigin)) return;
+		if (world.isAirBlock(this.blockOrigin.getX(), this.blockOrigin.getY(), this.blockOrigin.getZ())) return;
 		start.add(this.origin);
 		end.add(this.origin);
-		IBlockState blockState = world.getBlockState(blockOrigin);
-		RayTraceResult hit = blockState.collisionRayTrace(world, blockOrigin, new net.minecraft.util.math.Vec3d(start.x, start.y, start.z), new net.minecraft.util.math.Vec3d(end.x, end.y, end.z));
-		if (hit == null || hit.typeOfHit == RayTraceResult.Type.MISS) return;
-		this.hoveredFace = hit.sideHit;
+		Block block = world.getBlock(this.blockOrigin.getX(), this.blockOrigin.getY(), this.blockOrigin.getZ());
+		MovingObjectPosition hit = block.collisionRayTrace(this.world, this.blockOrigin.getX(), this.blockOrigin.getY(), this.blockOrigin.getZ(), Vec3.createVectorHelper(start.x, start.y, start.z), Vec3.createVectorHelper(end.x, end.y, end.z));
+		if (hit == null || hit.typeOfHit == MovingObjectType.MISS) return;
+		this.hoveredFace = EnumFacing.getFront(hit.sideHit);
 	}
 
 	private boolean updateCamera(float partialTick, Rectangle viewport) {
@@ -236,10 +216,10 @@ public class Scene3DRenderer {
 		GL11.glViewport(this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height);
 		GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
-		GlStateManager.pushMatrix();
+		GL11.glPushMatrix();
 		if (this.transposeProjectionMatrix != null) this.loadMatrix(this.transposeProjectionMatrix);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-		GlStateManager.pushMatrix();
+		GL11.glPushMatrix();
 		if (this.transposeViewMatrix != null) this.loadMatrix(this.transposeViewMatrix);
 		GL11.glTranslatef((float) -this.cameraPosition.x, (float) -this.cameraPosition.y, (float) -this.cameraPosition.z);
 	}
@@ -267,19 +247,28 @@ public class Scene3DRenderer {
 	}
 
 	private void renderScene(float partialTick) {
-		GlStateManager.enableCull();
-		GlStateManager.enableRescaleNormal();
+		GL11.glEnable(GL11.GL_CULL_FACE);
+		GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 		RenderHelper.disableStandardItemLighting();
-		GlStateManager.disableLighting();
-		this.mc.entityRenderer.disableLightmap();
-		this.mc.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-		GlStateManager.enableTexture2D();
-		GlStateManager.enableAlpha();
+		GL11.glDisable(GL11.GL_LIGHTING);
+		this.mc.entityRenderer.disableLightmap(0); // Passed argument is literally unused
+		this.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glEnable(GL11.GL_ALPHA_TEST);
 
 		Vec3d translation = new Vec3d(this.cameraPosition).sub(this.origin);
-		BlockRenderLayer oldRenderLayer = MinecraftForgeClient.getRenderLayer();
+		int oldRenderPass = MinecraftForgeClient.getRenderPass();
 		try {
-			for (BlockRenderLayer layer : BlockRenderLayer.values()) {
+			for (int layer = 0; layer < 2; layer++) {
+				ForgeHooksClient.setRenderPass(layer);
+				this.setGlStateForPass(layer, false);
+				this.doWorldRenderPass(translation, this.blockOrigin, layer);
+				if (!renderNeighbors) continue;
+				this.setGlStateForPass(layer, true);
+				this.doWorldRenderPass(translation, this.neighbors, layer);
+			}
+			// TODO: these for loops may be separated for a reason
+			/* for (BlockRenderLayer layer : BlockRenderLayer.values()) {
 				ForgeHooksClient.setRenderLayer(layer);
 				this.setGlStateForPass(layer, false);
 				this.doWorldRenderPass(translation, this.blockOrigin, layer);
@@ -291,15 +280,16 @@ public class Scene3DRenderer {
 					this.setGlStateForPass(layer, true);
 					this.doWorldRenderPass(translation, this.neighbors, layer);
 				}
-			}
+			} */
 		} finally {
-			ForgeHooksClient.setRenderLayer(oldRenderLayer);
+			ForgeHooksClient.setRenderPass(oldRenderPass);
 		}
 
 		RenderHelper.enableStandardItemLighting();
-		TileEntityRendererDispatcher.instance.entityX = this.origin.x - this.cameraPosition.x;
-		TileEntityRendererDispatcher.instance.entityY = this.origin.y - this.cameraPosition.y;
-		TileEntityRendererDispatcher.instance.entityZ = this.origin.z - this.cameraPosition.z;
+		// TileEntityRendererDispatcher.instance.entityX/Y/Z
+		TileEntityRendererDispatcher.instance.field_147558_l = this.origin.x - this.cameraPosition.x;
+		TileEntityRendererDispatcher.instance.field_147560_j = this.origin.y - this.cameraPosition.y;
+		TileEntityRendererDispatcher.instance.field_147561_k = this.origin.z - this.cameraPosition.z;
 		TileEntityRendererDispatcher.staticPlayerX = this.origin.x - this.cameraPosition.x;
 		TileEntityRendererDispatcher.staticPlayerY = this.origin.y - this.cameraPosition.y;
 		TileEntityRendererDispatcher.staticPlayerZ = this.origin.z - this.cameraPosition.z;
@@ -317,57 +307,56 @@ public class Scene3DRenderer {
 		this.setGlStateForPass(0, false);
 	}
 
-	private void setGlStateForPass(BlockRenderLayer layer, boolean isNeighbor) {
-		this.setGlStateForPass(layer == BlockRenderLayer.TRANSLUCENT ? 1 : 0, isNeighbor);
-	}
-
 	private void setGlStateForPass(int layer, boolean isNeighbor) {
-		GlStateManager.color(1, 1, 1, 1);
+		GL11.glColor4f(1, 1, 1, 1);
 		if (isNeighbor) {
-			GlStateManager.enableDepth();
-			GlStateManager.enableBlend();
-			GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_CONSTANT_COLOR);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GL11.glEnable(GL11.GL_BLEND);
+			GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_CONSTANT_COLOR);
 			GL14.glBlendColor(1, 1, 1, 1);
 			return;
 		}
 
 		if (layer == 0) {
-			GlStateManager.enableDepth();
-			GlStateManager.disableBlend();
-			GlStateManager.depthMask(true);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GL11.glDisable(GL11.GL_BLEND);
+			GL11.glDepthMask(false);
 		} else {
-			GlStateManager.enableBlend();
-			GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-			GlStateManager.depthMask(false);
+			GL11.glEnable(GL11.GL_BLEND);
+			GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+			GL11.glDepthMask(false);
 		}
 	}
 
-	private void doWorldRenderPass(Vec3d translation, ArrayList<BlockPos> blocks, BlockRenderLayer layer) {
-		BufferBuilder buffer = Tessellator.getInstance().getBuffer();
-		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-		buffer.setTranslation(translation.x, translation.y, translation.z);
+	private void doWorldRenderPass(Vec3d translation, ArrayList<BlockPos> blocks, int layer) {
+		Tessellator tesselator = Tessellator.instance;
+		tesselator.startDrawingQuads();
+		tesselator.setTranslation(translation.x, translation.y, translation.z);
 
 		for (BlockPos pos : blocks) {
-			IBlockState blockState = this.world.getBlockState(pos);
-			Block block = blockState.getBlock();
-			blockState = blockState.getActualState(this.world, pos);
-			if (!block.canRenderInLayer(blockState, layer)) continue;
-			this.renderBlock(blockState, pos, this.world, buffer);
+			int blockState = this.world.getBlockMetadata(pos.getX(), pos.getY(), pos.getZ());
+			Block block = this.world.getBlock(pos.getX(), pos.getY(), pos.getZ());
+			if (!block.canRenderInPass(layer)) continue;
+			this.renderBlock(blockState, pos, this.world);
 		}
 
-		Tessellator.getInstance().draw();
-		buffer.setTranslation(0, 0, 0);
+		tesselator.draw();
+		tesselator.setTranslation(0, 0, 0);
 	}
 
-	private void doWorldRenderPass(Vec3d translation, BlockPos blockPos, BlockRenderLayer layer) {
+	private void doWorldRenderPass(Vec3d translation, BlockPos blockPos, int layer) {
 		ArrayList<BlockPos> list = new ArrayList<BlockPos>();
 		list.add(blockPos);
 		this.doWorldRenderPass(translation, list, layer);
 	}
 
-	private void renderBlock(IBlockState blockState, BlockPos blockPos, IBlockAccess blockAccess, BufferBuilder buffer) {
+	private void renderBlock(int blockState, BlockPos blockPos, IBlockAccess blockAccess) {
+		Block block = this.world.getBlock(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+		RenderBlocks renderer = new RenderBlocks(blockAccess);
+
 		try {
-			BlockRendererDispatcher blockRendererDispatcher = this.mc.getBlockRendererDispatcher();
+			renderer.renderBlockByRenderType(block, blockPos.getX(), blockPos.getY(), blockPos.getZ());
+			/* BlockRendererDispatcher blockRendererDispatcher = this.mc.getBlockRendererDispatcher();
 			EnumBlockRenderType blockRenderType = blockState.getRenderType();
 			if (blockRenderType != EnumBlockRenderType.MODEL) {
 				blockRendererDispatcher.renderBlock(blockState, blockPos, blockAccess, buffer);
@@ -376,7 +365,7 @@ public class Scene3DRenderer {
 
 			IBakedModel model = blockRendererDispatcher.getModelForState(blockState);
 			blockState = blockState.getBlock().getExtendedState(blockState, blockAccess, blockPos);
-			blockRendererDispatcher.getBlockModelRenderer().renderModel(blockAccess, model, blockState, blockPos, buffer, false);
+			blockRendererDispatcher.getBlockModelRenderer().renderModel(blockAccess, model, blockState, blockPos, buffer, false); */
 		} catch (Throwable error) {
 			// Eat the error -- don't care.
 		}
@@ -384,7 +373,7 @@ public class Scene3DRenderer {
 
 	private void doTileEntityRenderPass(ArrayList<BlockPos> blocks, int pass, float partialTick) {
 		for (BlockPos pos : blocks) {
-			TileEntity tileEntity = this.world.getTileEntity(pos);
+			TileEntity tileEntity = this.world.getTileEntity(pos.getX(), pos.getY(), pos.getZ());
 			if (tileEntity == null) continue;
 			Vec3d renderPos = new Vec3d(this.cameraPosition).add(pos).sub(this.origin);
 			if (tileEntity.getClass() == TileEntityChest.class) {
@@ -397,7 +386,7 @@ public class Scene3DRenderer {
 					renderPos.z--;
 				}
 			}
-			TileEntityRendererDispatcher.instance.render(tileEntity, renderPos.x, renderPos.y, renderPos.z, partialTick);
+			TileEntityRendererDispatcher.instance.renderTileEntityAt(tileEntity, renderPos.x, renderPos.y, renderPos.z, partialTick);
 		}
 	}
 
@@ -410,30 +399,29 @@ public class Scene3DRenderer {
 	private void renderOverlays() {
 		if (this.selectedFace == null) return;
 
-		GlStateManager.disableDepth();
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
 		RenderHelper.disableStandardItemLighting();
-		GlStateManager.color(1, 1, 1, 1);
-		this.mc.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+		GL11.glColor4f(1, 1, 1, 1);
+		this.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
 		
-		BufferBuilder buffer = Tessellator.getInstance().getBuffer();
+		Tessellator tesselator = Tessellator.instance;
 		Vec3d translation = new Vec3d(this.cameraPosition).sub(this.origin);
-		buffer.setTranslation(translation.x, translation.y, translation.z);
-		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-		this.drawOverlay(buffer, blockOrigin, this.selectedFace, Scene3DRenderer.selectedFaceSprite, true);
-		if (this.hoveredFace != null) this.drawOverlay(buffer, blockOrigin, this.hoveredFace, this.allowedFaces.get(this.hoveredFace.getIndex()).canTransfer() ? Scene3DRenderer.hoveredFaceSprite : Scene3DRenderer.blockedFaceSprite, false);		
-		Tessellator.getInstance().draw();
-		buffer.setTranslation(0, 0, 0);
+		tesselator.setTranslation(translation.x, translation.y, translation.z);
+		this.drawOverlay(tesselator, blockOrigin, this.selectedFace, RegisterOverlays.selectedFaceSprite, true);
+		if (this.hoveredFace != null) this.drawOverlay(tesselator, blockOrigin, this.hoveredFace, this.allowedFaces.get(this.hoveredFace.ordinal()).canTransfer() ? RegisterOverlays.hoveredFaceSprite : RegisterOverlays.blockedFaceSprite, false);		
+		tesselator.draw();
+		tesselator.setTranslation(0, 0, 0);
 	}
 
-	private void drawOverlay(BufferBuilder buffer, BlockPos blockPos, EnumFacing face, TextureAtlasSprite overlay, boolean drawInverse) {
+	private void drawOverlay(Tessellator tesselator, BlockPos blockPos, EnumFacing face, TextureAtlasSprite overlay, boolean drawInverse) {
 		double[] texelData = this.getPositionsAndUVForFace(blockPos, face, overlay.getMinU(), overlay.getMaxU(), overlay.getMinV(), overlay.getMaxV());
 		for (int i = 0; i < 4; i++) {
-			buffer.pos(texelData[i*5], texelData[i*5+1], texelData[i*5+2]).tex(texelData[i*5+3], texelData[i*5+4]).endVertex();
+			tesselator.addVertexWithUV(texelData[i*5], texelData[i*5+1], texelData[i*5+2], texelData[i*5+3], texelData[i*5+4]);
 		}
-		if (drawInverse) { // Render inwards facing selection, seen through blocks in front of it
-			for (int i = 3; i >= 0; i--) {
-				buffer.pos(texelData[i*5], texelData[i*5+1], texelData[i*5+2]).tex(texelData[i*5+3], texelData[i*5+4]).endVertex();
-			}
+		if (!drawInverse) return;
+		// Render inwards facing selection, seen through blocks in front of it
+		for (int i = 3; i >= 0; i--) {
+			tesselator.addVertexWithUV(texelData[i*5], texelData[i*5+1], texelData[i*5+2], texelData[i*5+3], texelData[i*5+4]);
 		}
 	}
 
@@ -463,8 +451,8 @@ public class Scene3DRenderer {
 		RenderHelper.enableStandardItemLighting();
 		GL11.glViewport(0, 0, this.mc.displayWidth, this.mc.displayHeight);
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
-		GlStateManager.popMatrix();
+		GL11.glPopMatrix();
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-		GlStateManager.popMatrix();
+		GL11.glPopMatrix();
 	}
 }

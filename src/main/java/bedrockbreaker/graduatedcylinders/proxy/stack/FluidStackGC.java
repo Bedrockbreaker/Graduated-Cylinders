@@ -6,8 +6,6 @@ import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
 import net.minecraftforge.fluids.FluidStack;
 
 // AKA "FluidStackGraduatedCylinders" to avoid name conflict
@@ -35,12 +33,12 @@ public class FluidStackGC implements IProxyFluidStack {
 		return this.fluidStack.getFluid().getColor();
 	}
 
-	public SoundEvent getFillSound() {
-		return this.fluidStack.getFluid().getFillSound();
+	public String getFillSound() {
+		return "item.bucket.fill";
 	}
 
-	public SoundEvent getEmptySound() {
-		return this.fluidStack.getFluid().getEmptySound();
+	public String getEmptySound() {
+		return "item.bucket.empty";
 	}
 
 	public String getUnlocalizedName() {
@@ -51,12 +49,8 @@ public class FluidStackGC implements IProxyFluidStack {
 		return this.fluidStack.getLocalizedName();
 	}
 
-	public ResourceLocation getResourceLocation() {
-		return this.fluidStack.getFluid().getStill();
-	}
-
 	public TextureAtlasSprite getSprite() {
-		return Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(this.getResourceLocation().toString());
+		return Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(this.fluidStack.getFluid().getIcon().getIconName());
 	}
 
 	public FluidStackGC loadFromNBT(NBTTagCompound nbt) {

@@ -1,8 +1,14 @@
 package bedrockbreaker.graduatedcylinders.network;
 
+import bedrockbreaker.graduatedcylinders.util.BlockPos;
 import bedrockbreaker.graduatedcylinders.util.BufferHelper;
 import bedrockbreaker.graduatedcylinders.util.FluidHelper;
 import bedrockbreaker.graduatedcylinders.util.FluidHelper.TransferrableFluidResult;
+import cpw.mods.fml.common.network.ByteBufUtils;
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
+import cpw.mods.fml.common.network.simpleimpl.MessageContext;
+import cpw.mods.fml.relauncher.Side;
 
 import java.util.ArrayList;
 
@@ -12,13 +18,6 @@ import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketOpenFluidGUI implements IMessage {
 	
@@ -47,7 +46,7 @@ public class PacketOpenFluidGUI implements IMessage {
 	@Override
 	public void fromBytes(ByteBuf buffer) {
 		try {
-			this.heldItem = new ItemStack(ByteBufUtils.readTag(buffer));
+			this.heldItem = ItemStack.loadItemStackFromNBT(ByteBufUtils.readTag(buffer));
 			this.pos = new BlockPos(buffer.readInt(), buffer.readInt(), buffer.readInt());
 			this.side = buffer.readInt();
 
@@ -121,7 +120,7 @@ public class PacketOpenFluidGUI implements IMessage {
 		@Override
 		public IMessage onMessage(PacketOpenFluidGUI message, MessageContext context) {
 			if (context.side != Side.CLIENT) return null;
-			FMLCommonHandler.instance().getWorldThread(context.netHandler).addScheduledTask(() -> FluidTransferGui.open(message.heldItem, message.pos, message.transferResults, message.heldTankIndex, message.side, message.blockTankIndex, message.heldFluidStacks, message.blockFluidStacks));
+			FluidTransferGui.open(message.heldItem, message.pos, message.transferResults, message.heldTankIndex, message.side, message.blockTankIndex, message.heldFluidStacks, message.blockFluidStacks);
 			return null;
 		}
 	}

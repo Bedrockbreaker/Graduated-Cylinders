@@ -3,9 +3,9 @@ package bedrockbreaker.graduatedcylinders.util;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import bedrockbreaker.graduatedcylinders.util.FluidHelper.TransferrableFluidResult;
+import cpw.mods.fml.common.network.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 public class BufferHelper {
 	

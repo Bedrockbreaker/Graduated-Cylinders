@@ -4,13 +4,12 @@ import java.util.ArrayList;
 
 import bedrockbreaker.graduatedcylinders.proxy.mode.BucketMode;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 
 /**
  * To make your fluid handler work with GC, register a singleton instance of a child of this class in the `RegistryEvent.Register<MetaHandler>` event
  * @See {@link bedrockbreaker.graduatedcylinders.FluidHandlerRegistry#registerHandlers} for example
  */
-public abstract class MetaHandler extends IForgeRegistryEntry.Impl<MetaHandler> {
+public abstract class MetaHandler {
 
 	public ArrayList<IHandlerMode> modes = new ArrayList<IHandlerMode>();
 

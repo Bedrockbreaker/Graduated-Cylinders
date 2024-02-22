@@ -11,7 +11,7 @@ public class BucketMode implements IHandlerMode {
 
 	public static final BucketMode INSTANCE = new BucketMode();
 
-	public ItemStack icon = new ItemStack(Items.BUCKET);
+	public ItemStack icon = new ItemStack(Items.bucket);
 
 	public int[] getDeltas(int amount, int heldCapacity, int tankCapacity) {
 		return new int[] {1, 10, 100, 1000, 10000, 100000, Math.min(heldCapacity, tankCapacity)};

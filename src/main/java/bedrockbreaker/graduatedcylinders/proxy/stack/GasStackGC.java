@@ -4,11 +4,9 @@ import javax.annotation.Nullable;
 
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import mekanism.api.gas.GasStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
 
 // AKA "GasStackGraduatedCylinders" to avoid name conflict
 public class GasStackGC implements IProxyFluidStack {
@@ -32,31 +30,27 @@ public class GasStackGC implements IProxyFluidStack {
 	}
 
 	public int getColor() {
-		return this.gasStack.getGas().getTint();
+		return 0xFFFFFF;
 	}
 
-	public SoundEvent getFillSound() {
-		return SoundEvents.BLOCK_LAVA_EXTINGUISH; // Mekanism doesn't have any good gas transfer sounds
+	public String getFillSound() {
+		return "block.lava.extinguish"; // Mekanism doesn't have any good gas transfer sounds
 	}
 
-	public SoundEvent getEmptySound() {
-		return SoundEvents.BLOCK_LAVA_EXTINGUISH;
+	public String getEmptySound() {
+		return "block.lava.extinguish";
 	}
 
 	public String getUnlocalizedName() {
-		return this.gasStack.getGas().getTranslationKey();
+		return this.gasStack.getGas().getUnlocalizedName();
 	}
 
 	public String getLocalizedName() {
 		return this.gasStack.getGas().getLocalizedName();
 	}
 
-	public ResourceLocation getResourceLocation() {
-		return this.gasStack.getGas().getIcon();
-	}
-
 	public TextureAtlasSprite getSprite() {
-		return this.gasStack.getGas().getSprite();
+		return Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(this.gasStack.getGas().getIcon().getIconName());
 	}
 
 	public GasStackGC loadFromNBT(NBTTagCompound nbt) {

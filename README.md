@@ -1,5 +1,5 @@
 # Graduated Cylinders
-Minecraft 1.12 mod. Allows finer control over manually moving fluids between tanks.
+Minecraft mod. Allows finer control over manually moving fluids between tanks.
 
 ## Supported Mods/APIs
 - Forge fluids

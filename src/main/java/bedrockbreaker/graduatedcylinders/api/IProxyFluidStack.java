@@ -2,12 +2,10 @@ package bedrockbreaker.graduatedcylinders.api;
 
 import javax.annotation.Nullable;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public interface IProxyFluidStack {
 
@@ -33,19 +31,14 @@ public interface IProxyFluidStack {
 	public int getColor();
 
 	/**
-	 * Get the resource location of this fluid
-	 */
-	public ResourceLocation getResourceLocation();
-
-	/**
 	 * Get the container fill sound for this fluid
 	 */
-	public SoundEvent getFillSound();
+	public String getFillSound();
 
 	/**
 	 * Get the container drain sound for this fluid
 	 */
-	public SoundEvent getEmptySound();
+	public String getEmptySound();
 
 	/**
 	 * Get the unlocalized name of this fluid

@@ -1,15 +1,19 @@
 package bedrockbreaker.graduatedcylinders;
 
 import java.awt.Rectangle;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 import com.google.common.primitives.Ints;
 
@@ -20,9 +24,11 @@ import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import bedrockbreaker.graduatedcylinders.api.MetaHandler;
 import bedrockbreaker.graduatedcylinders.network.PacketBlockTransferFluid;
 import bedrockbreaker.graduatedcylinders.network.PacketHandler;
+import bedrockbreaker.graduatedcylinders.util.BlockPos;
 import bedrockbreaker.graduatedcylinders.util.ColorCache;
 import bedrockbreaker.graduatedcylinders.util.FluidHelper;
 import bedrockbreaker.graduatedcylinders.util.FluidHelper.TransferrableFluidResult;
+import bedrockbreaker.graduatedcylinders.util.TextFormatting;
 import bedrockbreaker.graduatedcylinders.util.GuiFluidSprite;
 import bedrockbreaker.graduatedcylinders.util.MathHelper;
 import bedrockbreaker.graduatedcylinders.util.Scene3DRenderer;
@@ -39,11 +45,7 @@ import net.minecraft.client.settings.GameSettings;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class FluidTransferGui extends GuiScreen {
@@ -100,7 +102,7 @@ public class FluidTransferGui extends GuiScreen {
 	public FluidTransferGui(ItemStack heldItem, BlockPos pos, ArrayList<ArrayList<TransferrableFluidResult>> sidedTransferResults, int heldTankIndex, int side, int blockTankIndex, ArrayList<IProxyFluidStack> heldFluidStacks, ArrayList<ArrayList<IProxyFluidStack>> sidedBlockFluidStacks) {
 		super();
 
-		this.world = Minecraft.getMinecraft().world;
+		this.world = Minecraft.getMinecraft().theWorld;
 		this.pos = pos;
 		this.heldItem = heldItem;
 		this.metaHandler = FluidHelper.getMetaHandler(heldItem);
@@ -157,7 +159,7 @@ public class FluidTransferGui extends GuiScreen {
 	}
 
 	protected boolean changeSelectedFace(EnumFacing face) {
-		int side = face.getIndex();
+		int side = face.ordinal();
 		if (!this.allowedFaces.get(side).canTransfer()) return false;
 		this.updateCaches(this.allowedFaces.get(side).sourceTank, side, this.allowedFaces.get(side).destinationTank);
 		this.applyToSprites((GuiFluidSprite sprite, boolean isHeldSprite, boolean isSelectedSprite, int tankIndex) -> {
@@ -210,8 +212,8 @@ public class FluidTransferGui extends GuiScreen {
 		this.deltaStrings = this.mode.getStringDeltas();
 
 		this.instructionsWidth = 0;
-		this.deltaStrings.forEach(s -> this.instructionsWidth = Math.max(this.instructionsWidth, this.fontRenderer.getStringWidth(s)));
-		this.instructionsWidth = this.fontRenderer.getStringWidth(I18n.format("gc.gui.combo6" + (Minecraft.IS_RUNNING_ON_MAC ? ".cmd" : ""))) + this.instructionsWidth + 10;
+		this.deltaStrings.forEach(s -> this.instructionsWidth = Math.max(this.instructionsWidth, this.fontRendererObj.getStringWidth(s)));
+		this.instructionsWidth = this.fontRendererObj.getStringWidth(I18n.format("gc.gui.combo6" + (Minecraft.isRunningOnMac ? ".cmd" : ""))) + this.instructionsWidth + 10;
 	}
 
 	protected void selectFluid(Pair<Integer, Integer> tankIndices, int fluidTransferAmount, boolean defaultTransferDirection, boolean doAnimation) {
@@ -223,7 +225,7 @@ public class FluidTransferGui extends GuiScreen {
 		// Do the stuff
 		this.heldTankIndex = tankIndices.getLeft();
 		this.blockTankIndex = tankIndices.getRight();
-		this.allowedFaces.set(this.selectedFace.getIndex(), this.getTransferCapability());
+		this.allowedFaces.set(this.selectedFace.ordinal(), this.getTransferCapability());
 		this.maxAmount = Math.min(this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity(), this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity());
 		this.transferDirectionForced = this.getTransferCapability().canExport ^ this.getTransferCapability().canImport;
 		this.isExporting = this.transferDirectionForced ? this.getTransferCapability().canExport : defaultTransferDirection;
@@ -248,25 +250,25 @@ public class FluidTransferGui extends GuiScreen {
 		final int centerY = this.height / 2;
 
 		this.incFluidButton = new GuiButton(buttonId++, centerX + 50, centerY - 35, 20, 20, "+");
-		this.addButton(this.incFluidButton);
+		this.buttonList.add(this.incFluidButton);
 
 		this.decFluidButton = new GuiButton(buttonId++, centerX + 50, centerY - 5, 20, 20, "-");
-		this.addButton(this.decFluidButton);
+		this.buttonList.add(this.decFluidButton);
 
 		this.exportButton = new GuiButton(buttonId++, centerX - 72, centerY + 28, 20, 20, this.isExporting ? "->" : "<-");
-		this.addButton(this.exportButton);
+		this.buttonList.add(this.exportButton);
 
 		this.modeButton = new GuiButton(buttonId++, centerX - 90, centerY - 20, 20, 20, "");
-		if (this.metaHandler.modes.size() > 1) this.addButton(this.modeButton);
+		if (this.metaHandler.modes.size() > 1) this.buttonList.add(this.modeButton);
 		this.cycleMode();
 
-		this.textAmount = new GuiTextField(0, this.fontRenderer, centerX - 60, centerY - 20, 100, 20);
+		this.textAmount = new GuiTextField(this.fontRendererObj, centerX - 60, centerY - 20, 100, 20);
 		this.textAmount.setText(Integer.toString(this.amount));
 		this.textAmount.setMaxStringLength(10);
 		this.textAmount.setFocused(true);
 		this.textAmount.setCanLoseFocus(false);
 
-		this.selectFluid(Pair.of(this.heldTankIndex, this.blockTankIndex), 0, Minecraft.getMinecraft().player.isSneaking(), false);
+		this.selectFluid(Pair.of(this.heldTankIndex, this.blockTankIndex), 0, Minecraft.getMinecraft().thePlayer.isSneaking(), false);
 		this.sceneRenderer.init();
 	}
 
@@ -299,11 +301,12 @@ public class FluidTransferGui extends GuiScreen {
 	// Called every frame (welcome to magic number jigoku)
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-		GameSettings settings = Minecraft.getMinecraft().gameSettings;
-		float scale = new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor();
+		Minecraft minecraft = Minecraft.getMinecraft();
+		GameSettings settings = minecraft.gameSettings;
+		float scale = new ScaledResolution(minecraft, minecraft.displayWidth, minecraft.displayHeight).getScaleFactor();
 		int centerX = this.width / 2;
 		int centerY = this.height / 2;
-		String cmd = Minecraft.IS_RUNNING_ON_MAC ? ".cmd" : "";
+		String cmd = Minecraft.isRunningOnMac ? ".cmd" : "";
 		int leftMargin = this.width - this.instructionsWidth;
 
 		this.drawDefaultBackground();
@@ -312,38 +315,38 @@ public class FluidTransferGui extends GuiScreen {
 
 		// Fluid amounts and current fluid name
 		String displayHeldAmount = this.mode.formatAmount(this.heldFluidStacks.get(this.heldTankIndex) != null ? this.heldFluidStacks.get(this.heldTankIndex).getAmount() : 0, false);
-		this.drawCenteredString(this.fontRenderer, displayHeldAmount, centerX - 98 - Math.max(this.fontRenderer.getStringWidth(displayHeldAmount) / 2 - 26, 0), centerY + 75, 0xAAAAAA);
+		this.drawCenteredString(this.fontRendererObj, displayHeldAmount, centerX - 98 - Math.max(this.fontRendererObj.getStringWidth(displayHeldAmount) / 2 - 26, 0), centerY + 75, 0xAAAAAA);
 		String displayBlockAmount = this.mode.formatAmount(this.blockFluidStacks.get(this.blockTankIndex) != null ? this.blockFluidStacks.get(this.blockTankIndex).getAmount() : 0, false);
-		this.drawCenteredString(this.fontRenderer, displayBlockAmount, centerX - 10 + Math.max(this.fontRenderer.getStringWidth(displayBlockAmount) / 2 - 42, 0), centerY + 75, 0xAAAAAA);
+		this.drawCenteredString(this.fontRendererObj, displayBlockAmount, centerX - 10 + Math.max(this.fontRendererObj.getStringWidth(displayBlockAmount) / 2 - 42, 0), centerY + 75, 0xAAAAAA);
 		if (this.amount > 0) {
 			int heldAmount = this.heldFluidStacks.get(this.heldTankIndex) != null ? this.heldFluidStacks.get(this.heldTankIndex).getAmount() : 0;
 			int blockAmount = this.blockFluidStacks.get(this.blockTankIndex) != null ? this.blockFluidStacks.get(this.blockTankIndex).getAmount() : 0;
 			int deltaMax = Math.min(this.isExporting ? Math.min(this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity() - blockAmount, heldAmount) : Math.min(this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity() - heldAmount, blockAmount), this.amount);
 			String displayHeldAmountNew = this.mode.formatAmount(heldAmount + (this.isExporting ? -deltaMax : deltaMax), false);
-			this.drawCenteredString(this.fontRenderer, displayHeldAmountNew, centerX - 98 - Math.max(this.fontRenderer.getStringWidth(displayHeldAmountNew) / 2 - 26, 0), centerY + 90, this.isExporting ? 0xAA0000 : 0x00AA00); // §4 dark_red : §2 dark_green
+			this.drawCenteredString(this.fontRendererObj, displayHeldAmountNew, centerX - 98 - Math.max(this.fontRendererObj.getStringWidth(displayHeldAmountNew) / 2 - 26, 0), centerY + 90, this.isExporting ? 0xAA0000 : 0x00AA00); // §4 dark_red : §2 dark_green
 			String displayTankAmountNew = this.mode.formatAmount(blockAmount + (this.isExporting ? deltaMax : -deltaMax), false);
-			this.drawCenteredString(this.fontRenderer, displayTankAmountNew, centerX - 10 + Math.max(this.fontRenderer.getStringWidth(displayTankAmountNew) / 2 - 42, 0), centerY + 90, this.isExporting ? 0x00AA00 : 0xAA0000); // §4 dark_green : §2 dark_red
+			this.drawCenteredString(this.fontRendererObj, displayTankAmountNew, centerX - 10 + Math.max(this.fontRendererObj.getStringWidth(displayTankAmountNew) / 2 - 42, 0), centerY + 90, this.isExporting ? 0x00AA00 : 0xAA0000); // §4 dark_green : §2 dark_red
 		}
 		String displayAmount = this.mode.formatAmount(this.amount, true);
-		this.drawString(this.fontRenderer, displayAmount, centerX - 56 - Math.max(this.fontRenderer.getStringWidth(displayAmount) - 96, 0), centerY - 30, 0xAAAAAA);
-		this.drawCenteredString(this.fontRenderer, this.getColorizedFluidName(this.getWorkingFluidStack()), centerX - 10, centerY - 50, 0xFFFFFF);
+		this.drawString(this.fontRendererObj, displayAmount, centerX - 56 - Math.max(this.fontRendererObj.getStringWidth(displayAmount) - 96, 0), centerY - 30, 0xAAAAAA);
+		this.drawCenteredString(this.fontRendererObj, this.getColorizedFluidName(this.getWorkingFluidStack()), centerX - 10, centerY - 50, 0xFFFFFF);
 
 		// Instructions in top-right corner
 		int h = -10;
 		this.drawRightAlignedString(I18n.format("gc.gui.instructions"), this.width - 5, h += 15, 0xAAAAAA);
-		if (!this.transferDirectionForced) this.drawRightAlignedString(I18n.format("gc.gui.toggle", settings.keyBindJump.getDisplayName()), this.width - 5, h += 15, 0xAAAAAA);
+		if (!this.transferDirectionForced) this.drawRightAlignedString(I18n.format("gc.gui.toggle", settings.keyBindJump.getKeyDescription()), this.width - 5, h += 15, 0xAAAAAA);
 		if (this.numTransferrableHeldFluids > 1 || this.numTransferrableBlockFluids > 1) this.drawRightAlignedString(I18n.format("gc.gui.cycle"), this.width - 5, h += 15, 0xAAAAAA);
-		this.drawRightAlignedString(I18n.format("gc.gui.accept", settings.keyBindInventory.getDisplayName()), this.width - 5, h += 15, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format("gc.gui.accept", settings.keyBindInventory.getKeyDescription()), this.width - 5, h += 15, 0xAAAAAA);
 		this.drawRightAlignedString(I18n.format("gc.gui.cancel"), this.width - 5, h += 15, 0xAAAAAA);
 
 		// Combo shortcuts, left-aligned in bottom-right corner
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo1" + cmd), leftMargin, this.height - 105, 0xAAAAAA);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo2" + cmd), leftMargin, this.height - 90, 0xAAAAAA);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo3"), leftMargin, this.height - 75, 0xAAAAAA);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo4"), leftMargin, this.height - 60, 0xAAAAAA);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo5"), leftMargin, this.height - 45, 0xAAAAAA);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo6" + cmd), leftMargin, this.height - 30, 0xAAAAAA);
-		this.drawString(this.fontRenderer, I18n.format("gc.gui.combo7"), leftMargin, this.height - 15, 0xAAAAAA);
+		this.drawString(this.fontRendererObj, I18n.format("gc.gui.combo1" + cmd), leftMargin, this.height - 105, 0xAAAAAA);
+		this.drawString(this.fontRendererObj, I18n.format("gc.gui.combo2" + cmd), leftMargin, this.height - 90, 0xAAAAAA);
+		this.drawString(this.fontRendererObj, I18n.format("gc.gui.combo3"), leftMargin, this.height - 75, 0xAAAAAA);
+		this.drawString(this.fontRendererObj, I18n.format("gc.gui.combo4"), leftMargin, this.height - 60, 0xAAAAAA);
+		this.drawString(this.fontRendererObj, I18n.format("gc.gui.combo5"), leftMargin, this.height - 45, 0xAAAAAA);
+		this.drawString(this.fontRendererObj, I18n.format("gc.gui.combo6" + cmd), leftMargin, this.height - 30, 0xAAAAAA);
+		this.drawString(this.fontRendererObj, I18n.format("gc.gui.combo7"), leftMargin, this.height - 15, 0xAAAAAA);
 
 		// Combo fluid amounts, right-aligned in bottom-right corner
 		this.drawRightAlignedString(this.deltaStrings.get(0), this.width - 5, this.height - 105, 0xAAAAAA);
@@ -377,7 +380,7 @@ public class FluidTransferGui extends GuiScreen {
 				} else {
 					textLines.add(I18n.format("gc.gui.selected",  TextFormatting.GRAY.toString() + TextFormatting.ITALIC));
 				}
-				this.drawHoveringText(textLines, mouseX, mouseY);
+				this.drawHoveringText(textLines, mouseX, mouseY, this.fontRendererObj);
 			}
 		});
 
@@ -429,18 +432,19 @@ public class FluidTransferGui extends GuiScreen {
 		
 		// Extra tooltips
 		if (mouseX >= centerX - 114 && mouseX < centerX -82  && mouseY >= centerY + 22 && mouseY < centerY + 54) this.renderToolTip(this.heldItem, mouseX, mouseY);
-		if (this.exportButton.isMouseOver()) this.drawHoveringText(I18n.format(this.transferDirectionForced ? "gc.gui.notoggle" : "gc.gui.yestoggle"), mouseX, mouseY);
-		if (this.modeButton.isMouseOver()) {
+		// func_146115_a() returns whether the mouse is over the button
+		if (this.exportButton.func_146115_a()) this.drawHoveringText(Arrays.asList(I18n.format(this.transferDirectionForced ? "gc.gui.notoggle" : "gc.gui.yestoggle")), mouseX, mouseY, this.fontRendererObj);
+		if (this.modeButton.func_146115_a()) {
 			ArrayList<String> lines = new ArrayList<String>();
 			lines.add(this.mode.getModeName());
-			lines.add(I18n.format("gc.gui.cyclemode", settings.keyBindJump.getDisplayName()));
-			this.drawHoveringText(lines, mouseX, mouseY);
+			lines.add(I18n.format("gc.gui.cyclemode", settings.keyBindJump.getKeyDescription()));
+			this.drawHoveringText(lines, mouseX, mouseY, this.fontRendererObj);
 		}
-		if (this.sceneRenderer.hoveredFace != null && !this.allowedFaces.get(this.sceneRenderer.hoveredFace.getIndex()).canTransfer()) this.drawHoveringText(I18n.format("gc.gui.sideblocked", TextFormatting.RED, TextFormatting.GRAY.toString() + TextFormatting.ITALIC), sceneX + sceneWidth, sceneY + sceneHeight / 2 + 5);
+		if (this.sceneRenderer.hoveredFace != null && !this.allowedFaces.get(this.sceneRenderer.hoveredFace.ordinal()).canTransfer()) this.drawHoveringText(Arrays.asList(I18n.format("gc.gui.sideblocked", TextFormatting.RED, TextFormatting.GRAY.toString() + TextFormatting.ITALIC)), sceneX + sceneWidth, sceneY + sceneHeight / 2 + 5, this.fontRendererObj);
 	}
 
 	@Override
-	protected void actionPerformed(GuiButton button) throws IOException {
+	protected void actionPerformed(GuiButton button) {
 		if (button == this.incFluidButton) {
 			this.setAmount(this.amount + this.getDelta());
 		} else if (button == this.decFluidButton) {
@@ -453,13 +457,13 @@ public class FluidTransferGui extends GuiScreen {
 	}
 
 	@Override
-	protected void keyTyped(char typedChar, int keyCode) throws IOException {
+	protected void keyTyped(char typedChar, int keyCode) {
 		super.keyTyped(typedChar, keyCode);
 		this.handleKeyInput(typedChar, keyCode);
 	}
 
 	@Override
-	public void handleMouseInput() throws IOException {
+	public void handleMouseInput() {
 		if (!this.initialized) return;
 
 		int scrollAmount = Mouse.getDWheel();
@@ -478,7 +482,7 @@ public class FluidTransferGui extends GuiScreen {
 	}
 
 	@Override
-	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 		this.textAmount.mouseClicked(mouseX, mouseY, mouseButton);
 		if (mouseButton == 1 && (this.isExporting ? this.heldFluidSprites.get(this.heldTankIndex) : this.blockFluidSprites.get(this.blockTankIndex)).isMouseOver(mouseX, mouseY)) this.setAmount((this.isExporting ? this.heldFluidStacks.get(this.heldTankIndex) : this.blockFluidStacks.get(this.blockTankIndex)).getAmount());
@@ -491,7 +495,7 @@ public class FluidTransferGui extends GuiScreen {
 
 		if (keyCode == settings.keyBindInventory.getKeyCode()) { // Open/close inventory to confirm transfer
 			Minecraft.getMinecraft().displayGuiScreen(null);
-			PacketHandler.INSTANCE.sendToServer(new PacketBlockTransferFluid(this.heldItem, this.heldTankIndex, this.pos, this.selectedFace.getIndex(), this.blockTankIndex, this.amount * (this.isExporting ? -1 : 1)));
+			PacketHandler.INSTANCE.sendToServer(new PacketBlockTransferFluid(this.heldItem, this.heldTankIndex, this.pos, this.selectedFace.ordinal(), this.blockTankIndex, this.amount * (this.isExporting ? -1 : 1)));
 		} else if (keyCode == settings.keyBindJump.getKeyCode()) { // Jump
 			if (GuiScreen.isShiftKeyDown()) { // Shift + Jump to cycle mode
 				this.cycleMode();
@@ -520,7 +524,7 @@ public class FluidTransferGui extends GuiScreen {
 				break;
 			}
 		} else if (keyCode == -99) { // Clear text box on right click
-			if (mouseX < this.textAmount.x || mouseX >= this.textAmount.x + this.textAmount.width || mouseY < this.textAmount.y || mouseY >= this.textAmount.y + this.textAmount.height) return;
+			if (mouseX < this.textAmount.xPosition || mouseX >= this.textAmount.xPosition + this.textAmount.width || mouseY < this.textAmount.yPosition || mouseY >= this.textAmount.yPosition + this.textAmount.height) return;
 			this.setAmount(0);
 			this.textAmount.setText("");
 		} else if (NumberUtils.isDigits(Character.toString(typedChar)) || !ChatAllowedCharacters.isAllowedCharacter(typedChar)) { // Digits and non-printable characters (backspace, etc.)
@@ -548,7 +552,7 @@ public class FluidTransferGui extends GuiScreen {
 	}
 
 	private void drawRightAlignedString(String text, int x, int y, int color) {
-		this.drawString(this.fontRenderer, text, x - this.fontRenderer.getStringWidth(text), y, color);
+		this.drawString(this.fontRendererObj, text, x - this.fontRendererObj.getStringWidth(text), y, color);
 	}
 
 	private void drawItemStack(ItemStack stack, int x, int y) {
@@ -562,15 +566,15 @@ public class FluidTransferGui extends GuiScreen {
 		RenderHelper.enableGUIStandardItemLighting();
 		GL11.glScalef(scale, scale, scale);
 		this.zLevel = 200.0F;
-		this.itemRender.zLevel = 200.0F;
+		GuiScreen.itemRender.zLevel = 200.0F;
 		FontRenderer font = stack.getItem().getFontRenderer(stack);
-		if (font == null) font = this.fontRenderer;
-		this.itemRender.renderItemAndEffectIntoGUI(stack, (int) x, (int) y);
-		this.itemRender.renderItemOverlayIntoGUI(font, stack, (int) x, (int) y, "");
+		if (font == null) font = this.fontRendererObj;
+		GuiScreen.itemRender.renderItemAndEffectIntoGUI(font, Minecraft.getMinecraft().getTextureManager(), stack, (int) x, (int) y);
+		GuiScreen.itemRender.renderItemOverlayIntoGUI(font, Minecraft.getMinecraft().getTextureManager(), stack, (int) x, (int) y, "");
 		RenderHelper.enableGUIStandardItemLighting();
 		GL11.glScalef(1/scale, 1/scale, 1/scale);
 		this.zLevel = 0.0F;
-		this.itemRender.zLevel = 0.0F;
+		GuiScreen.itemRender.zLevel = 0.0F;
 	}
 
 	private void setAmount(int amountIn) {
@@ -588,7 +592,10 @@ public class FluidTransferGui extends GuiScreen {
 		 * Ctrl+Shift+Alt:	this.deltas[5]
 		 * Alt:				this.deltas[6]
 		 */
-		return isShiftKeyDown() ? (isCtrlKeyDown() ? (isAltKeyDown() ? this.deltas[5] : this.deltas[0]) : (isAltKeyDown() ? this.deltas[4] : this.deltas[2])) : (isCtrlKeyDown() ? this.deltas[1] : (isAltKeyDown() ? this.deltas[6] : this.deltas[3]));
+		final boolean isShiftDown = GuiScreen.isShiftKeyDown();
+		final boolean isCtrlDown = GuiScreen.isCtrlKeyDown();
+		final boolean isAltDown = Keyboard.isKeyDown(Keyboard.KEY_LMENU) || Keyboard.isKeyDown(Keyboard.KEY_RMENU) || Keyboard.isKeyDown(Keyboard.KEY_LMETA) || Keyboard.isKeyDown(Keyboard.KEY_RMETA);
+		return isShiftDown ? (isCtrlDown ? (isAltDown ? this.deltas[5] : this.deltas[0]) : (isAltDown ? this.deltas[4] : this.deltas[2])) : (isCtrlDown ? this.deltas[1] : (isAltDown ? this.deltas[6] : this.deltas[3]));
 	}
 
 	private String getColorizedFluidName(IProxyFluidStack fluidStack) {

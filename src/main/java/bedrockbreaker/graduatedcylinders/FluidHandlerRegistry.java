@@ -1,37 +1,23 @@
 package bedrockbreaker.graduatedcylinders;
 
+import java.util.ArrayList;
+
+import bedrockbreaker.graduatedcylinders.api.FluidHandlerRegistryEvent;
 import bedrockbreaker.graduatedcylinders.api.MetaHandler;
 import bedrockbreaker.graduatedcylinders.proxy.meta.MetaFluidHandler;
 import bedrockbreaker.graduatedcylinders.proxy.meta.MetaGasHandler;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.event.RegistryEvent.MissingMappings.Mapping;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.RegistryBuilder;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
-@EventBusSubscriber(modid = GraduatedCylinders.MODID)
 public class FluidHandlerRegistry {
 
-	public static IForgeRegistry<MetaHandler> registry = null;
+	public static ArrayList<MetaHandler> registry;
 
 	@SubscribeEvent
-	public static void makeRegistry(RegistryEvent.NewRegistry event) {
-		RegistryBuilder<MetaHandler> registryBuilder = new RegistryBuilder<>();
-		registryBuilder.setName(new ResourceLocation(GraduatedCylinders.MODID, "fluidhandlers"));
-		registryBuilder.setType(MetaHandler.class);
-		registry = registryBuilder.create();
-	}
+	public void registerHandlers(FluidHandlerRegistryEvent event) {
+		event.getRegistry().add(new MetaFluidHandler());
+		// FIXME: mekanism 1.7.10 gas api is broken
+		// if (GraduatedCylinders.isMekanismLoaded) event.getRegistry().add(new MetaGasHandler());
 
-	@SubscribeEvent
-	public static void registerHandlers(RegistryEvent.Register<MetaHandler> event) {
-		event.getRegistry().register(new MetaFluidHandler().setRegistryName(GraduatedCylinders.MODID, "fluid"));
-		if (GraduatedCylinders.isMekanismLoaded) event.getRegistry().register(new MetaGasHandler().setRegistryName(GraduatedCylinders.MODID, "gas"));
-	}
-
-	@SubscribeEvent
-	public static void onMissingHandlers(RegistryEvent.MissingMappings<MetaHandler> event) {
-		event.getMappings().stream().forEach(Mapping::ignore);
+		FluidHandlerRegistry.registry = event.getRegistry();
 	}
 }

@@ -1,7 +1,5 @@
 package bedrockbreaker.graduatedcylinders.util;
 
-import net.minecraft.util.math.BlockPos;
-
 // Because the normal built-in vector class from the minecraft source code sucks
 public class Vec3d {
 

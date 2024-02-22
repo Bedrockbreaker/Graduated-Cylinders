@@ -10,12 +10,12 @@ public class MetaGasHandler extends MetaHandler {
 
 	@Override
 	public boolean hasHandler(ItemStack itemStack) {
-		return !itemStack.isEmpty() && itemStack.getItem() instanceof IGasItem;
+		return itemStack != null && itemStack.getItem() instanceof IGasItem && itemStack.stackSize == 1;
 	}
 
 	@Override
 	public GasHandlerItem getHandler(ItemStack itemStack) {
-		if (itemStack.isEmpty()) return null;
+		if (itemStack == null || itemStack.getItem() == null || itemStack.stackSize != 1) return null;
 		Item item = itemStack.getItem();
 		
 		return item instanceof IGasItem ? new GasHandlerItem((IGasItem) item, itemStack) : null;

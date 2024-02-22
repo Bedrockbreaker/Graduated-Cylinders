@@ -3,17 +3,15 @@ package bedrockbreaker.graduatedcylinders.network;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandlerItem;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import bedrockbreaker.graduatedcylinders.util.FluidHelper;
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
+import cpw.mods.fml.common.network.simpleimpl.MessageContext;
+import cpw.mods.fml.relauncher.Side;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
-import net.minecraft.util.SoundCategory;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketContainerTransferFluid implements IMessage {
 
@@ -44,31 +42,30 @@ public class PacketContainerTransferFluid implements IMessage {
 		@Override
 		public IMessage onMessage(PacketContainerTransferFluid message, MessageContext ctx) {
 			if (ctx.side != Side.SERVER) return null;
-			FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
-				EntityPlayer player = ctx.getServerHandler().player;
-				Container container = player.openContainer;
-				Slot hoveredSlot = container.inventorySlots.get(message.slot);
 
-				IProxyFluidHandlerItem heldFluidHandler = FluidHelper.getProxyFluidHandler(player.inventory.getItemStack());
-				IProxyFluidHandlerItem underFluidHandler = FluidHelper.getProxyFluidHandler(hoveredSlot.getStack());
+			EntityPlayer player = ctx.getServerHandler().playerEntity;
+			Container container = player.openContainer;
+			Slot hoveredSlot = container.inventorySlots.get(message.slot);
 
-				int transferAmount = FluidHelper.getTransferAmount(heldFluidHandler, underFluidHandler);
-				if (transferAmount == 0) return;
+			IProxyFluidHandlerItem heldFluidHandler = FluidHelper.getProxyFluidHandler(player.inventory.getItemStack());
+			IProxyFluidHandlerItem underFluidHandler = FluidHelper.getProxyFluidHandler(hoveredSlot.getStack());
 
-				IProxyFluidStack fluidStack = heldFluidHandler.getTankProperties(0).getContents();
-				if (fluidStack == null) fluidStack = underFluidHandler.getTankProperties(0).getContents();
-				if (fluidStack == null) return;
-				fluidStack = fluidStack.copy(fluidStack, Math.abs(transferAmount));
+			int transferAmount = FluidHelper.getTransferAmount(heldFluidHandler, underFluidHandler);
+			if (transferAmount == 0) return null;
 
-				if (FluidHelper.tryFluidTransfer(transferAmount < 0 ? underFluidHandler : heldFluidHandler, transferAmount < 0 ? heldFluidHandler : underFluidHandler, fluidStack, true) != null) player.world.playSound(null, player.getPosition(), transferAmount < 0 ? fluidStack.getEmptySound() : fluidStack.getFillSound(), SoundCategory.PLAYERS, 1.0F, 1.0F);
-				
-				hoveredSlot.putStack(underFluidHandler.getContainer());
-				player.inventory.setItemStack(heldFluidHandler.getContainer());
+			IProxyFluidStack fluidStack = heldFluidHandler.getTankProperties(0).getContents();
+			if (fluidStack == null) fluidStack = underFluidHandler.getTankProperties(0).getContents();
+			if (fluidStack == null) return null;
+			fluidStack = fluidStack.copy(fluidStack, Math.abs(transferAmount));
 
-				if (!(player instanceof EntityPlayerMP)) return;
-				((EntityPlayerMP) player).isChangingQuantityOnly = false;
-				((EntityPlayerMP) player).updateHeldItem();
-			});
+			if (FluidHelper.tryFluidTransfer(transferAmount < 0 ? underFluidHandler : heldFluidHandler, transferAmount < 0 ? heldFluidHandler : underFluidHandler, fluidStack, true) != null) player.worldObj.playSound(player.posX, player.posY, player.posZ, transferAmount < 0 ? fluidStack.getEmptySound() : fluidStack.getFillSound(), 1.0F, 1.0F, false);
+			
+			hoveredSlot.putStack(underFluidHandler.getContainer());
+			player.inventory.setItemStack(heldFluidHandler.getContainer());
+
+			if (!(player instanceof EntityPlayerMP)) return null;
+			((EntityPlayerMP) player).isChangingQuantityOnly = false;
+			((EntityPlayerMP) player).updateHeldItem();
 			return null;
 		}
 	}

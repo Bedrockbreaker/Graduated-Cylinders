@@ -1,11 +1,12 @@
 package bedrockbreaker.graduatedcylinders.util;
 
+import org.lwjgl.opengl.GL11;
+
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import cpw.mods.fml.relauncher.SideOnly;
+import cpw.mods.fml.relauncher.Side;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class GuiFluidSprite extends Gui {
@@ -74,9 +75,9 @@ public class GuiFluidSprite extends Gui {
 
 
 		if (this.color >>> 24 == 0) return;
-		GlStateManager.color((this.color >>> 16 & 255) / 255f, (this.color >>> 8 & 255) / 255f, (this.color & 255) / 255f, (this.color >>> 24) / 255f);
-		this.drawTexturedModalRect((int) this.x, (int) this.y, this.sprite, (int) this.width, (int) this.height);
-		GlStateManager.color(1, 1, 1, 1);
+		GL11.glColor4f((this.color >>> 16 & 255) / 255f, (this.color >>> 8 & 255) / 255f, (this.color & 255) / 255f, (this.color >>> 24) / 255f);
+		this.drawTexturedModalRect((int) this.x, (int) this.y, this.sprite.getOriginX(), this.sprite.getOriginY(), (int) this.width, (int) this.height);
+		GL11.glColor4f(1f, 1f, 1f, 1f);
 	}
 
 	// TODO: allow chaining?
