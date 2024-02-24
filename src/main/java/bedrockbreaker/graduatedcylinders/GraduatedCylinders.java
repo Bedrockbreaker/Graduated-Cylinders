@@ -18,6 +18,7 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.EventBus;
+import cpw.mods.fml.relauncher.Side;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -45,11 +46,12 @@ public class GraduatedCylinders {
 	public void init(FMLInitializationEvent event) {
 		new FluidHandlerRegistryEvent(new ArrayList<MetaHandler>()).post();
 		EventBus eventBus = FMLCommonHandler.instance().bus();
-		eventBus.register(new ColorCache());
-		eventBus.register(new FluidHandlerRegistry());
-		eventBus.register(new InventoryHandler());
 		eventBus.register(new OnBlockPunch());
-		eventBus.register(new RegisterOverlays());
+		if (event.getSide() == Side.CLIENT) {
+			eventBus.register(new ColorCache());
+			eventBus.register(new InventoryHandler());
+			eventBus.register(new RegisterOverlays());
+		}
 	}
 
 	// BUG: convert all instances of EnumFacing to ForgeDirection. Notice that the east/west fields (indices 4,5) are swapped between the two.

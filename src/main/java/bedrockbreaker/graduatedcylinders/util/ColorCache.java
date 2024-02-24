@@ -104,7 +104,7 @@ public class ColorCache {
 	}
 
 	@SubscribeEvent
-	public static void onResourceReload(TextureStitchEvent.Pre event) {
+	public void onResourceReload(TextureStitchEvent.Pre event) {
 		ColorCache.fluidColorCodeCache.clear();
 	}
 }

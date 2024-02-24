@@ -1,9 +1,12 @@
 package bedrockbreaker.graduatedcylinders;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraftforge.client.event.TextureStitchEvent;
 
+@SideOnly(Side.CLIENT)
 public class RegisterOverlays {
 
 	public static TextureAtlasSprite hoveredFaceSprite;
