@@ -6,6 +6,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.IIcon;
 
 public interface IProxyFluidStack {
 
@@ -57,6 +58,12 @@ public interface IProxyFluidStack {
 	 */
 	@SideOnly(Side.CLIENT)
 	public TextureAtlasSprite getSprite();
+
+	/**
+	 * Get the still icon of this fluid
+	 */
+	@SideOnly(Side.CLIENT)
+	public IIcon getIcon();
 
 	/**
 	 * Return a new fluid instance from the given nbt, without modifying this existing fluid

@@ -7,6 +7,7 @@ import mekanism.api.gas.GasStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.IIcon;
 
 // AKA "GasStackGraduatedCylinders" to avoid name conflict
 public class GasStackGC implements IProxyFluidStack {
@@ -51,6 +52,10 @@ public class GasStackGC implements IProxyFluidStack {
 
 	public TextureAtlasSprite getSprite() {
 		return Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(this.gasStack.getGas().getIcon().getIconName());
+	}
+
+	public IIcon getIcon() {
+		return this.gasStack.getGas().getIcon();
 	}
 
 	public GasStackGC loadFromNBT(NBTTagCompound nbt) {

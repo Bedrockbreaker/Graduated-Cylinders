@@ -39,8 +39,10 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.EnumFacing;
@@ -300,7 +302,6 @@ public class FluidTransferGui extends GuiScreen {
 	// Called every frame (welcome to magic number jigoku)
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-		// FIXME: replace all settings.XXX.getKeyDescription() with something which actually returns a human readable representation
 		Minecraft minecraft = Minecraft.getMinecraft();
 		GameSettings settings = minecraft.gameSettings;
 		float scale = new ScaledResolution(minecraft, minecraft.displayWidth, minecraft.displayHeight).getScaleFactor();
@@ -334,9 +335,9 @@ public class FluidTransferGui extends GuiScreen {
 		// Instructions in top-right corner
 		int h = -10;
 		this.drawRightAlignedString(I18n.format("gc.gui.instructions"), this.width - 5, h += 15, 0xAAAAAA);
-		if (!this.transferDirectionForced) this.drawRightAlignedString(I18n.format("gc.gui.toggle", settings.keyBindJump.getKeyDescription()), this.width - 5, h += 15, 0xAAAAAA);
+		if (!this.transferDirectionForced) this.drawRightAlignedString(I18n.format("gc.gui.toggle", this.getKeyName(settings.keyBindJump)), this.width - 5, h += 15, 0xAAAAAA);
 		if (this.numTransferrableHeldFluids > 1 || this.numTransferrableBlockFluids > 1) this.drawRightAlignedString(I18n.format("gc.gui.cycle"), this.width - 5, h += 15, 0xAAAAAA);
-		this.drawRightAlignedString(I18n.format("gc.gui.accept", settings.keyBindInventory.getKeyDescription()), this.width - 5, h += 15, 0xAAAAAA);
+		this.drawRightAlignedString(I18n.format("gc.gui.accept", this.getKeyName(settings.keyBindInventory)), this.width - 5, h += 15, 0xAAAAAA);
 		this.drawRightAlignedString(I18n.format("gc.gui.cancel"), this.width - 5, h += 15, 0xAAAAAA);
 
 		// Combo shortcuts, left-aligned in bottom-right corner
@@ -363,6 +364,7 @@ public class FluidTransferGui extends GuiScreen {
 
 		// Render Sprites
 		RenderHelper.disableStandardItemLighting();
+		minecraft.getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
 		this.applyToSprites((GuiFluidSprite sprite, boolean isHeldSprite, boolean isSelectedSprite, int tankIndex) -> sprite.render(partialTicks));
 
 		// Draw hover tooltip on sprites
@@ -437,7 +439,7 @@ public class FluidTransferGui extends GuiScreen {
 		if (this.modeButton.func_146115_a()) {
 			ArrayList<String> lines = new ArrayList<String>();
 			lines.add(this.mode.getModeName());
-			lines.add(I18n.format("gc.gui.cyclemode", settings.keyBindJump.getKeyDescription()));
+			lines.add(I18n.format("gc.gui.cyclemode", this.getKeyName(settings.keyBindJump)));
 			this.drawHoveringText(lines, mouseX, mouseY, this.fontRendererObj);
 		}
 		if (this.sceneRenderer.hoveredFace != null && !this.allowedFaces.get(this.sceneRenderer.hoveredFace.ordinal()).canTransfer()) this.drawHoveringText(Arrays.asList(I18n.format("gc.gui.sideblocked", TextFormatting.RED, TextFormatting.GRAY.toString() + TextFormatting.ITALIC)), sceneX + sceneWidth, sceneY + sceneHeight / 2 + 5, this.fontRendererObj);
@@ -549,6 +551,10 @@ public class FluidTransferGui extends GuiScreen {
 
 	private void handleKeyInput(int keyCode, int mouseX, int mouseY) {
 		this.handleKeyInput(Character.MIN_VALUE, keyCode, mouseX, mouseY);
+	}
+
+	private String getKeyName(KeyBinding keybind) {
+		return Keyboard.getKeyName(keybind.getKeyCode());
 	}
 
 	private void drawRightAlignedString(String text, int x, int y, int color) {

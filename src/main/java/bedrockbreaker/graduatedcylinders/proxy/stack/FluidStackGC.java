@@ -6,6 +6,7 @@ import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.IIcon;
 import net.minecraftforge.fluids.FluidStack;
 
 // AKA "FluidStackGraduatedCylinders" to avoid name conflict
@@ -50,7 +51,11 @@ public class FluidStackGC implements IProxyFluidStack {
 	}
 
 	public TextureAtlasSprite getSprite() {
-		return Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(this.fluidStack.getFluid().getIcon().getIconName());
+		return Minecraft.getMinecraft().getTextureMapBlocks().getTextureExtry(this.fluidStack.getFluid().getStillIcon().getIconName());
+	}
+
+	public IIcon getIcon() {
+		return this.fluidStack.getFluid().getStillIcon();
 	}
 
 	public FluidStackGC loadFromNBT(NBTTagCompound nbt) {

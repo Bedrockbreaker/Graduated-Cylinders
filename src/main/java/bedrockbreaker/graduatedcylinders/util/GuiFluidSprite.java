@@ -6,13 +6,13 @@ import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import cpw.mods.fml.relauncher.SideOnly;
 import cpw.mods.fml.relauncher.Side;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.util.IIcon;
 
 @SideOnly(Side.CLIENT)
 public class GuiFluidSprite extends Gui {
 
 	public IProxyFluidStack fluidStack;
-	public TextureAtlasSprite sprite;
+	public IIcon icon;
 	public int tankIndex;
 	public int renderIndex;
 	
@@ -38,7 +38,7 @@ public class GuiFluidSprite extends Gui {
 	public int endOpacity = 255; // 0-255
 
 	public GuiFluidSprite(IProxyFluidStack fluidStack, float x, float y, float width, float height, int tankIndex, int renderIndex) {
-		this.sprite = fluidStack.getSprite();
+		this.icon = fluidStack.getIcon();
 		this.fluidStack = fluidStack;
 		this.tankIndex = tankIndex;
 		this.renderIndex = renderIndex;
@@ -73,10 +73,9 @@ public class GuiFluidSprite extends Gui {
 		this.height = this.height == this.endHeight ? this.height : Math.round(MathHelper.clampedEaseInOutQuad(this.startHeight, this.endHeight, t));
 		this.color = this.color >>> 24 == this.endOpacity ? this.color : (this.color & 0xFFFFFF) | (Math.round(MathHelper.clampedEaseOutCubic(this.startOpacity, this.endOpacity, t)) << 24); // Only transition opacity
 
-
 		if (this.color >>> 24 == 0) return;
 		GL11.glColor4f((this.color >>> 16 & 255) / 255f, (this.color >>> 8 & 255) / 255f, (this.color & 255) / 255f, (this.color >>> 24) / 255f);
-		this.drawTexturedModalRect((int) this.x, (int) this.y, this.sprite.getOriginX(), this.sprite.getOriginY(), (int) this.width, (int) this.height);
+		this.drawTexturedModelRectFromIcon((int) this.x, (int) this.y, this.icon, (int) this.width, (int) this.height);
 		GL11.glColor4f(1f, 1f, 1f, 1f);
 	}
 
