@@ -405,6 +405,7 @@ public class Scene3DRenderer {
 		this.mc.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
 		
 		Tessellator tesselator = Tessellator.instance;
+		tesselator.startDrawingQuads();
 		Vec3d translation = new Vec3d(this.cameraPosition).sub(this.origin);
 		tesselator.setTranslation(translation.x, translation.y, translation.z);
 		this.drawOverlay(tesselator, blockOrigin, this.selectedFace, RegisterOverlays.selectedFaceSprite, true);
