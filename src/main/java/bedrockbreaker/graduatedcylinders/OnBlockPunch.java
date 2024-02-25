@@ -26,9 +26,13 @@ public class OnBlockPunch {
 		if (event.action != PlayerInteractEvent.Action.LEFT_CLICK_BLOCK) return;
 		// Return if running on logical client, or player is in creative mode
 		if (event.world.isRemote || event.entityPlayer.capabilities.isCreativeMode) return;
-
+		
 		ItemStack heldItem = event.entityPlayer.getHeldItem();
 		IProxyFluidHandlerItem heldFluidHandler = FluidHelper.getProxyFluidHandler(heldItem);
+		GraduatedCylinders.console.info("Held item:");
+		GraduatedCylinders.console.info(heldItem);
+		GraduatedCylinders.console.info("Held fluid handler:");
+		GraduatedCylinders.console.info(heldFluidHandler);
 		if (heldFluidHandler == null) return;
 
 		EnumFacing eventSide = EnumFacing.getFront(event.face);

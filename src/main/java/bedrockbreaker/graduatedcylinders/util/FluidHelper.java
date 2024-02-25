@@ -19,7 +19,7 @@ public class FluidHelper {
 	public static MetaHandler getMetaHandler(ItemStack itemStack) {
 		if (itemStack == null || itemStack.getItem() == null || itemStack.stackSize != 1) return null;
 
-		for (MetaHandler metaHandler : FluidHandlerRegistry.registry) {
+		for (MetaHandler metaHandler : FluidHandlerRegistry.REGISTRY) {
 			if (metaHandler.hasHandler(itemStack)) return metaHandler;
 		}
 
