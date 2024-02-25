@@ -35,12 +35,12 @@ public class GraduatedCylinders {
 
 		GraduatedCylinders.isMekanismLoaded = Loader.isModLoaded("mekanism");
 
-		proxy.preInit(event);
+		GraduatedCylinders.proxy.preInit(event);
 	}
 
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
-		proxy.init(event);
+		GraduatedCylinders.proxy.init(event);
 	}
 
 	// BUG: convert all instances of EnumFacing to ForgeDirection. Notice that the east/west fields (indices 4,5) are swapped between the two.

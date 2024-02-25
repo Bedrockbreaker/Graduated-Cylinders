@@ -267,20 +267,6 @@ public class Scene3DRenderer {
 				this.setGlStateForPass(layer, true);
 				this.doWorldRenderPass(translation, this.neighbors, layer);
 			}
-			// TODO: these for loops may be separated for a reason
-			/* for (BlockRenderLayer layer : BlockRenderLayer.values()) {
-				ForgeHooksClient.setRenderLayer(layer);
-				this.setGlStateForPass(layer, false);
-				this.doWorldRenderPass(translation, this.blockOrigin, layer);
-			}
-
-			if (renderNeighbors) {
-				for (BlockRenderLayer layer : BlockRenderLayer.values()) {
-					ForgeHooksClient.setRenderLayer(layer);
-					this.setGlStateForPass(layer, true);
-					this.doWorldRenderPass(translation, this.neighbors, layer);
-				}
-			} */
 		} finally {
 			ForgeHooksClient.setRenderPass(oldRenderPass);
 		}

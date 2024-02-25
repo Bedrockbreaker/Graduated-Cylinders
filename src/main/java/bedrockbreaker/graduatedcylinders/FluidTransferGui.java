@@ -12,9 +12,6 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-
 import com.google.common.primitives.Ints;
 
 import bedrockbreaker.graduatedcylinders.api.IHandlerMode;
@@ -28,10 +25,12 @@ import bedrockbreaker.graduatedcylinders.util.BlockPos;
 import bedrockbreaker.graduatedcylinders.util.ColorCache;
 import bedrockbreaker.graduatedcylinders.util.FluidHelper;
 import bedrockbreaker.graduatedcylinders.util.FluidHelper.TransferrableFluidResult;
-import bedrockbreaker.graduatedcylinders.util.TextFormatting;
 import bedrockbreaker.graduatedcylinders.util.GuiFluidSprite;
 import bedrockbreaker.graduatedcylinders.util.MathHelper;
 import bedrockbreaker.graduatedcylinders.util.Scene3DRenderer;
+import bedrockbreaker.graduatedcylinders.util.TextFormatting;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -301,6 +300,7 @@ public class FluidTransferGui extends GuiScreen {
 	// Called every frame (welcome to magic number jigoku)
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		// FIXME: replace all settings.XXX.getKeyDescription() with something which actually returns a human readable representation
 		Minecraft minecraft = Minecraft.getMinecraft();
 		GameSettings settings = minecraft.gameSettings;
 		float scale = new ScaledResolution(minecraft, minecraft.displayWidth, minecraft.displayHeight).getScaleFactor();
