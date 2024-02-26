@@ -8,7 +8,6 @@ public class MathHelper {
 		return Math.max(Math.min(x, b), a);
 	}
 
-	
 	public static float clamp(float x, float a, float b) {
 		return Math.max(Math.min(x, b), a);
 	}

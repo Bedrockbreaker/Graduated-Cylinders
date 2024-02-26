@@ -29,10 +29,6 @@ public class OnBlockPunch {
 		
 		ItemStack heldItem = event.entityPlayer.getHeldItem();
 		IProxyFluidHandlerItem heldFluidHandler = FluidHelper.getProxyFluidHandler(heldItem);
-		GraduatedCylinders.console.info("Held item:");
-		GraduatedCylinders.console.info(heldItem);
-		GraduatedCylinders.console.info("Held fluid handler:");
-		GraduatedCylinders.console.info(heldFluidHandler);
 		if (heldFluidHandler == null) return;
 
 		EnumFacing eventSide = EnumFacing.getFront(event.face);

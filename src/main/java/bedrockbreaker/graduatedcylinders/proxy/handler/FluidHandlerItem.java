@@ -16,6 +16,8 @@ import net.minecraftforge.fluids.IFluidHandler;
 
 public class FluidHandlerItem implements IProxyFluidHandlerItem {
 
+	// TODO: add special fix for buckets
+
 	protected IFluidContainerItem fluidHandlerItem;
 	protected ItemStack itemStack;
 
