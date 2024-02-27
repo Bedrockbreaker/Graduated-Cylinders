@@ -60,8 +60,8 @@ public class PacketContainerTransferFluid implements IMessage {
 
 			if (FluidHelper.tryFluidTransfer(transferAmount < 0 ? underFluidHandler : heldFluidHandler, transferAmount < 0 ? heldFluidHandler : underFluidHandler, fluidStack, true) != null) player.worldObj.playSound(player.posX, player.posY, player.posZ, transferAmount < 0 ? fluidStack.getEmptySound() : fluidStack.getFillSound(), 1.0F, 1.0F, false);
 			
-			hoveredSlot.putStack(underFluidHandler.getContainer());
-			player.inventory.setItemStack(heldFluidHandler.getContainer());
+			hoveredSlot.putStack(heldFluidHandler.getContainer());
+			player.inventory.setItemStack(underFluidHandler.getContainer());
 
 			if (!(player instanceof EntityPlayerMP)) return null;
 			((EntityPlayerMP) player).isChangingQuantityOnly = false;

@@ -20,6 +20,7 @@ public class GraduatedCylinders {
 	public static final String MODID = "graduatedcylinders";
 	public static final String NAME = "Graduated Cylinders";
 	public static final String VERSION = "3.0.0";
+	public static final boolean IN_DEV = (boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
 
 	public static Logger console = LogManager.getLogger(GraduatedCylinders.NAME);
 	public static boolean isMekanismLoaded = false;
@@ -29,7 +30,7 @@ public class GraduatedCylinders {
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		if (!(Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment") && GraduatedCylindersAPI.class.getProtectionDomain().getCodeSource().getLocation().toString().toLowerCase(Locale.ROOT).contains("-api.java")) {
+		if (!GraduatedCylinders.IN_DEV && GraduatedCylindersAPI.class.getProtectionDomain().getCodeSource().getLocation().toString().toLowerCase(Locale.ROOT).contains("-api.java")) {
 			throw new RuntimeException("Graduated Cylinders API jar (\"GraduatedCylinders-" + MinecraftForge.MC_VERSION + "-" + GraduatedCylindersAPI.API_VERSION + "-api.jar\") was detected in your mods folder. Please delete it and restart the game.");
 		}
 
