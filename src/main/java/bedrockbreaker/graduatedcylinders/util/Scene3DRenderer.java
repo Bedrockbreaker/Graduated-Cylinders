@@ -24,7 +24,6 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -33,6 +32,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.MinecraftForgeClient;
+import net.minecraftforge.common.util.ForgeDirection;
 
 // Shamelessly modified from EnderIO
 // Mostly from https://github.com/SleepyTrousers/EnderIO/blob/release/1.12.2/enderio-base/src/main/java/crazypants/enderio/base/gui/IoConfigRenderer.java
@@ -66,8 +66,8 @@ public class Scene3DRenderer {
 	private Rectangle viewport;
 
 	// Misc
-	public EnumFacing hoveredFace;
-	public EnumFacing selectedFace;
+	public ForgeDirection hoveredFace;
+	public ForgeDirection selectedFace;
 	public ArrayList<TransferrableFluidResult> allowedFaces;
 	private static final FloatBuffer MATRIX_BUFFER = GLAllocation.createDirectFloatBuffer(16);
 
@@ -75,7 +75,7 @@ public class Scene3DRenderer {
 		this.world = mc.theWorld;
 		this.blockOrigin = blockOrigin;
 		this.allowedFaces = allowedFaces;
-		for (EnumFacing face : EnumFacing.values()) {
+		for (ForgeDirection face : ForgeDirection.values()) {
 			this.neighbors.add(blockOrigin.offset(face));
 		}
 		this.origin.set(blockOrigin).add(.5);
@@ -159,7 +159,7 @@ public class Scene3DRenderer {
 		}
 	}
 
-	public EnumFacing getHoveredFace() {
+	public ForgeDirection getHoveredFace() {
 		return this.hoveredFace;
 	}
 
@@ -171,7 +171,7 @@ public class Scene3DRenderer {
 		Block block = world.getBlock(this.blockOrigin.getX(), this.blockOrigin.getY(), this.blockOrigin.getZ());
 		MovingObjectPosition hit = block.collisionRayTrace(this.world, this.blockOrigin.getX(), this.blockOrigin.getY(), this.blockOrigin.getZ(), Vec3.createVectorHelper(start.x, start.y, start.z), Vec3.createVectorHelper(end.x, end.y, end.z));
 		if (hit == null || hit.typeOfHit == MovingObjectType.MISS) return;
-		this.hoveredFace = EnumFacing.getFront(hit.sideHit);
+		this.hoveredFace = ForgeDirection.getOrientation(hit.sideHit);
 	}
 
 	private boolean updateCamera(float partialTick, Rectangle viewport) {
@@ -400,7 +400,7 @@ public class Scene3DRenderer {
 		tesselator.setTranslation(0, 0, 0);
 	}
 
-	private void drawOverlay(Tessellator tesselator, BlockPos blockPos, EnumFacing face, IIcon overlay, boolean drawInverse) {
+	private void drawOverlay(Tessellator tesselator, BlockPos blockPos, ForgeDirection face, IIcon overlay, boolean drawInverse) {
 		double[] texelData = this.getPositionsAndUVForFace(blockPos, face, overlay.getMinU(), overlay.getMaxU(), overlay.getMinV(), overlay.getMaxV());
 		for (int i = 0; i < 4; i++) {
 			tesselator.addVertexWithUV(texelData[i*5], texelData[i*5+1], texelData[i*5+2], texelData[i*5+3], texelData[i*5+4]);
@@ -413,7 +413,7 @@ public class Scene3DRenderer {
 	}
 
 	// Returns the vertices of the corners for the specified position and face in counter clockwise order.
-	private double[] getPositionsAndUVForFace(BlockPos pos, EnumFacing face, float minU, float maxU, float minV, float maxV) {
+	private double[] getPositionsAndUVForFace(BlockPos pos, ForgeDirection face, float minU, float maxU, float minV, float maxV) {
 		int x = pos.getX();
 		int y = pos.getY();
 		int z = pos.getZ();
@@ -430,8 +430,10 @@ public class Scene3DRenderer {
 				return new double[] {x + 1, y + 1, z + 1, minU, minV, x + 1, y + 1, z, minU, maxV, x, y + 1, z, maxU, maxV, x, y + 1, z + 1, maxU, minV};
 			case DOWN:
 				return new double[] {x, y, z, maxU, maxV, x + 1, y, z, minU, maxV, x + 1, y, z + 1, minU, minV, x, y, z + 1, maxU, minV};
+			case UNKNOWN:
+			default:
+				return null;
 		}
-		return null;
 	}
 
 	private void cleanUpGlState() {

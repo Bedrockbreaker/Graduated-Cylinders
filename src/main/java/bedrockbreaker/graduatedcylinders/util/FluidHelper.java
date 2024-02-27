@@ -11,8 +11,8 @@ import bedrockbreaker.graduatedcylinders.api.MetaHandler;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 
 public class FluidHelper {
 
@@ -31,7 +31,7 @@ public class FluidHelper {
 		return metaHandler == null ? null : metaHandler.getHandler(itemStack);
 	}
 
-	public static IProxyFluidHandler getMatchingProxyFluidHandler(World world, BlockPos pos, @Nullable EnumFacing side, IProxyFluidHandlerItem fluidHandlerMatch) {
+	public static IProxyFluidHandler getMatchingProxyFluidHandler(World world, BlockPos pos, @Nullable ForgeDirection side, IProxyFluidHandlerItem fluidHandlerMatch) {
 		int state = world.getBlockMetadata(pos.getX(), pos.getY(), pos.getZ());
 		Block block = world.getBlock(pos.getX(), pos.getY(), pos.getZ());
 		if (!block.hasTileEntity(state)) return null;

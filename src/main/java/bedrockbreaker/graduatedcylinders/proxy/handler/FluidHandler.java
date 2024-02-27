@@ -9,7 +9,6 @@ import bedrockbreaker.graduatedcylinders.proxy.stack.FluidStackGC;
 import bedrockbreaker.graduatedcylinders.proxy.tankproperties.FluidTankProperties;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidHandler;
@@ -17,9 +16,9 @@ import net.minecraftforge.fluids.IFluidHandler;
 public class FluidHandler implements IProxyFluidHandler {
 
 	protected IFluidHandler fluidHandler;
-	protected EnumFacing side;
+	protected ForgeDirection side;
 
-	public FluidHandler(IFluidHandler fluidHandler, EnumFacing side) {
+	public FluidHandler(IFluidHandler fluidHandler, ForgeDirection side) {
 		this.fluidHandler = fluidHandler;
 		this.side = side;
 	}
@@ -29,33 +28,33 @@ public class FluidHandler implements IProxyFluidHandler {
 		return fluidStack == null ? null : new FluidStackGC(fluidStack);
 	}
 
-	public boolean isMatchingHandlerType(TileEntity tileEntity, EnumFacing side) {
+	public boolean isMatchingHandlerType(TileEntity tileEntity, ForgeDirection side) {
 		return tileEntity instanceof IFluidHandler;
 	}
 
 	public IProxyTankProperties getTankProperties(int tankIndex) {
-		return new FluidTankProperties(this.fluidHandler.getTankInfo(ForgeDirection.getOrientation(this.side.ordinal()))[tankIndex], this.side);
+		return new FluidTankProperties(this.fluidHandler.getTankInfo(this.side)[tankIndex], this.side);
 	}
 
 	public int getNumTanks() {
-		return this.fluidHandler.getTankInfo(ForgeDirection.getOrientation(this.side.ordinal())).length;
+		return this.fluidHandler.getTankInfo(this.side).length;
 	}
 
 	public int fill(IProxyFluidStack resource, boolean doFill) {
 		if (!(resource instanceof FluidStackGC)) return 0;
-		return this.fluidHandler.fill(ForgeDirection.getOrientation(this.side.ordinal()), ((FluidStackGC) resource).fluidStack, doFill);
+		return this.fluidHandler.fill(this.side, ((FluidStackGC) resource).fluidStack, doFill);
 	}
 
 	@Nullable
 	public FluidStackGC drain(int maxAmount, boolean doDrain) {
-		FluidStack removedFluid = this.fluidHandler.drain(ForgeDirection.getOrientation(this.side.ordinal()), maxAmount, doDrain);
+		FluidStack removedFluid = this.fluidHandler.drain(this.side, maxAmount, doDrain);
 		return removedFluid == null ? null : new FluidStackGC(removedFluid);
 	}
 
 	@Nullable
 	public FluidStackGC drain(IProxyFluidStack resource, boolean doDrain) {
 		if (!(resource instanceof FluidStackGC)) return null;
-		FluidStack removedFluid = this.fluidHandler.drain(ForgeDirection.getOrientation(this.side.ordinal()), ((FluidStackGC) resource).fluidStack, doDrain);
+		FluidStack removedFluid = this.fluidHandler.drain(this.side, ((FluidStackGC) resource).fluidStack, doDrain);
 		return removedFluid == null ? null : new FluidStackGC(removedFluid);
 	}
 }

@@ -9,7 +9,7 @@ import bedrockbreaker.graduatedcylinders.proxy.tankproperties.FluidTankPropertie
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidContainerItem;
 import net.minecraftforge.fluids.IFluidHandler;
@@ -31,11 +31,11 @@ public class FluidHandlerItem implements IProxyFluidHandlerItem {
 		return fluidStack == null ? null : new FluidStackGC(fluidStack);
 	}
 
-	public boolean isMatchingHandlerType(TileEntity tileEntity, EnumFacing side) {
+	public boolean isMatchingHandlerType(TileEntity tileEntity, ForgeDirection side) {
 		return tileEntity instanceof IFluidHandler;
 	}
 
-	public FluidHandler getMatchingHandler(TileEntity tileEntity, EnumFacing side) {
+	public FluidHandler getMatchingHandler(TileEntity tileEntity, ForgeDirection side) {
 		return new FluidHandler((IFluidHandler) tileEntity, side);
 	}
 

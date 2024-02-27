@@ -1,6 +1,6 @@
 package bedrockbreaker.graduatedcylinders.util;
 
-import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.util.ForgeDirection;
 
 public class BlockPos {
 	
@@ -26,7 +26,7 @@ public class BlockPos {
 		return this.z;
 	}
 
-	public BlockPos offset(EnumFacing facing) {
-		return new BlockPos(this.x + facing.getFrontOffsetX(), this.y + facing.getFrontOffsetY(), this.z + facing.getFrontOffsetZ());
+	public BlockPos offset(ForgeDirection facing) {
+		return new BlockPos(this.x + facing.offsetX, this.y + facing.offsetY, this.z + facing.offsetZ);
 	}
 }

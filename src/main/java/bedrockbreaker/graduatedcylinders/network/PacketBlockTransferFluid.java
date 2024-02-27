@@ -15,8 +15,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 
 public class PacketBlockTransferFluid implements IMessage {
 
@@ -84,7 +84,7 @@ public class PacketBlockTransferFluid implements IMessage {
 
 			World world = ctx.getServerHandler().playerEntity.worldObj;
 			IProxyFluidHandlerItem heldFluidHandler = FluidHelper.getProxyFluidHandler(message.heldItem);
-			IProxyFluidHandler blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(world, message.pos, EnumFacing.getFront(message.side), heldFluidHandler);
+			IProxyFluidHandler blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(world, message.pos, ForgeDirection.getOrientation(message.side), heldFluidHandler);
 			if (heldFluidHandler == null || blockFluidHandler == null) return null;
 
 			IProxyFluidStack fluidStack = heldFluidHandler.getTankProperties(message.heldTankIndex).getContents();

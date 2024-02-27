@@ -45,8 +45,8 @@ import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatAllowedCharacters;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 
 @SideOnly(Side.CLIENT)
 public class FluidTransferGui extends GuiScreen {
@@ -60,7 +60,7 @@ public class FluidTransferGui extends GuiScreen {
 	public final ItemStack heldItem;
 	private final IProxyFluidHandlerItem heldFluidHandler; // Based on client knowledge. Inventory desyncs are likely to cause funky issues if client fluidstacks are used
 	private IProxyFluidHandler blockFluidHandler; // Based on client knowledge. May not contain any valid fluidstacks (e.g GregTech which doesn't send client updates)
-	public EnumFacing selectedFace;
+	public ForgeDirection selectedFace;
 	public int heldTankIndex;
 	public int blockTankIndex;
 
@@ -124,13 +124,13 @@ public class FluidTransferGui extends GuiScreen {
 		}
 
 		this.sceneRenderer = new Scene3DRenderer(pos, this.allowedFaces);
-		this.sceneRenderer.selectedFace = EnumFacing.getFront(side);
+		this.sceneRenderer.selectedFace = ForgeDirection.getOrientation(side);
 		this.initialized = true;
 	}
 
 	public void updateCaches(int heldTankIndex, int side, int blockTankIndex) {
-		this.selectedFace = EnumFacing.getFront(side);
-		this.blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(world, pos, EnumFacing.getFront(side), this.heldFluidHandler);
+		this.selectedFace = ForgeDirection.getOrientation(side);
+		this.blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(world, pos, ForgeDirection.getOrientation(side), this.heldFluidHandler);
 		this.heldTankIndex = heldTankIndex;
 		this.blockTankIndex = blockTankIndex;
 		
@@ -159,7 +159,7 @@ public class FluidTransferGui extends GuiScreen {
 		}
 	}
 
-	protected boolean changeSelectedFace(EnumFacing face) {
+	protected boolean changeSelectedFace(ForgeDirection face) {
 		int side = face.ordinal();
 		if (!this.allowedFaces.get(side).canTransfer()) return false;
 		this.updateCaches(this.allowedFaces.get(side).sourceTank, side, this.allowedFaces.get(side).destinationTank);

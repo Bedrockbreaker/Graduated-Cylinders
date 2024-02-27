@@ -2,15 +2,15 @@ package bedrockbreaker.graduatedcylinders.proxy.tankproperties;
 
 import bedrockbreaker.graduatedcylinders.api.IProxyTankProperties;
 import bedrockbreaker.graduatedcylinders.proxy.stack.FluidStackGC;
-import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidTankInfo;
 
 public class FluidTankProperties implements IProxyTankProperties {
 
 	protected FluidTankInfo fluidTankProperties;
-	protected EnumFacing side;
+	protected ForgeDirection side;
 
-	public FluidTankProperties(FluidTankInfo fluidTankProperties, EnumFacing side) {
+	public FluidTankProperties(FluidTankInfo fluidTankProperties, ForgeDirection side) {
 		this.fluidTankProperties = fluidTankProperties;
 	}
 

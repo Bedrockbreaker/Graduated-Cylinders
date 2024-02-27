@@ -2,7 +2,7 @@ package bedrockbreaker.graduatedcylinders.api;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.util.ForgeDirection;
 
 public interface IProxyFluidHandlerItem extends IProxyFluidHandler {
 
@@ -14,10 +14,10 @@ public interface IProxyFluidHandlerItem extends IProxyFluidHandler {
 	/**
 	 * Check if the tile entity has a matching fluid handler
 	 */
-	public boolean isMatchingHandlerType(TileEntity tileEntity, EnumFacing side);
+	public boolean isMatchingHandlerType(TileEntity tileEntity, ForgeDirection side);
 
 	/**
 	 * Get the tile entity's fluid handler whose type matches this fluid handler
 	 */
-	public IProxyFluidHandler getMatchingHandler(TileEntity tileEntity, EnumFacing side);
+	public IProxyFluidHandler getMatchingHandler(TileEntity tileEntity, ForgeDirection side);
 }

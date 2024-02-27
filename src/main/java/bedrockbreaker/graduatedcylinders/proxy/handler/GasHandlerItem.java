@@ -13,7 +13,7 @@ import mekanism.api.gas.IGasItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.util.ForgeDirection;
 
 public class GasHandlerItem implements IProxyFluidHandlerItem {
 
@@ -30,11 +30,11 @@ public class GasHandlerItem implements IProxyFluidHandlerItem {
 		return gasStack == null ? null : new GasStackGC(gasStack);
 	}
 
-	public boolean isMatchingHandlerType(TileEntity tileEntity, EnumFacing side) {
+	public boolean isMatchingHandlerType(TileEntity tileEntity, ForgeDirection side) {
 		return tileEntity instanceof IGasHandler;
 	}
 
-	public GasHandler getMatchingHandler(TileEntity tileEntity, EnumFacing side) {
+	public GasHandler getMatchingHandler(TileEntity tileEntity, ForgeDirection side) {
 		return new GasHandler((IGasHandler) tileEntity, side);
 	}
 
