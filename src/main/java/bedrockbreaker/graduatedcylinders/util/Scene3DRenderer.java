@@ -20,12 +20,12 @@ import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.IIcon;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
@@ -400,7 +400,7 @@ public class Scene3DRenderer {
 		tesselator.setTranslation(0, 0, 0);
 	}
 
-	private void drawOverlay(Tessellator tesselator, BlockPos blockPos, EnumFacing face, TextureAtlasSprite overlay, boolean drawInverse) {
+	private void drawOverlay(Tessellator tesselator, BlockPos blockPos, EnumFacing face, IIcon overlay, boolean drawInverse) {
 		double[] texelData = this.getPositionsAndUVForFace(blockPos, face, overlay.getMinU(), overlay.getMaxU(), overlay.getMinV(), overlay.getMaxV());
 		for (int i = 0; i < 4; i++) {
 			tesselator.addVertexWithUV(texelData[i*5], texelData[i*5+1], texelData[i*5+2], texelData[i*5+3], texelData[i*5+4]);
