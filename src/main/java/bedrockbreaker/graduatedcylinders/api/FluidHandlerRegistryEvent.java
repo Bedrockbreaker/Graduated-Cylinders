@@ -6,6 +6,7 @@ import bedrockbreaker.graduatedcylinders.FluidHandlerRegistry;
 import cpw.mods.fml.common.eventhandler.Event;
 import net.minecraftforge.common.MinecraftForge;
 
+// Subscribe to this event to register your meta handlers
 public class FluidHandlerRegistryEvent extends Event {
 	private boolean canPost = true;
 

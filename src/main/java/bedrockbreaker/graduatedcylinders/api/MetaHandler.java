@@ -6,7 +6,7 @@ import bedrockbreaker.graduatedcylinders.proxy.mode.BucketMode;
 import net.minecraft.item.ItemStack;
 
 /**
- * To make your fluid handler work with GC, register a singleton instance of a child of this class in the `RegistryEvent.Register<MetaHandler>` event
+ * To make your fluid handler work with GC, register an instance of your handler in the FluidHandlerRegistryEvent during init
  * @See {@link bedrockbreaker.graduatedcylinders.FluidHandlerRegistry#registerHandlers} for example
  */
 public abstract class MetaHandler {

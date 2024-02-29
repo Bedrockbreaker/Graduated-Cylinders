@@ -84,9 +84,11 @@ public class InventoryHandler {
 		this.drawHoveringText(this.minecraft.currentScreen, Arrays.asList(I18n.format("gc.inventory.rightclick", transferAmount < 0 ? "->" : "<-", ColorCache.getFluidColorCode(fluid, fluid.getColor()) + TextFormatting.BOLD + metaHandler.modes.get(0).formatAmount(Math.abs(transferAmount), false) + TextFormatting.RESET)), event.mouseX, event.mouseY);
 	}
 
+	// KAMO: use mixins to inject into GuiContainer#mouseClicked?
+
 	// There isn't a GuiScreenEvent.MouseInputEvent in 1.7.10, so I have to poll instead :/
 	@SubscribeEvent
-	public void test(TickEvent.ClientTickEvent event) {
+	public void onClientTick(TickEvent.ClientTickEvent event) {
 		if (event.phase != TickEvent.Phase.START) return;
 		if (!(this.minecraft.currentScreen instanceof GuiContainer)) return;
 		if (!Mouse.isButtonDown(1)) {
@@ -101,17 +103,9 @@ public class InventoryHandler {
 
 		float scale = new ScaledResolution(this.minecraft, this.minecraft.displayWidth, this.minecraft.displayHeight).getScaleFactor();
 		Slot hoveredSlot = getSlotUnderMouse((GuiContainer) this.minecraft.currentScreen, (int) (Mouse.getX() / scale), (int) ((this.minecraft.displayHeight - Mouse.getY()) / scale));
-
-		GraduatedCylinders.console.info("Slot: " + hoveredSlot);
-
 		if (hoveredSlot == null || !hoveredSlot.getHasStack() || hoveredSlot.getStack().getItem() == null || !hoveredSlot.canTakeStack(minecraft.thePlayer)) return;
-
-		GraduatedCylinders.console.info("Slot item: " + hoveredSlot.getStack());
-		GraduatedCylinders.console.info("Held item: " + heldStack);
-
 		if (FluidHelper.getTransferAmount(FluidHelper.getProxyFluidHandler(heldStack), FluidHelper.getProxyFluidHandler(hoveredSlot.getStack())) == 0) return;
 
-		GraduatedCylinders.console.info("Found compatible fluid containers");
 		PacketHandler.INSTANCE.sendToServer(new PacketContainerTransferFluid(hoveredSlot.slotNumber));
 
 		// Wish I could cancel the GuiScreen#mouseClicked event here, but that would probably involve ASM or mixins or something.
