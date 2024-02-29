@@ -470,7 +470,7 @@ public class FluidTransferGui extends GuiScreen {
 	public void handleMouseInput() {
 		if (!this.initialized) return;
 
-		int scrollAmount = Mouse.getDWheel();
+		int scrollAmount = Mouse.getEventDWheel();
 		if (scrollAmount != 0) this.setAmount(this.amount + this.getDelta() * MathHelper.clamp(scrollAmount, -1, 1));
 
 		if ((Mouse.getEventButton() == 0 || Mouse.getEventButton() == 1) && Mouse.getEventButtonState() && this.hoveredSprite != null) {
