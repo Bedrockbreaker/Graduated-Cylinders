@@ -1,5 +1,6 @@
 package bedrockbreaker.graduatedcylinders.proxy.tankproperties;
 
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import bedrockbreaker.graduatedcylinders.api.IProxyTankProperties;
 import bedrockbreaker.graduatedcylinders.proxy.stack.GasStackGC;
 import mekanism.api.gas.GasStack;
@@ -21,8 +22,9 @@ public class GasTankProperties implements IProxyTankProperties {
 		return drawnGas == null ? null : new GasStackGC(drawnGas);
 	}
 
-	public int getCapacity() {
+	public int getCapacity(IProxyFluidStack fluidStack) {
 		// FIXME: get actual capacity of gas tank
+		if (!(fluidStack instanceof GasStackGC)) return 0;
 		return 0;
 	}
 }

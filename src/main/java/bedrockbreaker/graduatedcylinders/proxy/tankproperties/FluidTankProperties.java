@@ -1,5 +1,6 @@
 package bedrockbreaker.graduatedcylinders.proxy.tankproperties;
 
+import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import bedrockbreaker.graduatedcylinders.api.IProxyTankProperties;
 import bedrockbreaker.graduatedcylinders.proxy.stack.FluidStackGC;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -18,7 +19,8 @@ public class FluidTankProperties implements IProxyTankProperties {
 		return this.fluidTankProperties.fluid == null ? null : new FluidStackGC(this.fluidTankProperties.fluid);
 	}
 
-	public int getCapacity() {
+	public int getCapacity(IProxyFluidStack fluidStack) {
+		if (!(fluidStack instanceof FluidStackGC)) return 0;
 		return this.fluidTankProperties.capacity;
 	}
 }

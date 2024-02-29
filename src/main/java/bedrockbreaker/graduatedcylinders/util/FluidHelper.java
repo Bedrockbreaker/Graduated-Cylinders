@@ -72,13 +72,14 @@ public class FluidHelper {
 		IProxyTankProperties itemTwoProps = handler2.getTankProperties(0);
 		IProxyFluidStack itemOneContents = itemOneProps.getContents();
 		IProxyFluidStack itemTwoContents = itemTwoProps.getContents();
-		if (itemOneContents != null && itemTwoContents != null && !itemOneContents.isFluidEqual(itemTwoContents)) return 0;
+		if ((itemOneContents != null && itemTwoContents != null && !itemOneContents.isFluidEqual(itemTwoContents)) || (itemOneContents == null && itemTwoContents == null)) return 0;
 
+		IProxyFluidStack fluidType = itemOneContents == null ? itemTwoContents : itemOneContents;
 		int itemOneAmount = itemOneContents == null ? 0 : itemOneContents.getAmount();
 		int itemTwoAmount = itemTwoContents == null ? 0 : itemTwoContents.getAmount();
-		if ((itemOneAmount == itemOneProps.getCapacity() && itemTwoAmount == itemTwoProps.getCapacity()) || itemOneAmount + itemTwoAmount == 0) return 0;
+		if ((itemOneAmount == itemOneProps.getCapacity(fluidType) && itemTwoAmount == itemTwoProps.getCapacity(fluidType)) || itemOneAmount + itemTwoAmount == 0) return 0;
 
-		return itemTwoAmount == 0 || itemOneAmount == itemOneProps.getCapacity() ? -Math.min(itemTwoProps.getCapacity() - itemTwoAmount, itemOneAmount) : Math.min(itemOneProps.getCapacity() - itemOneAmount, itemTwoAmount);
+		return itemTwoAmount == 0 || itemOneAmount == itemOneProps.getCapacity(fluidType) ? -Math.min(itemTwoProps.getCapacity(fluidType) - itemTwoAmount, itemOneAmount) : Math.min(itemOneProps.getCapacity(fluidType) - itemOneAmount, itemTwoAmount);
 	}
 
 	/**

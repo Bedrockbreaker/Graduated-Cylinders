@@ -209,7 +209,7 @@ public class FluidTransferGui extends GuiScreen {
 
 	protected void cycleMode() {
 		this.mode = this.metaHandler.modes.get((this.metaHandler.modes.indexOf(this.mode) + 1) % this.metaHandler.modes.size());
-		this.deltas = this.mode.getDeltas(this.amount, this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity(), this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity());
+		this.deltas = this.mode.getDeltas(this.amount, this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity(this.getWorkingFluidStack()), this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity(this.getWorkingFluidStack()));
 		this.deltaStrings = this.mode.getStringDeltas();
 
 		this.instructionsWidth = 0;
@@ -227,13 +227,13 @@ public class FluidTransferGui extends GuiScreen {
 		this.heldTankIndex = tankIndices.getLeft();
 		this.blockTankIndex = tankIndices.getRight();
 		this.allowedFaces.set(this.selectedFace.ordinal(), this.getTransferCapability());
-		this.maxAmount = Math.min(this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity(), this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity());
+		this.maxAmount = Math.min(this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity(this.getWorkingFluidStack()), this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity(this.getWorkingFluidStack()));
 		this.transferDirectionForced = this.getTransferCapability().canExport ^ this.getTransferCapability().canImport;
 		this.isExporting = this.transferDirectionForced ? this.getTransferCapability().canExport : defaultTransferDirection;
 		this.exportButton.displayString = this.isExporting ? "->" : "<-";
 		this.exportButton.enabled = !this.transferDirectionForced;
 		this.setAmount(fluidTransferAmount);
-		this.deltas = this.mode.getDeltas(this.amount, this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity(), this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity());
+		this.deltas = this.mode.getDeltas(this.amount, this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity(this.getWorkingFluidStack()), this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity(this.getWorkingFluidStack()));
 		this.initFluidSprites(doAnimation);
 	}
 
@@ -322,7 +322,9 @@ public class FluidTransferGui extends GuiScreen {
 		if (this.amount > 0) {
 			int heldAmount = this.heldFluidStacks.get(this.heldTankIndex) != null ? this.heldFluidStacks.get(this.heldTankIndex).getAmount() : 0;
 			int blockAmount = this.blockFluidStacks.get(this.blockTankIndex) != null ? this.blockFluidStacks.get(this.blockTankIndex).getAmount() : 0;
-			int deltaMax = Math.min(this.isExporting ? Math.min(this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity() - blockAmount, heldAmount) : Math.min(this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity() - heldAmount, blockAmount), this.amount);
+			int deltaMax = Math.min(this.isExporting
+				? Math.min(this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity(this.getWorkingFluidStack()) - blockAmount, heldAmount)
+				: Math.min(this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity(this.getWorkingFluidStack()) - heldAmount, blockAmount), this.amount);
 			String displayHeldAmountNew = this.mode.formatAmount(heldAmount + (this.isExporting ? -deltaMax : deltaMax), false);
 			this.drawCenteredString(this.fontRendererObj, displayHeldAmountNew, centerX - 98 - Math.max(this.fontRendererObj.getStringWidth(displayHeldAmountNew) / 2 - 26, 0), centerY + 90, this.isExporting ? 0xAA0000 : 0x00AA00); // §4 dark_red : §2 dark_green
 			String displayTankAmountNew = this.mode.formatAmount(blockAmount + (this.isExporting ? deltaMax : -deltaMax), false);

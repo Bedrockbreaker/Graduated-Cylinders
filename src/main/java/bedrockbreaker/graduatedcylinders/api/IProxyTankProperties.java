@@ -10,5 +10,5 @@ public interface IProxyTankProperties {
 	/**
 	 * Get the maximum capacity of this tank
 	 */
-	public int getCapacity();
+	public int getCapacity(IProxyFluidStack fluidStack);
 }
