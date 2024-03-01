@@ -4,29 +4,22 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
-import org.lwjgl.input.Mouse;
-
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import bedrockbreaker.graduatedcylinders.api.MetaHandler;
-import bedrockbreaker.graduatedcylinders.network.PacketContainerTransferFluid;
-import bedrockbreaker.graduatedcylinders.network.PacketHandler;
 import bedrockbreaker.graduatedcylinders.util.ColorCache;
 import bedrockbreaker.graduatedcylinders.util.FluidHelper;
 import bedrockbreaker.graduatedcylinders.util.TextFormatting;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.fluids.IFluidContainerItem;
 
 @SideOnly(Side.CLIENT)
 public class InventoryHandler {
@@ -82,33 +75,6 @@ public class InventoryHandler {
 		if (fluid == null) throw new NullPointerException(); // Shouldn't ever throw.
 
 		this.drawHoveringText(this.minecraft.currentScreen, Arrays.asList(I18n.format("gc.inventory.rightclick", transferAmount < 0 ? "->" : "<-", ColorCache.getFluidColorCode(fluid, fluid.getColor()) + TextFormatting.BOLD + metaHandler.modes.get(0).formatAmount(Math.abs(transferAmount), false) + TextFormatting.RESET)), event.mouseX, event.mouseY);
-	}
-
-	// KAMO: use mixins to inject into GuiContainer#mouseClicked?
-
-	// There isn't a GuiScreenEvent.MouseInputEvent in 1.7.10, so I have to poll instead :/
-	@SubscribeEvent
-	public void onClientTick(TickEvent.ClientTickEvent event) {
-		if (event.phase != TickEvent.Phase.START) return;
-		if (!(this.minecraft.currentScreen instanceof GuiContainer)) return;
-		if (!Mouse.isButtonDown(1)) {
-			this.clicked = false;
-			return;
-		}
-		if (this.clicked) return;
-		this.clicked = true;
-
-		ItemStack heldStack = this.minecraft.thePlayer.inventory.getItemStack();
-		if (heldStack == null || heldStack.getItem() == null || heldStack.stackSize != 1 || !(heldStack.getItem() instanceof IFluidContainerItem)) return;
-
-		float scale = new ScaledResolution(this.minecraft, this.minecraft.displayWidth, this.minecraft.displayHeight).getScaleFactor();
-		Slot hoveredSlot = getSlotUnderMouse((GuiContainer) this.minecraft.currentScreen, (int) (Mouse.getX() / scale), (int) ((this.minecraft.displayHeight - Mouse.getY()) / scale));
-		if (hoveredSlot == null || !hoveredSlot.getHasStack() || hoveredSlot.getStack().getItem() == null || !hoveredSlot.canTakeStack(minecraft.thePlayer)) return;
-		if (FluidHelper.getTransferAmount(FluidHelper.getProxyFluidHandler(heldStack), FluidHelper.getProxyFluidHandler(hoveredSlot.getStack())) == 0) return;
-
-		PacketHandler.INSTANCE.sendToServer(new PacketContainerTransferFluid(hoveredSlot.slotNumber));
-
-		// Wish I could cancel the GuiScreen#mouseClicked event here, but that would probably involve ASM or mixins or something.
 	}
 
 	private Slot getSlotUnderMouse(GuiContainer container, int mouseX, int mouseY) {

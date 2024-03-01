@@ -16,7 +16,7 @@ public class MetaFluidHandler extends MetaHandler {
 
 	@Override
 	public boolean hasHandler(ItemStack itemStack) {
-		return itemStack != null && (itemStack.getItem() instanceof IFluidContainerItem || FluidContainerRegistry.isContainer(itemStack));
+		return itemStack != null && itemStack.stackSize == 1 && (itemStack.getItem() instanceof IFluidContainerItem || FluidContainerRegistry.isContainer(itemStack));
 	}
 
 	@Override

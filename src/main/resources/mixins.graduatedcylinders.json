@@ -1,0 +1,9 @@
+{
+	"required": true,
+	"minVersion": "0.8.3-GTNH",
+	"package": "bedrockbreaker.graduatedcylinders.mixins",
+	"refmap": "mixins.graduatedcylinders.refmap.json",
+	"client": ["MixinMouseClicked"],
+	"target": "@env(DEFAULT)",
+	"compatibilityLevel": "JAVA_8"
+}
