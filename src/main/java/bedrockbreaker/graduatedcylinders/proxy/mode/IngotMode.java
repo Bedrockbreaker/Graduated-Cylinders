@@ -9,7 +9,7 @@ import net.minecraft.item.ItemStack;
 
 public class IngotMode implements IHandlerMode {
 
-	// TODO: render mB as well while in ingot mode?
+	// KAMO: render mB as well while in ingot mode?
 	public static final IngotMode INSTANCE = new IngotMode();
 
 	public ItemStack icon = new ItemStack(Items.iron_ingot);
