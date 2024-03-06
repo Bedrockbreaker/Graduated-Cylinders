@@ -8,16 +8,19 @@ import bedrockbreaker.graduatedcylinders.proxy.stack.GasStackGC;
 import bedrockbreaker.graduatedcylinders.proxy.tankproperties.GasTankProperties;
 import mekanism.api.gas.GasStack;
 import mekanism.api.gas.IGasHandler;
+import mekanism.api.gas.IGasTankInfoProvider;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 
 public class GasHandler implements IProxyFluidHandler {
 
 	protected IGasHandler gasHandler;
+	protected IGasTankInfoProvider gasTankInfoProvider;
 	protected ForgeDirection side;
 
-	public GasHandler(IGasHandler gasHandler, ForgeDirection side) {
+	public GasHandler(IGasHandler gasHandler, IGasTankInfoProvider gasTankInfoProvider, ForgeDirection side) {
 		this.gasHandler = gasHandler;
+		this.gasTankInfoProvider = gasTankInfoProvider;
 		this.side = side;
 	}
 
@@ -27,11 +30,11 @@ public class GasHandler implements IProxyFluidHandler {
 	}
 
 	public GasTankProperties getTankProperties(int tankIndex) {
-		return new GasTankProperties(this.gasHandler);
+		return new GasTankProperties(this.gasTankInfoProvider.getTankInfo()[tankIndex]);
 	}
 
 	public int getNumTanks() {
-		return 1;
+		return this.gasTankInfoProvider.getTankInfo().length;
 	}
 
 	public int fill(IProxyFluidStack resource, boolean doFill) {

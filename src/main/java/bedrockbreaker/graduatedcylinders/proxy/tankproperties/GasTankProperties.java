@@ -4,27 +4,25 @@ import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import bedrockbreaker.graduatedcylinders.api.IProxyTankProperties;
 import bedrockbreaker.graduatedcylinders.proxy.stack.GasStackGC;
 import mekanism.api.gas.GasStack;
-import mekanism.api.gas.IGasHandler;
+import mekanism.api.gas.GasTankInfo;
 import net.minecraftforge.common.util.ForgeDirection;
 
 public class GasTankProperties implements IProxyTankProperties {
 
-	protected IGasHandler gasHandler;
+	protected GasTankInfo gasTankInfo;
 	protected ForgeDirection side;
 
-	public GasTankProperties(IGasHandler gasHandler) {
-		this.gasHandler = gasHandler;
+	public GasTankProperties(GasTankInfo gasTankInfo) {
+		this.gasTankInfo = gasTankInfo;
 	}
 
 	public GasStackGC getContents() {
-		// FIXME: only works for tile entities which allow draining gas in the first place
-		GasStack drawnGas = this.gasHandler.drawGas(this.side, Integer.MAX_VALUE, false);
+		GasStack drawnGas = this.gasTankInfo.getGas();
 		return drawnGas == null ? null : new GasStackGC(drawnGas);
 	}
 
 	public int getCapacity(IProxyFluidStack fluidStack) {
-		// FIXME: get actual capacity of gas tank
 		if (!(fluidStack instanceof GasStackGC)) return 0;
-		return 0;
+		return this.gasTankInfo.getMaxGas();
 	}
 }

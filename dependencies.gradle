@@ -35,5 +35,5 @@
  */
 dependencies {
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.5.4-GTNH:dev")
-    compileOnly("curse.maven:mekanism-268560:2475797") // Their real maven doesn't host a version for 1.7.10
+    compileOnly("curse.maven:mekanism-ce-399904:5157603") // I have no clue how to get their real maven to work. Gradle/maven/whatever is literally magic to me.
 }

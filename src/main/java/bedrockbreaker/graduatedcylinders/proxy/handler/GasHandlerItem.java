@@ -10,6 +10,7 @@ import bedrockbreaker.graduatedcylinders.proxy.tankproperties.GasTankPropertiesI
 import mekanism.api.gas.GasStack;
 import mekanism.api.gas.IGasHandler;
 import mekanism.api.gas.IGasItem;
+import mekanism.api.gas.IGasTankInfoProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -31,11 +32,11 @@ public class GasHandlerItem implements IProxyFluidHandlerItem {
 	}
 
 	public boolean isMatchingHandlerType(TileEntity tileEntity, ForgeDirection side) {
-		return tileEntity instanceof IGasHandler;
+		return tileEntity instanceof IGasHandler && tileEntity instanceof IGasTankInfoProvider;
 	}
 
 	public GasHandler getMatchingHandler(TileEntity tileEntity, ForgeDirection side) {
-		return new GasHandler((IGasHandler) tileEntity, side);
+		return new GasHandler((IGasHandler) tileEntity, (IGasTankInfoProvider) tileEntity, side);
 	}
 
 	public IProxyTankProperties getTankProperties(int tankIndex) {

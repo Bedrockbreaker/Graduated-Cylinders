@@ -19,7 +19,7 @@ import net.minecraftforge.common.MinecraftForge;
 public class GraduatedCylinders {
 	public static final String MODID = "graduatedcylinders";
 	public static final String NAME = "Graduated Cylinders";
-	public static final String VERSION = "3.0.0";
+	public static final String VERSION = "3.0.1";
 	public static final boolean IN_DEV = (boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
 
 	public static Logger console = LogManager.getLogger(GraduatedCylinders.NAME);
@@ -34,7 +34,7 @@ public class GraduatedCylinders {
 			throw new RuntimeException("Graduated Cylinders API jar (\"GraduatedCylinders-" + MinecraftForge.MC_VERSION + "-" + GraduatedCylindersAPI.API_VERSION + "-api.jar\") was detected in your mods folder. Please delete it and restart the game.");
 		}
 
-		GraduatedCylinders.isMekanismLoaded = Loader.isModLoaded("mekanism");
+		GraduatedCylinders.isMekanismLoaded = Loader.isModLoaded("Mekanism");
 
 		GraduatedCylinders.proxy.preInit(event);
 	}
