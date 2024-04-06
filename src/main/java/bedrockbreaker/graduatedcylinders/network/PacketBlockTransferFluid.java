@@ -69,7 +69,6 @@ public class PacketBlockTransferFluid implements IMessage {
 	public static class Handler implements IMessageHandler<PacketBlockTransferFluid, IMessage> {
 
 		@Override
-		@SuppressWarnings("null")
 		public IMessage onMessage(PacketBlockTransferFluid message, MessageContext ctx) {
 			if (ctx.side != Side.SERVER) return null;
 			FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
