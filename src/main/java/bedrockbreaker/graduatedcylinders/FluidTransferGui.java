@@ -5,13 +5,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
-
-import com.google.common.primitives.Ints;
 
 import bedrockbreaker.graduatedcylinders.api.IHandlerMode;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
@@ -21,6 +18,7 @@ import bedrockbreaker.graduatedcylinders.api.MetaHandler;
 import bedrockbreaker.graduatedcylinders.network.PacketBlockTransferFluid;
 import bedrockbreaker.graduatedcylinders.network.PacketHandler;
 import bedrockbreaker.graduatedcylinders.util.ColorCache;
+import bedrockbreaker.graduatedcylinders.util.Expression;
 import bedrockbreaker.graduatedcylinders.util.FluidHelper;
 import bedrockbreaker.graduatedcylinders.util.FluidHelper.TransferrableFluidResult;
 import bedrockbreaker.graduatedcylinders.util.GuiFluidSprite;
@@ -37,7 +35,6 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
@@ -184,7 +181,7 @@ public class FluidTransferGui extends GuiScreen {
 		if (this.transferDirectionForced) return;
 		this.isExporting = !this.isExporting;
 		this.exportButton.displayString = this.isExporting ? "->" : "<-";
-		
+
 		final int centerX = this.width / 2;
 		final int centerY = this.height / 2;
 		this.applyToSprites((GuiFluidSprite sprite, boolean isHeldSprite, boolean isSelectedSprite, int tankIndex) -> {
@@ -202,6 +199,12 @@ public class FluidTransferGui extends GuiScreen {
 				}
 			}
 		});
+
+		// Reevaluate the amount, since toggling the direction can affect the % operator
+		if (!this.textAmount.getText().contains("%")) return;
+		double output = Math.round(Expression.evaluate(this.textAmount.getText(), new Expression.Context().setPercent(this.isExporting ? this.heldFluidStacks.get(this.heldTankIndex).getAmount() : this.blockFluidStacks.get(this.blockTankIndex).getAmount())));
+		if (output < 0 || Double.isNaN(output)) return;
+		this.amount = MathHelper.clamp((int) output, 0, this.maxAmount);
 	}
 
 	protected void cycleMode() {
@@ -262,7 +265,6 @@ public class FluidTransferGui extends GuiScreen {
 
 		this.textAmount = new GuiTextField(0, this.fontRenderer, centerX - 60, centerY - 20, 100, 20);
 		this.textAmount.setText(Integer.toString(this.amount));
-		this.textAmount.setMaxStringLength(10);
 		this.textAmount.setFocused(true);
 		this.textAmount.setCanLoseFocus(false);
 
@@ -523,15 +525,19 @@ public class FluidTransferGui extends GuiScreen {
 			if (mouseX < this.textAmount.x || mouseX >= this.textAmount.x + this.textAmount.width || mouseY < this.textAmount.y || mouseY >= this.textAmount.y + this.textAmount.height) return;
 			this.setAmount(0);
 			this.textAmount.setText("");
-		} else if (NumberUtils.isDigits(Character.toString(typedChar)) || !ChatAllowedCharacters.isAllowedCharacter(typedChar)) { // Digits and non-printable characters (backspace, etc.)
+		} else { // Text box
+			// Evaluate text expression
 			this.textAmount.textboxKeyTyped(typedChar, keyCode);
-			Integer num = Ints.tryParse(StringUtils.defaultIfEmpty(this.textAmount.getText(), "0"));
-			if (num == null) num = Integer.MAX_VALUE;
-			this.amount = MathHelper.clamp(num, 0, this.maxAmount);
-			if (num != this.amount) this.textAmount.setText(Integer.toString(this.amount)); // If text representation overflows integer
+			double output = Math.round(Expression.evaluate(this.textAmount.getText(), new Expression.Context().setPercent(this.isExporting ? this.heldFluidStacks.get(this.heldTankIndex).getAmount() : this.blockFluidStacks.get(this.blockTankIndex).getAmount())));
+			if (output < 0 || Double.isNaN(output)) return;
+			this.amount = MathHelper.clamp((int) output, 0, this.maxAmount);
 			
-			if (!this.textAmount.getText().startsWith("0") || !NumberUtils.isDigits(Character.toString(typedChar))) return; // If digit is typed and text starts with zeros
-			final int cursorPos = this.textAmount.getCursorPosition();
+			// Enter key: Replace the expression with its value
+			if (keyCode == 28) this.textAmount.setText(String.valueOf(this.amount));
+
+			// Remove leading zeros
+			if (!this.textAmount.getText().startsWith("0") || !NumberUtils.isDigits(Character.toString(typedChar))) return;
+			int cursorPos = this.textAmount.getCursorPosition();
 			int leadCount = 0;
 			while (leadCount < this.textAmount.getText().length() - 1 && this.textAmount.getText().charAt(leadCount) == '0') leadCount++;
 			this.textAmount.setText(this.textAmount.getText().substring(leadCount));
