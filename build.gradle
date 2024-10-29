@@ -20,6 +20,18 @@ sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = co
 
 minecraft {
     mappings channel: 'snapshot', version: '20171003-1.12'
+    runs {
+        client {
+            workingDirectory project.file('run')
+            args '--tweakClass', 'net.minecraftforge.fml.common.launcher.FMLTweaker'
+            jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005'
+        }
+        server {
+            workingDirectory project.file('run')
+            args '--tweakClass', 'net.minecraftforge.fml.common.launcher.FMLServerTweaker'
+            jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5006'
+        }
+    }
 }
 
 repositories {
