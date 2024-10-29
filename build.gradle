@@ -59,6 +59,21 @@ jar {
     }
 }
 
+tasks.register("copyResourcesToRun") {
+    doLast {
+        copy {
+            from "src/main/resources"
+            into "run/assets/dev"
+        }
+    }
+}
+
+tasks.withType(JavaExec).configureEach {
+    if (name == "runClient" || name == "runServer") {
+        dependsOn("copyResourcesToRun")
+    }
+}
+
 task apiJar(type: Jar) {
     classifier = "api"
     from(sourceSets.main.allJava)
