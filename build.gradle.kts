@@ -210,6 +210,14 @@ idea {
 	}
 }
 
+tasks.named<JavaExec>("runClient") {
+	jvmArgs = listOf("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
+}
+
+tasks.named<JavaExec>("runServer") {
+	jvmArgs = listOf("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5006")
+}
+
 tasks.processIdeaSettings.configure {
 	dependsOn(tasks.injectTags)
 }

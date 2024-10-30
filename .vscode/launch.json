@@ -13,7 +13,7 @@
 		},
 		{
 			"type": "java",
-			"name": "Attach to Client",
+			"name": "Attach to Server",
 			"request": "attach",
 			"hostName": "localhost",
 			"port": 5006
