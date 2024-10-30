@@ -87,7 +87,7 @@ public class PacketBlockTransferFluid implements IMessage {
 
 				World world = ctx.getServerHandler().player.getServerWorld();
 				IProxyFluidHandlerItem heldFluidHandler = FluidHelper.getProxyFluidHandler(message.heldItem);
-				IProxyFluidHandler blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(world, message.pos, EnumFacing.getFront(message.side), heldFluidHandler);
+				IProxyFluidHandler blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(world, message.pos, EnumFacing.byIndex(message.side), heldFluidHandler);
 				if (heldFluidHandler == null || blockFluidHandler == null) return;
 
 				IProxyFluidStack fluidStack = heldFluidHandler.getTankProperties(message.heldTankIndex).getContents();

@@ -118,13 +118,13 @@ public class FluidTransferGui extends GuiScreen {
 		}
 
 		this.sceneRenderer = new Scene3DRenderer(pos, this.allowedFaces);
-		this.sceneRenderer.selectedFace = EnumFacing.getFront(side);
+		this.sceneRenderer.selectedFace = EnumFacing.byIndex(side);
 		this.initialized = true;
 	}
 
 	public void updateCaches(int heldTankIndex, int side, int blockTankIndex) {
-		this.selectedFace = EnumFacing.getFront(side);
-		this.blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(world, pos, EnumFacing.getFront(side), this.heldFluidHandler);
+		this.selectedFace = EnumFacing.byIndex(side);
+		this.blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(world, pos, EnumFacing.byIndex(side), this.heldFluidHandler);
 		this.heldTankIndex = heldTankIndex;
 		this.blockTankIndex = blockTankIndex;
 		
