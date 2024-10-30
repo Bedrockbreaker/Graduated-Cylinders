@@ -47,7 +47,7 @@ public class OnBlockPunch {
 		// Ew, triple for-loop, I know, but the total loop count will almost never even be > 100 (which would require numHeldTanks * numBlockTanks * 6 > 100)
 		for (int i = -1; i < 6; i++) {
 			if (i == defaultSide.getIndex()) continue;
-			EnumFacing side = i == -1 ? defaultSide : EnumFacing.getFront(i);
+			EnumFacing side = i == -1 ? defaultSide : EnumFacing.byIndex(i);
 			IProxyFluidHandler blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(event.getWorld(), event.getPos(), side, heldFluidHandler);
 			if (blockFluidHandler == null) continue;
 			for (int j = 0; j < heldFluidHandler.getNumTanks(); j++) {
