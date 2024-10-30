@@ -7,8 +7,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 /**
- * To make your fluid handler work with GC, register a singleton instance of a child of this class in the `RegistryEvent.Register<MetaHandler>` event
- * @See {@link bedrockbreaker.graduatedcylinders.FluidHandlerRegistry#registerHandlers} for example
+ * To make your fluid handler work with GC, register a singleton instance of a child of this class in the {@link net.minecraftforge.event.RegistryEvent.Register} event
+ * @see bedrockbreaker.graduatedcylinders.FluidHandlerRegistry#registerHandlers Example
  */
 public abstract class MetaHandler extends IForgeRegistryEntry.Impl<MetaHandler> {
 
