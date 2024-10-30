@@ -107,6 +107,17 @@ dependencies {
 	api(rfg.deobf("curse.maven:mekanismapi-268560:2835176")) // Mekanism's real maven doesn't have files for 1.12
 }
 
+tasks.register<Jar>("apiJar") {
+	archiveClassifier.set("api")
+	from(sourceSets.main.get().allJava)
+	from(sourceSets.main.get().output)
+	include("bedrockbreaker/graduatedcylinders/api/**")
+}
+
+artifacts {
+	add("archives", tasks.named("apiJar"))
+}
+
 // Publishing to a Maven repository
 publishing {
 	publications {
