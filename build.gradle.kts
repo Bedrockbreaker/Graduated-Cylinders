@@ -91,6 +91,10 @@ repositories {
 		name = "GTNH Maven"
 		url = uri("https://nexus.gtnewhorizons.com/repository/public/")
 	}
+	maven {
+		name = "Curseforge"
+		url = uri("https://cursemaven.com")
+	}
 }
 
 dependencies {
@@ -100,6 +104,7 @@ dependencies {
 	// api(rfg.deobf("curse.maven:ic2-242638:2353971"))
 	// Example: grab the ic2 jar from libs/ in the workspace and deobfuscate
 	// api(rfg.deobf(project.files("libs/ic2.jar")))
+	api(rfg.deobf("curse.maven:mekanismapi-268560:2835176")) // Mekanism's real maven doesn't have files for 1.12
 }
 
 // Publishing to a Maven repository
