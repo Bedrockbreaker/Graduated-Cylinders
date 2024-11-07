@@ -6,17 +6,10 @@
 	"configurations": [
 		{
 			"type": "java",
-			"name": "Attach to Client",
+			"name": "Attach Debugger",
 			"request": "attach",
 			"hostName": "localhost",
 			"port": 5005
-		},
-		{
-			"type": "java",
-			"name": "Attach to Server",
-			"request": "attach",
-			"hostName": "localhost",
-			"port": 5006
 		}
 	]
 }

@@ -2,7 +2,7 @@ package bedrockbreaker.graduatedcylinders.util;
 
 import java.util.HashMap;
 
-import bedrockbreaker.graduatedcylinders.GraduatedCylinders;
+import bedrockbreaker.graduatedcylinders.Tags;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.text.TextFormatting;
@@ -13,7 +13,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-@EventBusSubscriber(modid = GraduatedCylinders.MODID, value = Side.CLIENT)
+@EventBusSubscriber(modid = Tags.MOD_ID, value = Side.CLIENT)
 public class ColorCache {
 
 	public static final HashMap<String, String> fluidColorCodeCache = new HashMap<String, String>();
