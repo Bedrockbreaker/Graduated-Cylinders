@@ -11,7 +11,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 
-@EventBusSubscriber(modid = GraduatedCylinders.MODID)
+@EventBusSubscriber(modid = Tags.MOD_ID)
 public class FluidHandlerRegistry {
 
 	public static IForgeRegistry<MetaHandler> registry = null;
@@ -19,15 +19,15 @@ public class FluidHandlerRegistry {
 	@SubscribeEvent
 	public static void makeRegistry(RegistryEvent.NewRegistry event) {
 		RegistryBuilder<MetaHandler> registryBuilder = new RegistryBuilder<>();
-		registryBuilder.setName(new ResourceLocation(GraduatedCylinders.MODID, "fluidhandlers"));
+		registryBuilder.setName(new ResourceLocation(Tags.MOD_ID, "fluidhandlers"));
 		registryBuilder.setType(MetaHandler.class);
 		registry = registryBuilder.create();
 	}
 
 	@SubscribeEvent
 	public static void registerHandlers(RegistryEvent.Register<MetaHandler> event) {
-		event.getRegistry().register(new MetaFluidHandler().setRegistryName(GraduatedCylinders.MODID, "fluid"));
-		if (GraduatedCylinders.isMekanismLoaded) event.getRegistry().register(new MetaGasHandler().setRegistryName(GraduatedCylinders.MODID, "gas"));
+		event.getRegistry().register(new MetaFluidHandler().setRegistryName(Tags.MOD_ID, "fluid"));
+		if (GraduatedCylinders.isMekanismLoaded) event.getRegistry().register(new MetaGasHandler().setRegistryName(Tags.MOD_ID, "gas"));
 	}
 
 	@SubscribeEvent

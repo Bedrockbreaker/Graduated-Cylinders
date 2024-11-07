@@ -22,7 +22,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-@EventBusSubscriber(value = Side.CLIENT, modid = GraduatedCylinders.MODID)
+@EventBusSubscriber(value = Side.CLIENT, modid = Tags.MOD_ID)
 public class InventoryHandler {
 
 	public static boolean clicked = false;

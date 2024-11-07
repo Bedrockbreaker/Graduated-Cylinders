@@ -1,11 +1,12 @@
 [
 	{
-		"modid": "graduatedcylinders",
-		"name": "Graduated Cylinders",
-		"description": "Gives finer control over moving fluids between tanks",
+		"modid": "${mod_id}",
+		"name": "${mod_name}",
+		"description": "${mod_description}",
+		"url": "${mod_url}",
 		"version": "Your Mom",
 		"mcversion": "1.12.2",
-		"authorList": ["Bedrockbreaker"],
-		"logoFile": "assets/graduatedcylinders/textures/logo.png"
+		"authorList": ${mod_authors},
+		"logoFile": "${mod_logo_path}"
 	}
 ]

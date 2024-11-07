@@ -14,10 +14,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(modid = GraduatedCylinders.MODID, name = GraduatedCylinders.NAME, version = Tags.VERSION)
+@Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION)
 public class GraduatedCylinders {
-	public static final String MODID = "graduatedcylinders";
-	public static final String NAME = "Graduated Cylinders";
 
 	public static Logger console = LogManager.getLogger("Graduated Cylinders");
 	public static boolean isMekanismLoaded = false;
@@ -28,7 +26,7 @@ public class GraduatedCylinders {
 			throw new RuntimeException("Graduated Cylinders API jar (\"GraduatedCylinders-" + ForgeVersion.mcVersion  + "-" + GraduatedCylindersAPI.API_VERSION + "-api.jar\") was detected in your mods folder. Please delete it and restart the game.");
 		}
 
-		PacketHandler.register(MODID);
+		PacketHandler.register(Tags.MOD_ID);
 		GraduatedCylinders.isMekanismLoaded = Loader.isModLoaded("mekanism");
 	}
 }

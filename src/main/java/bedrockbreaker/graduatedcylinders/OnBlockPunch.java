@@ -19,7 +19,7 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 // For some unknown reason, this code needs to exist on the client as well
-@EventBusSubscriber(modid = GraduatedCylinders.MODID)
+@EventBusSubscriber(modid = Tags.MOD_ID)
 public class OnBlockPunch {
 
 	@SubscribeEvent

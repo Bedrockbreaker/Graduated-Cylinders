@@ -9,7 +9,7 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
 
-import bedrockbreaker.graduatedcylinders.GraduatedCylinders;
+import bedrockbreaker.graduatedcylinders.Tags;
 import bedrockbreaker.graduatedcylinders.util.FluidHelper.TransferrableFluidResult;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -47,7 +47,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 // Mostly from https://github.com/SleepyTrousers/EnderIO/blob/release/1.12.2/enderio-base/src/main/java/crazypants/enderio/base/gui/IoConfigRenderer.java
 // Used accordingly under its CC0 license
 @SideOnly(Side.CLIENT)
-@EventBusSubscriber(modid = GraduatedCylinders.MODID, value = Side.CLIENT)
+@EventBusSubscriber(modid = Tags.MOD_ID, value = Side.CLIENT)
 public class Scene3DRenderer {
 
 	// Scene
@@ -101,9 +101,9 @@ public class Scene3DRenderer {
 
 	@SubscribeEvent
 	public static void registerSprites(TextureStitchEvent.Pre event) {
-		Scene3DRenderer.hoveredFaceSprite = event.getMap().registerSprite(new ResourceLocation(GraduatedCylinders.MODID, "overlay/hovered_face"));
-		Scene3DRenderer.selectedFaceSprite = event.getMap().registerSprite(new ResourceLocation(GraduatedCylinders.MODID, "overlay/selected_face"));
-		Scene3DRenderer.blockedFaceSprite = event.getMap().registerSprite(new ResourceLocation(GraduatedCylinders.MODID, "overlay/blocked_face"));
+		Scene3DRenderer.hoveredFaceSprite = event.getMap().registerSprite(new ResourceLocation(Tags.MOD_ID, "overlay/hovered_face"));
+		Scene3DRenderer.selectedFaceSprite = event.getMap().registerSprite(new ResourceLocation(Tags.MOD_ID, "overlay/selected_face"));
+		Scene3DRenderer.blockedFaceSprite = event.getMap().registerSprite(new ResourceLocation(Tags.MOD_ID, "overlay/blocked_face"));
 	}
 
 	public void init() {
