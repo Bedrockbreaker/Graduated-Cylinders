@@ -25,17 +25,6 @@ repositories {
             includeGroup 'maven.modrinth'
         }
     }
-    exclusiveContent {
-        forRepository {
-            maven {
-                name "tterrag Maven"
-                url "https://maven.tterrag.com/"
-            }
-        }
-        filter {
-            includeGroup "mcjty.theoneprobe"
-        }
-    }
     mavenLocal() // Must be last for caching to work
 }
 
