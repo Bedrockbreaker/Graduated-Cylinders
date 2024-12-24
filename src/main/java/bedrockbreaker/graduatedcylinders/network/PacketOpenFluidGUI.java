@@ -1,14 +1,13 @@
 package bedrockbreaker.graduatedcylinders.network;
 
-import bedrockbreaker.graduatedcylinders.util.BufferHelper;
-import bedrockbreaker.graduatedcylinders.util.FluidHelper;
-import bedrockbreaker.graduatedcylinders.util.FluidHelper.TransferrableFluidResult;
-
 import java.util.ArrayList;
 
 import bedrockbreaker.graduatedcylinders.FluidTransferGui;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
+import bedrockbreaker.graduatedcylinders.util.BufferHelper;
+import bedrockbreaker.graduatedcylinders.util.FluidHelper;
+import bedrockbreaker.graduatedcylinders.util.FluidHelper.TransferrableFluidResult;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -28,18 +27,20 @@ public class PacketOpenFluidGUI implements IMessage {
 	private int heldTankIndex;
 	private int side;
 	private int blockTankIndex;
+	private ArrayList<ArrayList<Integer>> blockTankCapacities = new ArrayList<ArrayList<Integer>>();
 	private ArrayList<IProxyFluidStack> heldFluidStacks = new ArrayList<IProxyFluidStack>();
 	private ArrayList<ArrayList<IProxyFluidStack>> blockFluidStacks = new ArrayList<ArrayList<IProxyFluidStack>>();
 
 	public PacketOpenFluidGUI() {}
 
-	public PacketOpenFluidGUI(ItemStack heldItem, BlockPos pos, ArrayList<ArrayList<TransferrableFluidResult>> transferResults, int heldTankIndex,  int side, int blockTankIndex, ArrayList<IProxyFluidStack> heldFluidStacks, ArrayList<ArrayList<IProxyFluidStack>> blockFluidStacks) {
+	public PacketOpenFluidGUI(ItemStack heldItem, BlockPos pos, ArrayList<ArrayList<TransferrableFluidResult>> transferResults, int heldTankIndex, int side, int blockTankIndex, ArrayList<ArrayList<Integer>> blockTankCapacities, ArrayList<IProxyFluidStack> heldFluidStacks, ArrayList<ArrayList<IProxyFluidStack>> blockFluidStacks) {
 		this.heldItem = heldItem;
 		this.pos = pos;
 		this.transferResults = transferResults;
 		this.heldTankIndex = heldTankIndex;
 		this.side = side;
 		this.blockTankIndex = blockTankIndex;
+		this.blockTankCapacities = blockTankCapacities;
 		this.heldFluidStacks = heldFluidStacks;
 		this.blockFluidStacks = blockFluidStacks;
 	}
@@ -70,6 +71,16 @@ public class PacketOpenFluidGUI implements IMessage {
 			}
 
 			this.blockTankIndex = buffer.readInt();
+
+			int numSidedBlockTankCapacities = buffer.readInt();
+			for (int i = 0; i < numSidedBlockTankCapacities; i++) {
+				int numBlockTankCapacities = buffer.readInt();
+				this.blockTankCapacities.add(new ArrayList<Integer>());
+				for (int j = 0; j < numBlockTankCapacities; j++) {
+					this.blockTankCapacities.get(i).add(buffer.readInt());
+				}
+			}
+
 			int numSidedBlockFluidStacks = buffer.readInt();
 			for (int i = 0; i < numSidedBlockFluidStacks; i++) {
 				int numBlockFluidStacks = buffer.readInt();
@@ -107,6 +118,15 @@ public class PacketOpenFluidGUI implements IMessage {
 		}
 
 		buffer.writeInt(this.blockTankIndex);
+
+		buffer.writeInt(this.blockTankCapacities.size());
+		for (ArrayList<Integer> sidedBlockTankcapacities : this.blockTankCapacities) {
+			buffer.writeInt(sidedBlockTankcapacities.size());
+			for (Integer capacity : sidedBlockTankcapacities) {
+				buffer.writeInt(capacity);
+			}
+		}
+
 		buffer.writeInt(this.blockFluidStacks.size());
 		for (ArrayList<IProxyFluidStack> sidedFluidStacks : this.blockFluidStacks) {
 			buffer.writeInt(sidedFluidStacks.size());
@@ -121,7 +141,7 @@ public class PacketOpenFluidGUI implements IMessage {
 		@Override
 		public IMessage onMessage(PacketOpenFluidGUI message, MessageContext context) {
 			if (context.side != Side.CLIENT) return null;
-			FMLCommonHandler.instance().getWorldThread(context.netHandler).addScheduledTask(() -> FluidTransferGui.open(message.heldItem, message.pos, message.transferResults, message.heldTankIndex, message.side, message.blockTankIndex, message.heldFluidStacks, message.blockFluidStacks));
+			FMLCommonHandler.instance().getWorldThread(context.netHandler).addScheduledTask(() -> FluidTransferGui.open(message.heldItem, message.pos, message.transferResults, message.heldTankIndex, message.side, message.blockTankIndex, message.blockTankCapacities, message.heldFluidStacks, message.blockFluidStacks));
 			return null;
 		}
 	}

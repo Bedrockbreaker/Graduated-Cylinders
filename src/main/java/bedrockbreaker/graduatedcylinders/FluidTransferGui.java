@@ -11,8 +11,6 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import bedrockbreaker.graduatedcylinders.api.IHandlerMode;
-import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandler;
-import bedrockbreaker.graduatedcylinders.api.IProxyFluidHandlerItem;
 import bedrockbreaker.graduatedcylinders.api.IProxyFluidStack;
 import bedrockbreaker.graduatedcylinders.api.MetaHandler;
 import bedrockbreaker.graduatedcylinders.network.PacketBlockTransferFluid;
@@ -38,7 +36,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -47,13 +44,12 @@ public class FluidTransferGui extends GuiScreen {
 
 	public boolean initialized = false;
 
-	private final World world;
 	public final BlockPos pos;
 
 	public final MetaHandler metaHandler;
 	public final ItemStack heldItem;
-	private final IProxyFluidHandlerItem heldFluidHandler; // Based on client knowledge. Inventory desyncs are likely to cause funky issues if client fluidstacks are used
-	private IProxyFluidHandler blockFluidHandler; // Based on client knowledge. May not contain any valid fluidstacks (e.g GregTech which doesn't send client updates)
+	private final int heldTankCapacity;
+	private ArrayList<ArrayList<Integer>> blockTankCapacities = new ArrayList<ArrayList<Integer>>();
 	public EnumFacing selectedFace;
 	public int heldTankIndex;
 	public int blockTankIndex;
@@ -90,18 +86,18 @@ public class FluidTransferGui extends GuiScreen {
 	private GuiButton exportButton;
 	private GuiButton modeButton;
 
-	public static void open(ItemStack heldItem, BlockPos pos, ArrayList<ArrayList<TransferrableFluidResult>> sidedTransferResults, int heldTankIndex, int side, int blockTankIndex, ArrayList<IProxyFluidStack> heldFluidStacks, ArrayList<ArrayList<IProxyFluidStack>> sidedBlockFluidStacks) {
-		Minecraft.getMinecraft().displayGuiScreen(new FluidTransferGui(heldItem, pos, sidedTransferResults, heldTankIndex, side, blockTankIndex, heldFluidStacks, sidedBlockFluidStacks));
+	public static void open(ItemStack heldItem, BlockPos pos, ArrayList<ArrayList<TransferrableFluidResult>> sidedTransferResults, int heldTankIndex, int side, int blockTankIndex, ArrayList<ArrayList<Integer>> blockTankCapacities, ArrayList<IProxyFluidStack> heldFluidStacks, ArrayList<ArrayList<IProxyFluidStack>> sidedBlockFluidStacks) {
+		Minecraft.getMinecraft().displayGuiScreen(new FluidTransferGui(heldItem, pos, sidedTransferResults, heldTankIndex, side, blockTankIndex, blockTankCapacities, heldFluidStacks, sidedBlockFluidStacks));
 	}
 
-	public FluidTransferGui(ItemStack heldItem, BlockPos pos, ArrayList<ArrayList<TransferrableFluidResult>> sidedTransferResults, int heldTankIndex, int side, int blockTankIndex, ArrayList<IProxyFluidStack> heldFluidStacks, ArrayList<ArrayList<IProxyFluidStack>> sidedBlockFluidStacks) {
+	public FluidTransferGui(ItemStack heldItem, BlockPos pos, ArrayList<ArrayList<TransferrableFluidResult>> sidedTransferResults, int heldTankIndex, int side, int blockTankIndex, ArrayList<ArrayList<Integer>> blockTankCapacities, ArrayList<IProxyFluidStack> heldFluidStacks, ArrayList<ArrayList<IProxyFluidStack>> sidedBlockFluidStacks) {
 		super();
 
-		this.world = Minecraft.getMinecraft().world;
 		this.pos = pos;
 		this.heldItem = heldItem;
 		this.metaHandler = FluidHelper.getMetaHandler(heldItem);
-		this.heldFluidHandler = this.metaHandler.getHandler(heldItem);
+		this.heldTankCapacity = this.metaHandler.getHandler(heldItem).getTankProperties(heldTankIndex).getCapacity();
+		this.blockTankCapacities = blockTankCapacities;
 		this.heldFluidStacks = heldFluidStacks;
 
 		this.sidedBlockFluidStacks = sidedBlockFluidStacks;
@@ -124,7 +120,6 @@ public class FluidTransferGui extends GuiScreen {
 
 	public void updateCaches(int heldTankIndex, int side, int blockTankIndex) {
 		this.selectedFace = EnumFacing.byIndex(side);
-		this.blockFluidHandler = FluidHelper.getMatchingProxyFluidHandler(world, pos, EnumFacing.byIndex(side), this.heldFluidHandler);
 		this.heldTankIndex = heldTankIndex;
 		this.blockTankIndex = blockTankIndex;
 		
@@ -209,7 +204,7 @@ public class FluidTransferGui extends GuiScreen {
 
 	protected void cycleMode() {
 		this.mode = this.metaHandler.modes.get((this.metaHandler.modes.indexOf(this.mode) + 1) % this.metaHandler.modes.size());
-		this.deltas = this.mode.getDeltas(this.amount, this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity(), this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity());
+		this.deltas = this.mode.getDeltas(this.amount, heldTankCapacity, blockTankCapacities.get(this.selectedFace.getIndex()).get(blockTankIndex));
 		this.deltaStrings = this.mode.getStringDeltas();
 
 		this.instructionsWidth = 0;
@@ -227,13 +222,13 @@ public class FluidTransferGui extends GuiScreen {
 		this.heldTankIndex = tankIndices.getLeft();
 		this.blockTankIndex = tankIndices.getRight();
 		this.allowedFaces.set(this.selectedFace.getIndex(), this.getTransferCapability());
-		this.maxAmount = Math.min(this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity(), this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity());
+		this.maxAmount = Math.min(heldTankCapacity, blockTankCapacities.get(this.selectedFace.getIndex()).get(blockTankIndex));
 		this.transferDirectionForced = this.getTransferCapability().canExport ^ this.getTransferCapability().canImport;
 		this.isExporting = this.transferDirectionForced ? this.getTransferCapability().canExport : defaultTransferDirection;
 		this.exportButton.displayString = this.isExporting ? "->" : "<-";
 		this.exportButton.enabled = !this.transferDirectionForced;
 		this.setAmount(fluidTransferAmount);
-		this.deltas = this.mode.getDeltas(this.amount, this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity(), this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity());
+		this.deltas = this.mode.getDeltas(this.amount, heldTankCapacity, blockTankCapacities.get(this.selectedFace.getIndex()).get(blockTankIndex));
 		this.initFluidSprites(doAnimation);
 	}
 
@@ -320,7 +315,7 @@ public class FluidTransferGui extends GuiScreen {
 		if (this.amount > 0) {
 			int heldAmount = this.heldFluidStacks.get(this.heldTankIndex) != null ? this.heldFluidStacks.get(this.heldTankIndex).getAmount() : 0;
 			int blockAmount = this.blockFluidStacks.get(this.blockTankIndex) != null ? this.blockFluidStacks.get(this.blockTankIndex).getAmount() : 0;
-			int deltaMax = Math.min(this.isExporting ? Math.min(this.blockFluidHandler.getTankProperties(this.blockTankIndex).getCapacity() - blockAmount, heldAmount) : Math.min(this.heldFluidHandler.getTankProperties(this.heldTankIndex).getCapacity() - heldAmount, blockAmount), this.amount);
+			int deltaMax = Math.min(this.isExporting ? Math.min(blockTankCapacities.get(this.selectedFace.getIndex()).get(this.blockTankIndex) - blockAmount, heldAmount) : Math.min(heldTankCapacity - heldAmount, blockAmount), this.amount);
 			String displayHeldAmountNew = this.mode.formatAmount(heldAmount + (this.isExporting ? -deltaMax : deltaMax), false);
 			this.drawCenteredString(this.fontRenderer, displayHeldAmountNew, centerX - 98 - Math.max(this.fontRenderer.getStringWidth(displayHeldAmountNew) / 2 - 26, 0), centerY + 90, this.isExporting ? 0xAA0000 : 0x00AA00); // §4 dark_red : §2 dark_green
 			String displayTankAmountNew = this.mode.formatAmount(blockAmount + (this.isExporting ? deltaMax : -deltaMax), false);

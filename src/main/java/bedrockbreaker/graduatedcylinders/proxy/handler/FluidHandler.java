@@ -8,10 +8,7 @@ import bedrockbreaker.graduatedcylinders.api.IProxyTankProperties;
 import bedrockbreaker.graduatedcylinders.proxy.stack.FluidStackGC;
 import bedrockbreaker.graduatedcylinders.proxy.tankproperties.FluidTankProperties;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 
 public class FluidHandler implements IProxyFluidHandler {
@@ -25,10 +22,6 @@ public class FluidHandler implements IProxyFluidHandler {
 	public FluidStackGC loadFluidStackFromNBT(NBTTagCompound nbt) {
 		FluidStack fluidStack = FluidStack.loadFluidStackFromNBT(nbt);
 		return fluidStack == null ? null : new FluidStackGC(fluidStack);
-	}
-
-	public boolean isMatchingHandlerType(TileEntity tileEntity, EnumFacing side) {
-		return tileEntity.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side);
 	}
 
 	public IProxyTankProperties getTankProperties(int tankIndex) {
