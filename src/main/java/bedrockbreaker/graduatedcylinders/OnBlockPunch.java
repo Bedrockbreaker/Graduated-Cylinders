@@ -35,11 +35,13 @@ public class OnBlockPunch {
 		EnumFacing defaultSide = eventSide == null ? EnumFacing.DOWN : eventSide;
 
 		ArrayList<ArrayList<TransferrableFluidResult>> allTransferResults = new ArrayList<ArrayList<TransferrableFluidResult>>(6);
+		ArrayList<ArrayList<Integer>> blockTankCapacities = new ArrayList<ArrayList<Integer>>();
 		ArrayList<IProxyFluidStack> heldFluidStacks = new ArrayList<IProxyFluidStack>();
 		ArrayList<ArrayList<IProxyFluidStack>> blockFluidStacks = new ArrayList<ArrayList<IProxyFluidStack>>();
 		Pair<EnumFacing, TransferrableFluidResult> defaultIndex = Pair.of(defaultSide, new TransferrableFluidResult(0, 0, false, false));
 		for (int i = 0; i < 6; i++) { // Pre-fill the parent array
 			allTransferResults.add(new ArrayList<TransferrableFluidResult>());
+			blockTankCapacities.add(new ArrayList<Integer>());
 			blockFluidStacks.add(new ArrayList<IProxyFluidStack>());
 		}
 
@@ -57,6 +59,7 @@ public class OnBlockPunch {
 					TransferrableFluidResult transferResult = FluidHelper.getTransferResult(heldFluidHandler, j, blockFluidHandler, k);
 					Pair<EnumFacing, TransferrableFluidResult> index = Pair.of(side, transferResult);
 					allTransferResults.get(side.getIndex()).add(transferResult);
+					blockTankCapacities.get(side.getIndex()).add(blockFluidHandler.getTankProperties(k).getCapacity());
 					if ((!defaultIndex.getRight().canTransfer() && transferResult.canTransfer()) || ((defaultIndex.getRight().canExport ^ defaultIndex.getRight().canImport) && transferResult.canExport && transferResult.canImport)) defaultIndex = index;
 				}
 			}
@@ -64,6 +67,6 @@ public class OnBlockPunch {
 		if (!defaultIndex.getRight().canTransfer()) return;
 
 		event.setCanceled(true);
-		PacketHandler.INSTANCE.sendTo(new PacketOpenFluidGUI(heldItem, event.getPos(), allTransferResults, defaultIndex.getRight().sourceTank, defaultIndex.getLeft().getIndex(), defaultIndex.getRight().destinationTank, heldFluidStacks, blockFluidStacks), (EntityPlayerMP) event.getEntityPlayer());
+		PacketHandler.INSTANCE.sendTo(new PacketOpenFluidGUI(heldItem, event.getPos(), allTransferResults, defaultIndex.getRight().sourceTank, defaultIndex.getLeft().getIndex(), defaultIndex.getRight().destinationTank, blockTankCapacities, heldFluidStacks, blockFluidStacks), (EntityPlayerMP) event.getEntityPlayer());
 	}
 }

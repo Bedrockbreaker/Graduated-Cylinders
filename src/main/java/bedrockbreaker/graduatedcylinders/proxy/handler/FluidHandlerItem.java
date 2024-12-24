@@ -5,6 +5,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 
 public class FluidHandlerItem extends FluidHandler implements IProxyFluidHandlerItem {
@@ -18,6 +19,10 @@ public class FluidHandlerItem extends FluidHandler implements IProxyFluidHandler
 
 	public ItemStack getContainer() {
 		return this.fluidHandlerItem.getContainer();
+	}
+
+	public boolean isMatchingHandlerType(TileEntity tileEntity, EnumFacing side) {
+		return tileEntity.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side);
 	}
 
 	public FluidHandler getMatchingHandler(TileEntity tileEntity, EnumFacing side) {
